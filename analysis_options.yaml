@@ -1,0 +1,44 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+linter:
+  rules:
+    always_use_package_imports: false
+    prefer_relative_imports: true
+    require_trailing_commas: true
+    public_member_api_docs: false
+
+analyzer:
+  errors:
+    avoid_catches_without_on_clauses: ignore
+    avoid_positional_boolean_parameters: ignore
+    avoid_print: ignore
+    document_ignores: ignore
+    inference_failure_on_function_invocation: ignore
+    inference_failure_on_instance_creation: ignore
+    inference_failure_on_untyped_parameter: ignore
+    invalid_annotation_target : ignore
+    library_private_types_in_public_api: ignore
+    lines_longer_than_80_chars: ignore
+    must_be_immutable: ignore
+    must_call_super: error
+    no_default_cases: ignore
+    one_member_abstracts: ignore
+    prefer_asserts_with_message: ignore
+    prefer_if_elements_to_conditional_expressions: ignore
+    specify_nonobvious_property_types: ignore
+    unawaited_futures: ignore
+    use_build_context_synchronously: ignore
+    use_setters_to_change_properties: ignore
+
+  exclude:
+    - "bin/cache/**"
+    - "build/**"
+    - ".dart_tool/**"
+    - "ios/**"
+    - "android/**"
+    - "web/**"
+    - "test/**.mocks.dart"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated/**"
+    - "lib/generated_plugin_registrant.dart"
