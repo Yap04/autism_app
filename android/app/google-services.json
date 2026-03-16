@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "670545550464",
+    "project_id": "autism-app-b55dc",
+    "storage_bucket": "autism-app-b55dc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:670545550464:android:bac28957e00f9f9fb8da65",
+        "android_client_info": {
+          "package_name": "com.example.autism_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKXgk3SxTtgKhMas_C6OCEKo2-2wN2npQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
