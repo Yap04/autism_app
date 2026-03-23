@@ -19,6 +19,14 @@ class AppWidget {
     );
   }
 
+  static TextStyle h3TextFieldStyle() {
+    return const TextStyle(
+      color: ThemeColor.black,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    );
+  }
+
   static TextStyle bodyLarge() {
     return const TextStyle(
       fontSize: 16,
