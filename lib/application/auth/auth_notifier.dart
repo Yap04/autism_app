@@ -1,0 +1,71 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../domain/models/user_model.dart';
+import '../providers/repository_providers.dart';
+
+part 'auth_notifier.g.dart';
+
+@riverpod
+class AuthNotifier extends _$AuthNotifier {
+  @override
+  FutureOr<UserModel?> build() async {
+    final authRepo = ref.watch(authRepositoryProvider);
+    final userRepo = ref.watch(userRepositoryProvider);
+
+    final uid = await authRepo.getCurrentUserId();
+    if (uid != null) {
+      return await userRepo.getUserById(uid);
+    }
+    return null;
+  }
+
+  Future<void> register({
+    required String email,
+    required String password,
+    required String name,
+    required UserRole role,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final authRepo = ref.read(authRepositoryProvider);
+      final userRepo = ref.read(userRepositoryProvider);
+
+      final uid = await authRepo.signUpWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final newUser = UserModel(id: uid, name: name, email: email, role: role);
+      await userRepo.saveUser(newUser);
+
+      return newUser;
+    });
+  }
+
+  Future<void> login({required String email, required String password}) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final authRepo = ref.read(authRepositoryProvider);
+      final userRepo = ref.read(userRepositoryProvider);
+
+      final uid = await authRepo.loginWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = await userRepo.getUserById(uid);
+
+      if (user == null) {
+        throw Exception('User not found after login');
+      }
+
+      return user;
+    });
+  }
+
+  Future<void> signOut() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(authRepositoryProvider).signOut();
+      return null;
+    });
+  }
+}
