@@ -12,7 +12,7 @@ class AppSnackBar {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: const TextStyle(color: ThemeColor.white, fontSize: 14),
         ),
         backgroundColor: backgroundColor,
         duration: duration,
