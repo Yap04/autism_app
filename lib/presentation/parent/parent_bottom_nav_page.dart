@@ -1,30 +1,30 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import '../core/constant/color_constant.dart';
-import 'parent/appointments_page.dart';
-import 'parent/discover_page.dart';
-import 'parent/home_page.dart';
-import 'parent/profile_page.dart';
-import 'parent/progress_page.dart';
+import '../../core/constant/color_constant.dart';
+import 'parent_appointments_page.dart';
+import 'parent_discover_page.dart';
+import 'parent_home_page.dart';
+import 'parent_profile_page.dart';
+import 'parent_progress_page.dart';
 
 @RoutePage()
-class BottomNavPage extends StatefulWidget {
-  const BottomNavPage({super.key});
+class ParentBottomNavPage extends StatefulWidget {
+  const ParentBottomNavPage({super.key});
 
   @override
-  State<BottomNavPage> createState() => _BottomNavPageState();
+  State<ParentBottomNavPage> createState() => _ParentBottomNavPageState();
 }
 
-class _BottomNavPageState extends State<BottomNavPage> {
+class _ParentBottomNavPageState extends State<ParentBottomNavPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    HomePage(),
-    DiscoverPage(),
-    AppointmentsPage(),
-    ProgressPage(),
-    ProfilePage(),
+    ParentHomePage(),
+    ParentDiscoverPage(),
+    ParentAppointmentsPage(),
+    ParentProgressPage(),
+    ParentProfilePage(),
   ];
 
   void _onItemTapped(int index) {
