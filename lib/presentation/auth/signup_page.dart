@@ -186,7 +186,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                         email: email,
                         password: password,
                         name: username,
-                        role: UserRole.student,
+                        role: UserRole.parent,
                       );
 
                   final authState = ref.read(authNotifierProvider);
@@ -199,7 +199,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     AppSnackBar.error(context, errorMessage);
                   } else if (authState.value != null) {
                     AppSnackBar.success(context, 'Successfully registered!');
-                    context.replaceRoute(const BottomNavRoute());
+                    context.replaceRoute(const ParentBottomNavRoute());
                   }
                 },
                 child: Container(

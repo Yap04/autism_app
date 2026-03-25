@@ -8,6 +8,7 @@ import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
 import '../../core/routes/app_router.dart';
+import '../../domain/models/user_model.dart';
 import '../shared/snack_bar.dart';
 
 @RoutePage()
@@ -166,7 +167,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     AppSnackBar.error(context, errorMessage);
                   } else if (authState.value != null) {
                     AppSnackBar.success(context, 'Successfully sign in!');
-                    context.replaceRoute(const BottomNavRoute());
+                    
+                    final userRole = authState.value!.role;
+
+                    if(userRole == UserRole.trainer){
+                      context.replaceRoute(const TrainerBottomNavRoute());
+                    }else if(userRole == UserRole.parent){
+                      context.replaceRoute(const ParentBottomNavRoute());
+                    }
                   }
                 },
                 child: Container(
