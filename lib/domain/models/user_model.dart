@@ -4,7 +4,7 @@ part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
 enum UserRole { 
-  student,
+  parent,
   trainer,
   admin
 }
