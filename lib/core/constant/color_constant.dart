@@ -14,4 +14,5 @@ class ThemeColor {
   static const Color aquaBlue = Color(0xFFD9F1EF);
   static const Color blue = Color(0xFF4581BB);
   static const Color darkBlue = Color(0xFF1565C0);
+  static const Color backgroundAquaBlue = Color(0xFFBEE9E7);
 }
