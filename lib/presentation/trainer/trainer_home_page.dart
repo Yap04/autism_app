@@ -1,15 +1,30 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../application/appointment/appointment_notifier.dart';
+import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
+import '../../core/routes/app_router.dart';
+import '../../domain/models/appointment_model.dart';
 import '../shared/curved_header_background.dart';
+import '../shared/snack_bar.dart';
 
-class TrainerHomePage extends StatelessWidget {
+class TrainerHomePage extends ConsumerStatefulWidget {
   const TrainerHomePage({super.key});
 
   @override
+  ConsumerState<TrainerHomePage> createState() => _TrainerHomePageState();
+}
+
+class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
+  @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(authNotifierProvider).value;
+    final appointmentsAsync = ref.watch(appointmentNotifierProvider);
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       body: SingleChildScrollView(
@@ -31,7 +46,7 @@ class TrainerHomePage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Good Morning,\nCoach Dave!',
+                            'Good Morning,\n${currentUser?.name ?? 'Trainer'}!',
                             style: AppWidget.h2TextFieldStyle(),
                           ),
                           const CircleAvatar(
@@ -112,7 +127,7 @@ class TrainerHomePage extends StatelessWidget {
                                 Column(
                                   children: [
                                     Text(
-                                      'Sesi Hari Ini',
+                                      'Today Sessions',
                                       style: AppWidget.bodySmall().copyWith(
                                         color: ThemeColor.grey100,
                                       ),
@@ -156,14 +171,48 @@ class TrainerHomePage extends StatelessWidget {
                     12.heightBox,
                     SizedBox(
                       height: 180,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: 3,
-                        itemBuilder: (context, index) {
-                          return _buildRequestCard(
-                            ThemeColor.darkBlue,
-                            ThemeColor.aquaBlue,
+                      child: appointmentsAsync.when(
+                        loading:
+                            () => const Center(
+                              child: CircularProgressIndicator(
+                                color: ThemeColor.darkBlue,
+                              ),
+                            ),
+                        error:
+                            (error, stack) =>
+                                Center(child: Text('Error: $error')),
+                        data: (appointments) {
+                          final pendingRequests =
+                              appointments
+                                  .where(
+                                    (a) =>
+                                        a.status == AppointmentStatus.pending,
+                                  )
+                                  .toList();
+
+                          if (pendingRequests.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No pending appointments',
+                                style: AppWidget.bodyMedium().copyWith(
+                                  color: ThemeColor.grey100,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: pendingRequests.length,
+                            itemBuilder: (itemContext, index) {
+                              final appointment = pendingRequests[index];
+                              return _buildRequestCard(
+                                context,
+                                ref,
+                                appointment,
+                              );
+                            },
                           );
                         },
                       ),
@@ -172,30 +221,78 @@ class TrainerHomePage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'Jadual Sesi',
+                        'Today Session Schedule',
                         style: AppWidget.h3TextFieldStyle(),
                       ),
                     ),
                     16.heightBox,
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        children: [
-                          _buildTimelineItem(
-                            '10:00\nAM',
-                            'Ahmad',
-                            true,
-                            ThemeColor.darkBlue,
-                            ThemeColor.aquaBlue,
-                          ),
-                          _buildTimelineItem(
-                            '11:00\nAM',
-                            'Ahmad',
-                            false,
-                            ThemeColor.darkBlue,
-                            ThemeColor.aquaBlue,
-                          ),
-                        ],
+                      child: appointmentsAsync.when(
+                        loading:
+                            () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        error: (err, stack) => Text('Error: $err'),
+                        data: (appointments) {
+                          final today = DateTime.now();
+                          final todaySessions =
+                              appointments.where((a) {
+                                  return a.status ==
+                                          AppointmentStatus.accepted &&
+                                      a.dateTime.year == today.year &&
+                                      a.dateTime.month == today.month &&
+                                      a.dateTime.day == today.day;
+                                }).toList()
+                                ..sort(
+                                  (a, b) => a.dateTime.compareTo(b.dateTime),
+                                );
+
+                          if (todaySessions.isEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.all(24),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'No sessions today.',
+                                style: AppWidget.bodyMedium().copyWith(
+                                  color: ThemeColor.grey100,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            children: List.generate(todaySessions.length, (
+                              index,
+                            ) {
+                              final session = todaySessions[index];
+
+                              final hour = session.dateTime.hour;
+                              final minute = session.dateTime.minute
+                                  .toString()
+                                  .padLeft(2, '0');
+                              final period = hour >= 12 ? 'PM' : 'AM';
+                              final displayHour =
+                                  hour > 12
+                                      ? hour - 12
+                                      : (hour == 0 ? 12 : hour);
+                              final timeString =
+                                  '$displayHour:$minute\n$period';
+
+                              // determine if the appointment is last, if yes then no connection line required
+                              final isLast = index == todaySessions.length - 1;
+
+                              return _buildTimelineItem(
+                                timeString,
+                                session.parentName,
+                                session.sport,
+                                session.location,
+                                !isLast,
+                                session.parentId,
+                              );
+                            }),
+                          );
+                        },
                       ),
                     ),
                     40.heightBox,
@@ -209,7 +306,15 @@ class TrainerHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRequestCard(Color darkBlue, Color aquaBlue) {
+  Widget _buildRequestCard(
+    BuildContext context,
+    WidgetRef ref,
+    AppointmentModel appointment,
+  ) {
+    final date = appointment.dateTime;
+    final timeString =
+        '${date.day}/${date.month}/${date.year}, ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+
     return Container(
       width: 300,
       margin: const EdgeInsets.only(right: 16, bottom: 8),
@@ -239,9 +344,11 @@ class TrainerHomePage extends StatelessWidget {
                     child: Icon(Icons.person, color: ThemeColor.white),
                   ),
                   4.heightBox,
-                  const Text(
+                  Text(
                     'Parent',
-                    style: TextStyle(fontSize: 10, color: ThemeColor.grey100),
+                    style: AppWidget.bodyExtraSmall().copyWith(
+                      color: ThemeColor.grey100,
+                    ),
                   ),
                 ],
               ),
@@ -253,7 +360,10 @@ class TrainerHomePage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Ahmad', style: AppWidget.bodyLarge()),
+                        Text(
+                          appointment.parentName,
+                          style: AppWidget.bodyLarge(),
+                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -269,15 +379,14 @@ class TrainerHomePage extends StatelessWidget {
                                 width: 6,
                                 height: 6,
                                 decoration: const BoxDecoration(
-                                  color: ThemeColor.green,
+                                  color: ThemeColor.orange,
                                   shape: BoxShape.circle,
                                 ),
                               ),
                               4.widthBox,
-                              const Text(
-                                'Status',
-                                style: TextStyle(
-                                  fontSize: 10,
+                              Text(
+                                'New',
+                                style: AppWidget.bodyExtraSmall().copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -296,7 +405,7 @@ class TrainerHomePage extends StatelessWidget {
                         ),
                         4.widthBox,
                         Text(
-                          'Swimming',
+                          appointment.sport,
                           style: AppWidget.bodySmall().copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -312,16 +421,15 @@ class TrainerHomePage extends StatelessWidget {
                           color: ThemeColor.grey100,
                         ),
                         4.widthBox,
-                        const Text(
-                          '14 Mac 2026, 10:00 AM',
-                          style: TextStyle(
-                            fontSize: 11,
+                        Text(
+                          timeString,
+                          style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.grey100,
                           ),
                         ),
                       ],
                     ),
-                    4.heightBox,
+                    2.heightBox,
                     Row(
                       children: [
                         const Icon(
@@ -330,10 +438,9 @@ class TrainerHomePage extends StatelessWidget {
                           color: ThemeColor.grey100,
                         ),
                         4.widthBox,
-                        const Text(
-                          'Pusat Sukan Kuala Lumpur',
-                          style: TextStyle(
-                            fontSize: 11,
+                        Text(
+                          appointment.location,
+                          style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.grey100,
                           ),
                         ),
@@ -349,7 +456,13 @@ class TrainerHomePage extends StatelessWidget {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap:
+                      () => _handleStatusUpdate(
+                        context,
+                        ref,
+                        appointment.id,
+                        AppointmentStatus.accepted,
+                      ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
@@ -370,7 +483,13 @@ class TrainerHomePage extends StatelessWidget {
               12.widthBox,
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap:
+                      () => _handleStatusUpdate(
+                        context,
+                        ref,
+                        appointment.id,
+                        AppointmentStatus.rejected,
+                      ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
@@ -380,7 +499,7 @@ class TrainerHomePage extends StatelessWidget {
                       border: Border.all(color: ThemeColor.lightGrey),
                     ),
                     child: Text(
-                      'Tolak',
+                      'Reject',
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -398,9 +517,10 @@ class TrainerHomePage extends StatelessWidget {
   Widget _buildTimelineItem(
     String time,
     String name,
+    String sport,
+    String location,
     bool showLine,
-    Color darkBlue,
-    Color aquaBlue,
+    String parentId,
   ) {
     return IntrinsicHeight(
       child: Row(
@@ -463,6 +583,8 @@ class TrainerHomePage extends StatelessWidget {
                           style: AppWidget.bodyLarge().copyWith(
                             fontWeight: FontWeight.bold,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                         4.heightBox,
                         Row(
@@ -473,7 +595,12 @@ class TrainerHomePage extends StatelessWidget {
                               color: ThemeColor.darkBlue,
                             ),
                             4.widthBox,
-                            Text('Berenang', style: AppWidget.bodySmall()),
+                            Text(
+                              sport,
+                              style: AppWidget.bodySmall(),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ],
                         ),
                         4.heightBox,
@@ -485,10 +612,14 @@ class TrainerHomePage extends StatelessWidget {
                               color: ThemeColor.grey100,
                             ),
                             4.widthBox,
-                            Text(
-                              'Kuala Lumpur',
-                              style: AppWidget.bodySmall().copyWith(
-                                color: ThemeColor.grey100,
+                            Expanded(
+                              child: Text(
+                                location,
+                                style: AppWidget.bodySmall().copyWith(
+                                  color: ThemeColor.grey100,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ),
                           ],
@@ -499,20 +630,25 @@ class TrainerHomePage extends StatelessWidget {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CircleAvatar(
-                        radius: 18,
-                        backgroundColor: ThemeColor.darkBlue,
-                        child: Icon(
-                          Icons.chat_bubble,
-                          color: ThemeColor.white,
-                          size: 16,
+                      GestureDetector(
+                        onTap:
+                            () => context.pushRoute(
+                              ChatRoute(trainerId: parentId, trainerName: name),
+                            ),
+                        child: const CircleAvatar(
+                          radius: 18,
+                          backgroundColor: ThemeColor.darkBlue,
+                          child: Icon(
+                            Icons.chat_bubble,
+                            color: ThemeColor.white,
+                            size: 16,
+                          ),
                         ),
                       ),
                       4.heightBox,
-                      const Text(
+                      Text(
                         'Chat',
-                        style: TextStyle(
-                          fontSize: 10,
+                        style: AppWidget.bodyExtraSmall().copyWith(
                           color: ThemeColor.darkBlue,
                           fontWeight: FontWeight.bold,
                         ),
@@ -526,5 +662,29 @@ class TrainerHomePage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _handleStatusUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    String id,
+    AppointmentStatus status,
+  ) async {
+    try {
+      await ref
+          .read(appointmentNotifierProvider.notifier)
+          .updateStatus(id, status);
+      if (context.mounted) {
+        if (status == AppointmentStatus.accepted) {
+          AppSnackBar.success(context, 'Appointment Accepted!');
+        } else {
+          AppSnackBar.info(context, 'Appointment Rejected!');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackBar.error(context, e.toString());
+      }
+    }
   }
 }
