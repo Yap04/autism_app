@@ -1,10 +1,14 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../../application/appointment/appointment_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
+import '../../core/routes/app_router.dart';
+import '../../domain/models/appointment_model.dart';
 import '../shared/curved_header_background.dart';
 
 class ParentAppointmentsPage extends ConsumerStatefulWidget {
@@ -155,14 +159,96 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
                     12.heightBox,
 
-                    _buildAppointmentCard(
-                      time: '10:00 AM - 11:00 AM',
-                      status: 'Accepted',
-                      coachName: 'Coach Dave',
-                      sport: 'swimming',
-                      title: 'Swimming (Ahmad)',
-                      location: 'Kuala Lumpur Sports Center',
-                    ),
+                    ref
+                        .watch(appointmentNotifierProvider)
+                        .when(
+                          loading:
+                              () => const Center(
+                                child: CircularProgressIndicator(
+                                  color: ThemeColor.darkBlue,
+                                ),
+                              ),
+                          error: (e, stack) => Center(child: Text('Error: $e')),
+                          data: (appointments) {
+                            final targetDate = _selectedDay ?? DateTime.now();
+                            final filteredAppointments =
+                                appointments.where((app) {
+                                    final isSameDate =
+                                        app.dateTime.year == targetDate.year &&
+                                        app.dateTime.month ==
+                                            targetDate.month &&
+                                        app.dateTime.day == targetDate.day;
+                                    if (!isSameDate) {
+                                      return false;
+                                    }
+                                    if (_selectedTab == 'Pending') {
+                                      return app.status ==
+                                          AppointmentStatus.pending;
+                                    } else if (_selectedTab == 'Upcoming') {
+                                      return app.status ==
+                                          AppointmentStatus.accepted;
+                                    } else {
+                                      return app.status ==
+                                              AppointmentStatus.completed ||
+                                          app.status ==
+                                              AppointmentStatus.rejected ||
+                                          app.status ==
+                                              AppointmentStatus.cancelled;
+                                    }
+                                  }).toList()
+                                  ..sort(
+                                    (a, b) => a.dateTime.compareTo(b.dateTime),
+                                  );
+
+                            if (filteredAppointments.isEmpty) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 40,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'No ${_selectedTab.toLowerCase()} appointments for this date.',
+                                    style: AppWidget.bodyMedium().copyWith(
+                                      color: ThemeColor.grey100,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Column(
+                              children:
+                                  filteredAppointments.map((app) {
+                                    final startStr = DateFormat(
+                                      'hh:mm a',
+                                    ).format(app.dateTime);
+                                    final endStr = DateFormat('hh:mm a').format(
+                                      app.dateTime.add(
+                                        const Duration(hours: 1),
+                                      ),
+                                    );
+
+                                    final statusStr =
+                                        app.status.name[0].toUpperCase() +
+                                        app.status.name.substring(1);
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
+                                      child: _buildAppointmentCard(
+                                        time: '$startStr - $endStr',
+                                        status: statusStr,
+                                        coachName: app.trainerName,
+                                        sport: app.sport,
+                                        title: '${app.sport} Session',
+                                        location: app.location,
+                                        trainerId: app.trainerId,
+                                      ),
+                                    );
+                                  }).toList(),
+                            );
+                          },
+                        ),
                     40.heightBox,
                   ],
                 ),
@@ -181,6 +267,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     required String sport,
     required String title,
     required String location,
+    required String trainerId,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -285,8 +372,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     8.heightBox,
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: AppWidget.bodyLarge().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -302,8 +388,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                         Expanded(
                           child: Text(
                             location,
-                            style: const TextStyle(
-                              fontSize: 12,
+                            style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.grey100,
                             ),
                             maxLines: 1,
@@ -321,40 +406,45 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemeColor.blue,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
+                child: GestureDetector(
+                  onTap:
+                      () => context.pushRoute(
+                        ChatRoute(trainerId: trainerId, trainerName: coachName),
+                      ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: ThemeColor.blue,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text(
-                    'Chat with Coach',
-                    style: TextStyle(
-                      color: ThemeColor.white,
-                      fontWeight: FontWeight.bold,
+                    child: Text(
+                      'Chat with Coach',
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
               12.widthBox,
               Expanded(
-                child: OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: ThemeColor.black,
-                    side: const BorderSide(color: ThemeColor.lightGrey),
-                    shape: RoundedRectangleBorder(
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: ThemeColor.lightGrey),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: const Text(
-                    'Reschedule',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    child: Text(
+                      'Reschedule',
+                      style: AppWidget.bodySmall().copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ),
