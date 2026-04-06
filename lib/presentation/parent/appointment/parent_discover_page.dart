@@ -1,0 +1,379 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import '../../../application/user/trainer_provider.dart';
+import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/widget_ext.dart';
+import '../../../core/routes/app_router.dart';
+import '../../shared/app_text_field.dart';
+import '../../shared/trainer_card.dart';
+
+class ParentDiscoverPage extends ConsumerStatefulWidget {
+  const ParentDiscoverPage({super.key});
+
+  @override
+  ConsumerState<ParentDiscoverPage> createState() => _DiscoverPageState();
+}
+
+class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
+  final TextEditingController _searchController = TextEditingController();
+  bool _hasLocationPermission = false;
+
+  final Completer<GoogleMapController> _mapController =
+      Completer<GoogleMapController>();
+
+  // default location: miri
+  static const CameraPosition _initialPosition = CameraPosition(
+    target: LatLng(4.3995, 113.9914),
+    zoom: 14.5,
+  );
+
+  Future<void> _goToMyLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please turn on GPS location services.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permission denied.')),
+          );
+        }
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission permanently denied. Please enable in settings.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _hasLocationPermission = true;
+    });
+
+    // 4. 获取当前真实经纬度
+    final position = await Geolocator.getCurrentPosition();
+
+    // 5. 让地图镜头飞过去！
+    final controller = await _mapController.future;
+    await controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 16,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: ThemeColor.cream,
+      appBar: AppBar(
+        backgroundColor: ThemeColor.backgroundAquaBlue,
+        elevation: 0,
+        toolbarHeight: 80,
+        title: Text(
+          'Find Coaches Near You',
+          style: AppWidget.h2TextFieldStyle(),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(70),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: AppTextField(
+                    controller: _searchController,
+                    hintText: 'Search by name, sport or location...',
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: ThemeColor.grey100,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: ThemeColor.white.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.tune, color: ThemeColor.black),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 380,
+              child: Stack(
+                children: [
+                  SizedBox(
+                    height: 280,
+                    width: double.infinity,
+                    child: GoogleMap(
+                      initialCameraPosition: _initialPosition,
+                      onMapCreated: _mapController.complete,
+                      zoomControlsEnabled: false,
+                      myLocationButtonEnabled: false,
+                      mapToolbarEnabled: false,
+                      myLocationEnabled: _hasLocationPermission,
+
+                      gestureRecognizers: const {
+                        Factory<OneSequenceGestureRecognizer>(
+                          EagerGestureRecognizer.new,
+                        ),
+                      },
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: GestureDetector(
+                      onTap: _goToMyLocation,
+                      child: const CircleAvatar(
+                        backgroundColor: ThemeColor.white,
+                        child: Icon(
+                          Icons.my_location,
+                          color: ThemeColor.grey100,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 70,
+                    right: 16,
+                    child: GestureDetector(
+                      onTap: () {
+                        print('Navigation tapped');
+                      },
+                      child: const CircleAvatar(
+                        backgroundColor: ThemeColor.white,
+                        child: Icon(
+                          Icons.navigation,
+                          color: ThemeColor.grey100,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: SizedBox(
+                      height: 140,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: 3,
+                        itemBuilder: (context, index) {
+                          return _buildHorizontalCoachCard();
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            24.heightBox,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Nearby Certified Trainers',
+                    style: AppWidget.h3TextFieldStyle(),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.pushRoute(const TrainerListRoute()),
+                    child: Row(
+                      children: [
+                        Text(
+                          'View All',
+                          style: AppWidget.bodySmall().copyWith(
+                            color: ThemeColor.darkBlue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.chevron_right,
+                          color: ThemeColor.darkBlue,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            12.heightBox,
+            ref
+                .watch(trainerListProvider)
+                .when(
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error: (e, stack) => Text('Error: $e'),
+                  data: (trainers) {
+                    if (trainers.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'No trainers found.',
+                          style: AppWidget.bodyMedium(),
+                        ),
+                      );
+                    }
+
+                    final topTrainers = trainers.take(3).toList();
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: topTrainers.length,
+                      itemBuilder: (context, index) {
+                        return TrainerCard(trainer: topTrainers[index]);
+                      },
+                    );
+                  },
+                ),
+            30.heightBox,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalCoachCard() {
+    return Container(
+      width: 260,
+      margin: const EdgeInsets.only(right: 16, bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const CircleAvatar(
+                radius: 24,
+                backgroundColor: ThemeColor.grey100,
+                child: Icon(Icons.person, color: ThemeColor.white),
+              ),
+              12.widthBox,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Coach Dave',
+                    style: AppWidget.bodyLarge().copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '1.2 km away',
+                    style: AppWidget.bodySmall().copyWith(
+                      color: ThemeColor.grey100,
+                    ),
+                  ),
+                  4.heightBox,
+                  Row(
+                    children: [
+                      const Icon(Icons.pool, size: 16),
+                      4.widthBox,
+                      const Icon(Icons.sports_soccer, size: 16),
+                    ],
+                  ),
+                ],
+              ),
+              const Spacer(),
+              const Row(
+                children: [
+                  Icon(Icons.star, color: Colors.amber, size: 16),
+                  Text(' 4.9', style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+          Row(
+            children: [
+              const Icon(
+                Icons.verified,
+                color: ThemeColor.lightOrange,
+                size: 18,
+              ),
+              8.widthBox,
+              Text(
+                'Autism Training Certified',
+                style: AppWidget.bodySmall().copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
