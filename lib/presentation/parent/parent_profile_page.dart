@@ -1,12 +1,21 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
+import '../../core/routes/app_router.dart';
 import '../shared/curved_header_background.dart';
 
-class ParentProfilePage extends StatelessWidget {
+class ParentProfilePage extends ConsumerStatefulWidget {
   const ParentProfilePage({super.key});
 
+  @override
+  ConsumerState<ParentProfilePage> createState() => _ParentProfilePageState();
+}
+
+class _ParentProfilePageState extends ConsumerState<ParentProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,12 +31,26 @@ class ParentProfilePage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Profile',
-                        style: AppWidget.h1TextFieldStyle(),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Profile', style: AppWidget.h1TextFieldStyle()),
+                        IconButton(
+                          onPressed: () async {
+                            await ref
+                                .read(authNotifierProvider.notifier)
+                                .signOut();
+                            if (context.mounted) {
+                              context.router.replaceAll([const LoginRoute()]);
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.logout_rounded,
+                            color: ThemeColor.black,
+                            size: 28,
+                          ),
+                        ),
+                      ],
                     ),
                     10.heightBox,
 
