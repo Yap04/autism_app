@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../core/constant/color_constant.dart';
@@ -5,6 +6,7 @@ import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
 import '../shared/curved_header_background.dart';
 
+@RoutePage()
 class ParentProgressPage extends StatelessWidget {
   const ParentProgressPage({super.key});
 
@@ -20,25 +22,31 @@ class ParentProgressPage extends StatelessWidget {
             ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsetsGeometry.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        GestureDetector(
+                          onTap: () => context.router.maybePop(),
+                          child: Container(
+                            color: Colors.transparent,
+                            padding: const EdgeInsets.only(
+                              right: 12,
+                              top: 8,
+                              bottom: 8,
+                            ),
+                            child: const Icon(
+                              Icons.arrow_back_ios_new,
+                              color: ThemeColor.black,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                         Text(
                           'Performance',
                           style: AppWidget.h2TextFieldStyle(),
-                        ),
-                        const CircleAvatar(
-                          radius: 22,
-                          backgroundColor: ThemeColor.white,
-                          child: Icon(
-                            Icons.person,
-                            color: ThemeColor.grey100,
-                            size: 28,
-                          ),
                         ),
                       ],
                     ),
@@ -77,7 +85,7 @@ class ParentProgressPage extends StatelessWidget {
 
                     Text(
                       'Overall Performance Score',
-                      style: AppWidget.h2TextFieldStyle(),
+                      style: AppWidget.h3TextFieldStyle(),
                     ),
                     16.heightBox,
 
@@ -176,7 +184,7 @@ class ParentProgressPage extends StatelessWidget {
 
                     28.heightBox,
 
-                    Text('Latest Records', style: AppWidget.h2TextFieldStyle()),
+                    Text('Latest Records', style: AppWidget.h3TextFieldStyle()),
                     12.heightBox,
                     Container(
                       padding: const EdgeInsets.all(16),
