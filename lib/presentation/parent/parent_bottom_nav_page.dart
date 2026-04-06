@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constant/color_constant.dart';
+import '../chat/chat_list_page.dart';
+import 'appointment/parent_discover_page.dart';
 import 'parent_appointments_page.dart';
-import 'parent_discover_page.dart';
 import 'parent_home_page.dart';
 import 'parent_profile_page.dart';
-import 'parent_progress_page.dart';
 
 @RoutePage()
 class ParentBottomNavPage extends StatefulWidget {
@@ -21,9 +21,9 @@ class _ParentBottomNavPageState extends State<ParentBottomNavPage> {
 
   final List<Widget> _pages = const [
     ParentHomePage(),
+    ChatListPage(),
     ParentDiscoverPage(),
     ParentAppointmentsPage(),
-    ParentProgressPage(),
     ParentProfilePage(),
   ];
 
@@ -50,16 +50,16 @@ class _ParentBottomNavPageState extends State<ParentBottomNavPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            label: 'Chat',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.explore_outlined),
             label: 'Discover',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Appointments',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.trending_up),
-            label: 'Progress',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
