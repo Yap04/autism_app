@@ -39,7 +39,7 @@ class TrainerListPage extends ConsumerWidget {
           if (trainers.isEmpty) {
             return Center(
               child: Text(
-                'Tiada jurulatih setakat ini.\n(No trainers available yet)',
+                'No trainers available yet',
                 textAlign: TextAlign.center,
                 style: AppWidget.bodyLarge().copyWith(
                   color: ThemeColor.grey100,
