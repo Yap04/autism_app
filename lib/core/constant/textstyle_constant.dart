@@ -50,4 +50,12 @@ class AppWidget {
       color: Colors.black,
     );
   }
+
+  static TextStyle bodyExtraSmall() {
+    return const TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.normal,
+      color: Colors.black,
+    );
+  }
 }
