@@ -5,12 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/appointment_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/chat_repository.dart';
+import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../infrastructure/repositories/firebase_appointment_repository.dart';
 import '../../infrastructure/repositories/firebase_auth_repository.dart';
 import '../../infrastructure/repositories/firebase_chat_repository.dart';
+import '../../infrastructure/repositories/firebase_transaction_repository.dart';
 import '../../infrastructure/repositories/firebase_user_repository.dart';
-import '../../infrastructure/repositories/services/gemini_service.dart';
+import '../../infrastructure/services/gemini_service.dart';
+import '../../infrastructure/services/local_notification_service.dart';
+import '../../infrastructure/services/stripe_service.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -19,6 +23,8 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 final firestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
 });
+
+// Repository Providers
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final auth = ref.watch(firebaseAuthProvider);
@@ -40,6 +46,21 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return FirebaseChatRepository(firestore);
 });
 
+final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
+  final firestore = ref.watch(firestoreProvider);
+  return FirebaseTransactionRepository(firestore);
+});
+
+// Service Providers
+
 final geminiServiceProvider = Provider<GeminiService>((ref) {
   return GeminiService();
+});
+
+final stripeServiceProvider = Provider<StripeService>((ref) {
+  return StripeService();
+});
+
+final notificationServiceProvider = Provider<LocalNotificationService>((ref) {
+  return LocalNotificationService();
 });
