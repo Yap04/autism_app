@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/user_model.dart';
+import '../providers/repository_providers.dart';
 
 part 'trainer_provider.g.dart';
 
@@ -23,3 +24,11 @@ Future<List<UserModel>> trainerList(TrainerListRef ref) async {
     throw Exception('Failed to Fetch Trainer List: $e');
   }
 }
+
+final fetchTrainerProvider = FutureProvider.family<UserModel?, String>((
+  ref,
+  trainerId,
+) async {
+  if (trainerId.isEmpty) return null;
+  return ref.read(userRepositoryProvider).getUserById(trainerId);
+});
