@@ -21,7 +21,6 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> register({
     required String email,
     required String password,
-    required String name,
     required UserRole role,
   }) async {
     state = const AsyncLoading();
@@ -33,7 +32,7 @@ class AuthNotifier extends _$AuthNotifier {
         email: email,
         password: password,
       );
-      final newUser = UserModel(id: uid, name: name, email: email, role: role);
+      final newUser = UserModel(id: uid, email: email, role: role);
       await userRepo.saveUser(newUser);
 
       return newUser;
