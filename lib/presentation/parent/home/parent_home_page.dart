@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../application/appointment/appointment_notifier.dart';
-import '../../application/auth/auth_notifier.dart';
-import '../../core/constant/color_constant.dart';
-import '../../core/constant/textstyle_constant.dart';
-import '../../core/extension/widget_ext.dart';
-import '../../core/routes/app_router.dart';
-import '../../domain/models/appointment_model.dart';
-import '../shared/curved_header_background.dart';
+import '../../../application/appointment/appointment_notifier.dart';
+import '../../../application/auth/auth_notifier.dart';
+import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/widget_ext.dart';
+import '../../../core/routes/app_router.dart';
+import '../../../domain/models/appointment_model.dart';
+import '../../shared/curved_header_background.dart';
+import '../../shared/user_avatar.dart';
 
 class ParentHomePage extends ConsumerStatefulWidget {
   const ParentHomePage({super.key});
@@ -48,13 +49,13 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                           style: AppWidget.h2TextFieldStyle(),
                         ),
                         const Spacer(),
-                        const CircleAvatar(
-                          radius: 20,
-                          backgroundColor: ThemeColor.grey100,
-                          child: Icon(
-                            Icons.person,
-                            color: ThemeColor.white,
-                            size: 30,
+                        GestureDetector(
+                          onTap: () => context.pushRoute(const ProfileRoute()),
+                          child: UserAvatar(
+                            radius: 20,
+                            username:
+                                currentUser?.name ?? currentUser?.nickname,
+                            userAvatarUrl: currentUser?.userAvatarUrl,
                           ),
                         ),
                       ],
