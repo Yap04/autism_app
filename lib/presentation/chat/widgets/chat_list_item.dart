@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constant/color_constant.dart';
+import '../../shared/user_avatar.dart';
+import 'ai_avatar.dart';
 
 class ChatListItem extends StatelessWidget {
   const ChatListItem({
@@ -27,7 +29,14 @@ class ChatListItem extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Stack(
         children: [
-          isAiAssistant ? _buildAiAvatar() : _buildUserAvatar(),
+          isAiAssistant
+              ? AiAvatar(imageUrl: imageUrl)
+              : UserAvatar(
+                radius: 26,
+                userAvatarUrl: imageUrl,
+                username: username,
+              ),
+
           if (isOnline)
             Positioned(
               bottom: 2,
@@ -61,33 +70,6 @@ class ChatListItem extends StatelessWidget {
         style: const TextStyle(color: Colors.grey, fontSize: 12),
       ),
       onTap: onTap,
-    );
-  }
-
-  Widget _buildUserAvatar() {
-    return CircleAvatar(
-      radius: 26,
-      backgroundColor: ThemeColor.white,
-      backgroundImage:
-          imageUrl != null && imageUrl!.isNotEmpty
-              ? NetworkImage(imageUrl!)
-              : null,
-      child:
-          imageUrl == null || imageUrl!.isEmpty
-              ? const Icon(Icons.person, color: ThemeColor.grey100, size: 30)
-              : null,
-    );
-  }
-
-  Widget _buildAiAvatar() {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: const BoxDecoration(
-        color: ThemeColor.white,
-        shape: BoxShape.circle,
-      ),
-      child: ClipOval(child: Image.asset(imageUrl!, fit: BoxFit.contain)),
     );
   }
 }

@@ -9,7 +9,10 @@ import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/message_model.dart';
+import '../../application/chat/chat_user_provider.dart';
 import '../shared/snack_bar.dart';
+import '../shared/user_avatar.dart';
+import 'widgets/ai_avatar.dart';
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
@@ -97,6 +100,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
 
     final currentUser = ref.watch(authNotifierProvider).value;
+    final isAiAssistant =
+        widget.trainerId == 'chatbot_ai' ||
+        widget.trainerName == 'AI Assistant';
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -106,11 +112,28 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         shadowColor: ThemeColor.black.withValues(alpha: 0.1),
         title: Row(
           children: [
-            const CircleAvatar(
-              radius: 18,
-              backgroundColor: ThemeColor.grey100,
-              child: Icon(Icons.person, color: ThemeColor.white, size: 24),
-            ),
+            isAiAssistant
+                ? const AiAvatar(radius: 18)
+                : ref
+                    .watch(userByIdProvider(widget.trainerId))
+                    .when(
+                      data:
+                          (user) => UserAvatar(
+                            radius: 18,
+                            username: widget.trainerName,
+                            userAvatarUrl: user?.userAvatarUrl,
+                          ),
+                      loading:
+                          () => const CircleAvatar(
+                            radius: 18,
+                            backgroundColor: ThemeColor.lightGrey,
+                          ),
+                      error:
+                          (err, _) => UserAvatar(
+                            radius: 18,
+                            username: widget.trainerName,
+                          ),
+                    ),
             12.widthBox,
             Text(widget.trainerName, style: AppWidget.h3TextFieldStyle()),
           ],
@@ -170,14 +193,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isMe)
-            const CircleAvatar(
-              radius: 14,
-              backgroundColor: ThemeColor.grey100,
-              child: Icon(Icons.person, color: ThemeColor.white, size: 18),
-            ),
-          if (!isMe) 8.widthBox,
-
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -210,26 +225,17 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   4.heightBox,
                   Text(
                     timeString,
-                    style: AppWidget.bodySmall().copyWith(
+                    style: AppWidget.bodyExtraSmall().copyWith(
                       color:
                           isMe
                               ? ThemeColor.white.withValues(alpha: 0.7)
                               : ThemeColor.grey100,
-                      fontSize: 10,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-
-          if (isMe) 8.widthBox,
-          if (isMe)
-            const CircleAvatar(
-              radius: 14,
-              backgroundColor: ThemeColor.darkBlue,
-              child: Icon(Icons.face, color: ThemeColor.white, size: 18),
-            ),
         ],
       ),
     );

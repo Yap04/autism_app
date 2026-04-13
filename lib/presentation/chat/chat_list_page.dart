@@ -177,9 +177,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                             data: (otherUser) {
                               final name = otherUser?.name ?? 'Unknown User';
 
+                              final avatarUrl = otherUser?.userAvatarUrl;
+
                               if (_searchQuery.isNotEmpty &&
                                   !name.toLowerCase().contains(_searchQuery)) {
-                                return const SizedBox.shrink();
+                                return emptyBox;
                               }
 
                               return ChatListItem(
@@ -188,6 +190,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                                     room.lastMessage ??
                                     'Started a conversation',
                                 time: _formatTimestamp(room.lastUpdatedAt),
+                                imageUrl: avatarUrl,
                                 onTap:
                                     () => context.pushRoute(
                                       ChatRoute(
