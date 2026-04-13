@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constant/color_constant.dart';
+import '../chat/chat_list_page.dart';
+import '../profile/profile_page.dart';
 import 'trainer_appointments_page.dart';
 import 'trainer_home_page.dart';
 import 'trainer_my_students_page.dart';
-import 'trainer_profile_page.dart';
-import 'trainer_wallet_page.dart';
 
 @RoutePage()
 class TrainerBottomNavPage extends StatefulWidget {
@@ -21,10 +21,10 @@ class _TrainerBottomNavPageState extends State<TrainerBottomNavPage> {
 
   final List<Widget> _pages = const [
     TrainerHomePage(),
+    ChatListPage(),
     TrainerMyStudentsPage(),
     TrainerAppointmentsPage(),
-    TrainerWalletPage(),
-    TrainerProfilePage(),
+    ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -50,16 +50,16 @@ class _TrainerBottomNavPageState extends State<TrainerBottomNavPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            label: 'Chat',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.supervisor_account_outlined),
             label: 'Students',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
             label: 'Appointments',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.wallet_outlined),
-            label: 'Wallet',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
