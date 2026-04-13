@@ -14,6 +14,7 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../shared/app_text_field.dart';
+import '../../shared/snack_bar.dart';
 import '../../shared/trainer_card.dart';
 
 class ParentDiscoverPage extends ConsumerStatefulWidget {
@@ -43,11 +44,7 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please turn on GPS location services.'),
-          ),
-        );
+        AppSnackBar.info(context, 'Please turn on GPS location services.');
       }
       return;
     }
@@ -57,9 +54,7 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permission denied.')),
-          );
+          AppSnackBar.error(context, 'Location permission denied.');
         }
         return;
       }
@@ -67,12 +62,9 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
 
     if (permission == LocationPermission.deniedForever) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Location permission permanently denied. Please enable in settings.',
-            ),
-          ),
+        AppSnackBar.error(
+          context,
+          'Location permission permanently denied. Please enable in settings.',
         );
       }
       return;
@@ -82,10 +74,8 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       _hasLocationPermission = true;
     });
 
-    // 4. 获取当前真实经纬度
     final position = await Geolocator.getCurrentPosition();
 
-    // 5. 让地图镜头飞过去！
     final controller = await _mapController.future;
     await controller.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -268,7 +258,9 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           'No trainers found.',
-                          style: AppWidget.bodyMedium(),
+                          style: AppWidget.bodyMedium().copyWith(
+                            color: ThemeColor.grey100,
+                          ),
                         ),
                       );
                     }
