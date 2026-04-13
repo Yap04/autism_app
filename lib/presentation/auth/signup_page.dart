@@ -20,7 +20,6 @@ class SignupPage extends ConsumerStatefulWidget {
 }
 
 class _SignupPageState extends ConsumerState<SignupPage> {
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -29,7 +28,6 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -52,33 +50,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
             children: [
               Text('Create your Account', style: AppWidget.h1TextFieldStyle()),
               48.heightBox,
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  fillColor: ThemeColor.aquaBlue,
-                  filled: true,
-                  border: InputBorder.none,
-                  hintText: 'Name',
-                  hintStyle: AppWidget.bodySmall().copyWith(
-                    color: ThemeColor.darkBlue,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.person,
-                    color: ThemeColor.darkBlue,
-                  ),
 
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              16.heightBox,
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -174,9 +146,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
                   final email = _emailController.text.trim();
                   final password = _passwordController.text.trim();
-                  final username = _nameController.text.trim();
 
-                  if (email.isEmpty || password.isEmpty || username.isEmpty) {
+                  if (email.isEmpty || password.isEmpty) {
                     AppSnackBar.error(context, 'Please fill in all fields');
                     return;
                   }
@@ -185,7 +156,6 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       .register(
                         email: email,
                         password: password,
-                        name: username,
                         role: UserRole.parent,
                       );
 
@@ -199,7 +169,14 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     AppSnackBar.error(context, errorMessage);
                   } else if (authState.value != null) {
                     AppSnackBar.success(context, 'Successfully registered!');
-                    context.replaceRoute(const ParentBottomNavRoute());
+
+                    final user = authState.value!;
+
+                    if (user.name?.isEmpty ?? true) {
+                      context.replaceRoute(const EditProfileRoute());
+                    } else {
+                      context.replaceRoute(const ParentBottomNavRoute());
+                    }
                   }
                 },
                 child: Container(

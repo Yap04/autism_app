@@ -19,23 +19,19 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authNotifierProvider, (previous, next) {
-      next.when(
-        data: (user) {
-          if (user != null) {
-            if (user.role == UserRole.trainer) {
-              context.replaceRoute(const TrainerBottomNavRoute());
-            } else {
-              context.replaceRoute(const ParentBottomNavRoute());
-            }
+      next.whenData((user) {
+        if (user == null) {
+          context.router.replaceAll([const LoginRoute()]);
+        } else if (user.name?.isEmpty ?? true) {
+          context.router.replaceAll([const EditProfileRoute()]);
+        } else {
+          if (user.role == UserRole.parent) {
+            context.router.replaceAll([const ParentBottomNavRoute()]);
           } else {
-            context.replaceRoute(const LoginRoute());
+            context.router.replaceAll([const TrainerBottomNavRoute()]);
           }
-        },
-        error: (error, stackTrace) {
-          context.replaceRoute(const LoginRoute());
-        },
-        loading: () {},
-      );
+        }
+      });
     });
 
     return const Scaffold(
