@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
-import '../../../application/payment/stripe_service.dart';
+import '../../../application/providers/repository_providers.dart';
+import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/bottom_action_button.dart';
 import '../../shared/snack_bar.dart';
+import '../../shared/user_avatar.dart';
 
 @RoutePage()
 class BookingDetailsPage extends ConsumerStatefulWidget {
@@ -113,6 +115,13 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     final user = ref.watch(authNotifierProvider).value;
     final credits = user?.sessionCredits ?? 0;
 
+    final trainerImageUrl =
+        ref
+            .watch(fetchTrainerProvider(widget.trainerId))
+            .asData
+            ?.value
+            ?.userAvatarUrl;
+
     final requiredCredits = _selectedWeeks;
     final totalPrice = _sessionPrice * _selectedWeeks;
     final hasEnoughCredits = credits >= requiredCredits;
@@ -133,7 +142,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTrainerCard(),
+                    _buildTrainerCard(trainerImageUrl),
 
                     32.heightBox,
 
@@ -246,10 +255,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                     );
 
                     if (_selectedPaymentMethod == PaymentMethod.singlePay) {
-                      final paymentSuccess = await StripeService.makePayment(
-                        amount: totalPrice,
-                        currency: 'myr',
-                      );
+                      final paymentSuccess = await ref
+                          .read(stripeServiceProvider)
+                          .makePayment(amount: totalPrice, currency: 'myr');
 
                       if (!paymentSuccess) {
                         if (context.mounted) {
@@ -298,7 +306,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     );
   }
 
-  Widget _buildTrainerCard() {
+  Widget _buildTrainerCard(String? imageUrl) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -314,20 +322,17 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       ),
       child: Row(
         children: [
-          // 1. 教练头像
-          const CircleAvatar(
-            radius: 35,
-            backgroundColor: ThemeColor.grey100,
-            child: Icon(Icons.person, color: ThemeColor.white, size: 40),
+          UserAvatar(
+            radius: 36,
+            userAvatarUrl: imageUrl,
+            username: widget.trainerName,
           ),
           16.widthBox,
 
-          // 2. 教练信息
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 教练名字
                 Text(
                   widget.trainerName,
                   style: AppWidget.bodyLarge().copyWith(
@@ -339,7 +344,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 ),
                 8.heightBox,
 
-                // 运动类型标签 (带浅蓝色背景)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -353,7 +357,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
-                        Icons.sports_soccer, // 你也可以根据 widget.sport 动态换图标
+                        Icons.sports_soccer,
                         size: 14,
                         color: ThemeColor.darkBlue,
                       ),
@@ -370,7 +374,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 ),
                 8.heightBox,
 
-                // 地点信息
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

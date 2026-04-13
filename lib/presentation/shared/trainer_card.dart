@@ -6,6 +6,7 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
+import 'user_avatar.dart';
 
 class TrainerCard extends StatelessWidget {
   const TrainerCard({required this.trainer, super.key});
@@ -33,10 +34,11 @@ class TrainerCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
+              UserAvatar(
                 radius: 36,
-                backgroundColor: ThemeColor.grey100,
-                child: Icon(Icons.person, color: ThemeColor.white, size: 40),
+                userAvatarUrl: trainer.userAvatarUrl,
+                username: trainer.name ?? trainer.nickname,
+                fontSize: 28,
               ),
               16.widthBox,
               Expanded(
@@ -48,7 +50,9 @@ class TrainerCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            trainer.name,
+                            trainer.name ??
+                                trainer.nickname ??
+                                'Unknown Trainer',
                             style: AppWidget.bodyLarge().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -148,7 +152,7 @@ class TrainerCard extends StatelessWidget {
                   context.pushRoute(
                     BookingDetailsRoute(
                       trainerId: trainer.id,
-                      trainerName: trainer.name,
+                      trainerName: trainer.name ?? 'unknown',
                       sport: 'Swimming',
                       location: 'Kuala Lumpur',
                     ),
