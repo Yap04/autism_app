@@ -15,6 +15,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
   Future<void> createAppointments({
     required List<AppointmentModel> appointments,
     required bool useCredit,
+    required PaymentChannel paymentChannel,
   }) async {
     final batch = _firestore.batch();
 
@@ -29,32 +30,47 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
       for (final app in appointments) {
         final appDocRef = _appointmentsRef.doc();
         firstAppId ??= appDocRef.id;
-
         final newAppointment = app.copyWith(id: appDocRef.id);
         batch.set(appDocRef, newAppointment.toJson());
       }
 
       if (useCredit) {
         final totalDeduct = appointments.length;
-
         final userRef = _firestore.collection('users').doc(parentId);
         batch.update(userRef, {
           'sessionCredits': FieldValue.increment(-totalDeduct),
         });
-
-        final txRef = _firestore.collection('creditTransactions').doc();
-        final tx = CreditTransactionModel(
-          id: txRef.id,
-          parentId: parentId,
-          type: TransactionType.deduct,
-          amount: -totalDeduct,
-          relatedAppointmentId: firstAppId,
-          description:
-              'Booked ${appointments.length} ${appointments.first.sport} session(s) with ${appointments.first.trainerName}',
-          createdAt: DateTime.now(),
-        );
-        batch.set(txRef, tx.toJson());
       }
+
+      final txRef =
+          _firestore
+              .collection('users')
+              .doc(parentId)
+              .collection('transactions')
+              .doc();
+
+      final description =
+          'Booked ${appointments.length} ${appointments.first.sport} session(s) with ${appointments.first.trainerName}';
+
+      //todo: assuming that RM80 for each session
+      final txAmount =
+          useCredit
+              ? -appointments.length.toDouble()
+              : -80.0 * appointments.length;
+
+      final tx = CreditTransactionModel(
+        id: txRef.id,
+        parentId: parentId,
+        type: useCredit ? TransactionType.deduct : TransactionType.payment,
+        paymentChannel: paymentChannel,
+        amount: txAmount,
+        relatedAppointmentId: firstAppId,
+        description: description,
+        createdAt: DateTime.now(),
+        status: TransactionStatus.pending,
+      );
+      batch.set(txRef, tx.toJson());
+
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to create appointment: $e');
@@ -65,9 +81,79 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
   Future<void> updateAppointmentStatus(
     String appointmentId,
     AppointmentStatus status,
+    PaymentChannel paymentChannel,
   ) async {
     try {
-      await _appointmentsRef.doc(appointmentId).update({'status': status.name});
+      await _firestore.runTransaction((transaction) async {
+        final appRef = _appointmentsRef.doc(appointmentId);
+        final appSnapshot = await transaction.get(appRef);
+
+        if (!appSnapshot.exists) {
+          throw Exception('Appointment not found');
+        }
+
+        final appData = appSnapshot.data()!;
+        if (appData['status'] == status.name) {
+          return;
+        }
+
+        transaction.update(appRef, {'status': status.name});
+
+        final isCreditUsed = appData['paymentMethod'] == 'credit';
+        final parentId = appData['parentId'] as String;
+
+        final transactionsQuery =
+            await _firestore
+                .collection('users')
+                .doc(parentId)
+                .collection('transactions')
+                .where('relatedAppointmentId', isEqualTo: appointmentId)
+                .limit(1)
+                .get();
+
+        DocumentReference? originalTxRef;
+        if (transactionsQuery.docs.isNotEmpty) {
+          originalTxRef = transactionsQuery.docs.first.reference;
+        }
+
+        if (status == AppointmentStatus.accepted && originalTxRef != null) {
+          transaction.update(originalTxRef, {
+            'status': TransactionStatus.completed.name,
+          });
+        }
+
+        if (status == AppointmentStatus.rejected && isCreditUsed) {
+          final userRef = _firestore.collection('users').doc(parentId);
+          transaction.update(userRef, {
+            'sessionCredits': FieldValue.increment(1),
+          });
+
+          if (originalTxRef != null) {
+            transaction.update(originalTxRef, {
+              'status': TransactionStatus.refunded.name,
+              'description': '${appData['sport']} Session (Refunded)',
+            });
+          }
+
+          final newTxRef =
+              _firestore
+                  .collection('users')
+                  .doc(parentId)
+                  .collection('transactions')
+                  .doc();
+          final refundTx = CreditTransactionModel(
+            id: newTxRef.id,
+            parentId: parentId,
+            type: TransactionType.refund,
+            paymentChannel: paymentChannel,
+            amount: 1,
+            description: 'Refund: Rejected by trainer',
+            createdAt: DateTime.now(),
+            relatedAppointmentId: appointmentId,
+          );
+          transaction.set(newTxRef, refundTx.toJson());
+        }
+      });
     } catch (e) {
       throw Exception('Failed to update appointment status: $e');
     }
