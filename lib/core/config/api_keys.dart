@@ -1,5 +1,5 @@
 class ApiKeys {
-  // static const imgbb = '98665b02c27451e9d4b632af40dbc513';
+  static const imgbb = 'dbf1e45b1cb11bc7991a2314fbb41d24';
   static const googleMaps = 'AIzaSyAni0-JZf5YsJDVIvTev7xnxTEh1NjUMwg';
   static const geminiKey = 'AIzaSyAtEFyq5h2iet4YtgDk90J8l6UCmF-egFs';
   // stripe api keys
