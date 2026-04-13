@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 
-class StripeService {
-  static const String _secretKey =
-      'sk_test_51RbCKq4Tjoljxbmo4gHkZ0lePtFA0fHj6XWXyemurolOFlGFu7T4EPfUkIKLZJhzzLCoFPyChG1bcIkun8fVZ2ce00KZ7qCtcz';
+import '../../core/config/api_keys.dart';
 
-  static Future<bool> makePayment({
+class StripeService {
+  Future<bool> makePayment({
     required double amount,
     required String currency,
   }) async {
@@ -32,7 +31,7 @@ class StripeService {
     }
   }
 
-  static Future<Map<String, dynamic>?> _createPaymentIntent(
+  Future<Map<String, dynamic>?> _createPaymentIntent(
     double amount,
     String currency,
   ) async {
@@ -48,7 +47,7 @@ class StripeService {
       final response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
         headers: {
-          'Authorization': 'Bearer $_secretKey',
+          'Authorization': 'Bearer ${ApiKeys.secretKey}',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: body,

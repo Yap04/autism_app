@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../../../core/config/api_keys.dart';
+import '../../core/config/api_keys.dart';
 
 class GeminiService {
   static const String _model = 'gemini-2.5-flash';
