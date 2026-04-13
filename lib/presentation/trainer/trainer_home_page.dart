@@ -9,6 +9,7 @@ import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/appointment_model.dart';
+import '../../domain/models/credit_transaction_model.dart';
 import '../shared/curved_header_background.dart';
 import '../shared/snack_bar.dart';
 
@@ -460,7 +461,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                       () => _handleStatusUpdate(
                         context,
                         ref,
-                        appointment.id,
+                        appointment,
                         AppointmentStatus.accepted,
                       ),
                   child: Container(
@@ -487,7 +488,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                       () => _handleStatusUpdate(
                         context,
                         ref,
-                        appointment.id,
+                        appointment,
                         AppointmentStatus.rejected,
                       ),
                   child: Container(
@@ -667,13 +668,18 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
   Future<void> _handleStatusUpdate(
     BuildContext context,
     WidgetRef ref,
-    String id,
+    AppointmentModel appointment,
     AppointmentStatus status,
   ) async {
     try {
+      final paymentChannel =
+          appointment.paymentMethod == PaymentMethod.credit
+              ? PaymentChannel.credit
+              : PaymentChannel.stripe;
+
       await ref
           .read(appointmentNotifierProvider.notifier)
-          .updateStatus(id, status);
+          .updateStatus(appointment.id, status, paymentChannel);
       if (context.mounted) {
         if (status == AppointmentStatus.accepted) {
           AppSnackBar.success(context, 'Appointment Accepted!');
