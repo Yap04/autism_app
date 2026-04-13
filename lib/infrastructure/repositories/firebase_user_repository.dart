@@ -47,4 +47,13 @@ class FirebaseUserRepository implements UserRepository {
       throw Exception('Failed to save user: $e');
     }
   }
+
+  @override
+  Future<void> updateUser(UserModel user) async {
+    try {
+      await _firestore.collection('users').doc(user.id).update(user.toJson());
+    } catch (e) {
+      throw Exception('Failed to update user: $e');
+    }
+  }
 }

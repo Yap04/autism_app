@@ -5,6 +5,7 @@ abstract class UserRepository {
 
   Future<void> saveUser(UserModel user);
 
-  Future<List<UserModel>> getTrainers();
+  Future<void> updateUser(UserModel user);
 
+  Future<List<UserModel>> getTrainers();
 }
