@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../../core/constant/color_constant.dart';
-import '../../core/constant/textstyle_constant.dart';
-import '../../core/extension/widget_ext.dart';
-import '../shared/curved_header_background.dart';
+import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/widget_ext.dart';
+import '../../shared/curved_header_background.dart';
 
 @RoutePage()
 class ParentProgressPage extends StatelessWidget {
