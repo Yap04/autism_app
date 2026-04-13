@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/appointment_model.dart';
+import '../../domain/models/credit_transaction_model.dart';
 import '../../domain/models/user_model.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
@@ -61,7 +62,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
           AppointmentModel(
             id: '',
             parentId: user.id,
-            parentName: user.name,
+            parentName: user.name ?? user.nickname ?? 'Unknown User',
             trainerId: trainerId,
             trainerName: trainerName,
             sport: sport,
@@ -82,6 +83,10 @@ class AppointmentNotifier extends _$AppointmentNotifier {
           .createAppointments(
             appointments: appointmentsToCreate,
             useCredit: paymentMethod == PaymentMethod.credit,
+            paymentChannel:
+                paymentMethod == PaymentMethod.credit
+                    ? PaymentChannel.credit
+                    : PaymentChannel.stripe,
           );
     } catch (e) {
       throw Exception('Failed to create appointment: $e');
@@ -91,13 +96,44 @@ class AppointmentNotifier extends _$AppointmentNotifier {
   Future<void> updateStatus(
     String appointmentId,
     AppointmentStatus newStatus,
+    PaymentChannel paymentChannel,
   ) async {
     try {
       await ref
           .read(appointmentRepositoryProvider)
-          .updateAppointmentStatus(appointmentId, newStatus);
+          .updateAppointmentStatus(appointmentId, newStatus, paymentChannel);
     } catch (e) {
       throw Exception('Failed to update appointment status: $e');
+    }
+  }
+
+  Future<void> scheduleRemindersForAppointment(
+    AppointmentModel appointment,
+  ) async {
+    final notificationService = ref.read(notificationServiceProvider);
+    final notificationId = appointment.dateTime.millisecondsSinceEpoch
+        .remainder(100000);
+
+    final now = DateTime.now();
+    final reminderTime = appointment.dateTime.subtract(
+      const Duration(hours: 2),
+    );
+
+    if (reminderTime.isAfter(now)) {
+      await notificationService.scheduleAppointmentReminder(
+        notificationId: notificationId,
+        title: 'Training Reminder! 🏃‍♂️',
+        body:
+            'Your ${appointment.sport} session with ${appointment.trainerName} starts at ${appointment.dateTime.hour}:${appointment.dateTime.minute.toString().padLeft(2, '0')}. Get ready!',
+        scheduledTime: reminderTime,
+      );
+    } else if (appointment.dateTime.isAfter(now)) {
+      await notificationService.showImmediateAppointmentReminder(
+        notificationId: notificationId,
+        title: 'Urgent: Training Soon! 🏃‍♂️',
+        body:
+            'Your ${appointment.sport} session is starting very soon at ${appointment.dateTime.hour}:${appointment.dateTime.minute.toString().padLeft(2, '0')}!',
+      );
     }
   }
 }
