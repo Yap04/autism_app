@@ -8,7 +8,7 @@ import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
-import '../../../domain/models/credit_transaction_model.dart';
+import '../../../domain/models/transaction_model.dart';
 import '../../../domain/models/user_model.dart';
 import '../../shared/loading_components.dart';
 import '../../shared/snack_bar.dart';

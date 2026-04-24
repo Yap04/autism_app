@@ -1,7 +1,7 @@
-import '../models/credit_transaction_model.dart';
+import '../models/transaction_model.dart';
 
 abstract class TransactionRepository {
-  Future<void> addTransaction(CreditTransactionModel transaction);
+  Future<void> addTransaction(TransactionModel transaction);
 
-  Stream<List<CreditTransactionModel>> getUserTransactions(String userId);
+  Stream<List<TransactionModel>> getUserTransactions(String userId);
 }

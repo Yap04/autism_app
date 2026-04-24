@@ -1,5 +1,5 @@
 import '../models/appointment_model.dart';
-import '../models/credit_transaction_model.dart';
+import '../models/transaction_model.dart';
 
 abstract class AppointmentRepository {
   Future<void> createAppointments({

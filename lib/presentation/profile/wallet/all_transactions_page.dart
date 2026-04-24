@@ -7,7 +7,7 @@ import '../../../application/auth/auth_notifier.dart';
 import '../../../application/payment/payment_notifier.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
-import '../../../domain/models/credit_transaction_model.dart';
+import '../../../domain/models/transaction_model.dart';
 import 'shared/empty_transaction_state.dart';
 import 'shared/transaction_card.dart';
 
@@ -99,7 +99,7 @@ class _AllTransactionsPageState extends ConsumerState<AllTransactionsPage>
   }
 
   Widget _buildList(
-    AsyncValue<List<CreditTransactionModel>> asyncData,
+    AsyncValue<List<TransactionModel>> asyncData,
     bool isCreditTab,
   ) {
     return asyncData.when(

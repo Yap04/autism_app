@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../domain/models/appointment_model.dart';
-import '../../domain/models/credit_transaction_model.dart';
+import '../../domain/models/transaction_model.dart';
 import '../../domain/repositories/appointment_repository.dart';
 
 class FirebaseAppointmentRepository implements AppointmentRepository {

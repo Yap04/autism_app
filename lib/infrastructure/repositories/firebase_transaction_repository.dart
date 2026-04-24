@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../domain/models/credit_transaction_model.dart';
+import '../../domain/models/transaction_model.dart';
 import '../../domain/repositories/transaction_repository.dart';
 
 class FirebaseTransactionRepository implements TransactionRepository {
@@ -8,7 +8,7 @@ class FirebaseTransactionRepository implements TransactionRepository {
   final FirebaseFirestore _firestore;
 
   @override
-  Future<void> addTransaction(CreditTransactionModel transaction) async {
+  Future<void> addTransaction(TransactionModel transaction) async {
     await _firestore
         .collection('users')
         .doc(transaction.parentId)
@@ -18,7 +18,7 @@ class FirebaseTransactionRepository implements TransactionRepository {
   }
 
   @override
-  Stream<List<CreditTransactionModel>> getUserTransactions(String userId) {
+  Stream<List<TransactionModel>> getUserTransactions(String userId) {
     return _firestore
         .collection('users')
         .doc(userId)
@@ -27,7 +27,7 @@ class FirebaseTransactionRepository implements TransactionRepository {
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
-              .map((doc) => CreditTransactionModel.fromJson(doc.data()))
+              .map((doc) => TransactionModel.fromJson(doc.data()))
               .toList();
         });
   }

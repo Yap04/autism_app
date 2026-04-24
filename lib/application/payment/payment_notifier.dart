@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/models/credit_transaction_model.dart';
+import '../../domain/models/transaction_model.dart';
 import '../../domain/models/user_model.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
@@ -27,7 +27,7 @@ class PaymentNotifier extends AsyncNotifier<void> {
           .read(stripeServiceProvider)
           .makePayment(amount: amount, currency: 'myr');
 
-      if (!isSuccess) {
+      if (isSuccess == null) {
         throw Exception('Payment was cancelled or failed.');
       }
 
@@ -41,7 +41,7 @@ class PaymentNotifier extends AsyncNotifier<void> {
       final transactionRepo = ref.read(transactionRepositoryProvider);
       final now = DateTime.now();
 
-      final stripeTransaction = CreditTransactionModel(
+      final stripeTransaction = TransactionModel(
         id: 'tx_stripe_${now.millisecondsSinceEpoch}',
         parentId: currentUser.id,
         type: TransactionType.payment,
@@ -52,7 +52,7 @@ class PaymentNotifier extends AsyncNotifier<void> {
       );
       await transactionRepo.addTransaction(stripeTransaction);
 
-      final creditTransaction = CreditTransactionModel(
+      final creditTransaction = TransactionModel(
         id: 'tx_credit_${now.millisecondsSinceEpoch}',
         parentId: currentUser.id,
         type: TransactionType.topUp,
@@ -76,7 +76,7 @@ final paymentNotifierProvider = AsyncNotifierProvider<PaymentNotifier, void>(
 );
 
 final userTransactionsStreamProvider =
-    StreamProvider.family<List<CreditTransactionModel>, String>((ref, userId) {
+    StreamProvider.family<List<TransactionModel>, String>((ref, userId) {
       return ref
           .watch(transactionRepositoryProvider)
           .getUserTransactions(userId);
