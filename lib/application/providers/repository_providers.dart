@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/appointment_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/chat_repository.dart';
+import '../../domain/repositories/dashboard_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../infrastructure/repositories/firebase_appointment_repository.dart';
 import '../../infrastructure/repositories/firebase_auth_repository.dart';
 import '../../infrastructure/repositories/firebase_chat_repository.dart';
+import '../../infrastructure/repositories/firebase_dashboard_repository.dart';
 import '../../infrastructure/repositories/firebase_transaction_repository.dart';
 import '../../infrastructure/repositories/firebase_user_repository.dart';
 import '../../infrastructure/services/gemini_service.dart';
@@ -49,6 +51,11 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
   return FirebaseTransactionRepository(firestore);
+});
+
+final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
+  final firestore = ref.watch(firestoreProvider);
+  return FirebaseDashboardRepository(firestore);
 });
 
 // Service Providers
