@@ -17,4 +17,6 @@ abstract class AppointmentRepository {
   Stream<List<AppointmentModel>> watchParentAppointments(String parentId);
 
   Stream<List<AppointmentModel>> watchTrainerAppointments(String trainerId);
+
+  Stream<List<AppointmentModel>> watchAllAppointments();
 }
