@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
+import '../../../application/content/parent_content_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
@@ -12,6 +13,7 @@ import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/curved_header_background.dart';
 import '../../shared/user_avatar.dart';
+import 'content/shared/content_card.dart';
 
 class ParentHomePage extends ConsumerStatefulWidget {
   const ParentHomePage({super.key});
@@ -27,6 +29,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
     final currentUser = authState.value;
 
     final appointmentsAsync = ref.watch(appointmentNotifierProvider);
+    final contentAsync = ref.watch(parentPublishedContentProvider);
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -105,37 +108,98 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Recommended Training',
-                            style: AppWidget.h3TextFieldStyle(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Resources for You',
+                                style: AppWidget.h3TextFieldStyle(),
+                              ),
+                              GestureDetector(
+                                onTap:
+                                    () => context.pushRoute(
+                                      const ContentListRoute(),
+                                    ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'View More',
+                                      style: AppWidget.bodySmall().copyWith(
+                                        color: ThemeColor.blue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      color: ThemeColor.darkBlue,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                           8.heightBox,
-                          SizedBox(
-                            height: 200,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: 5,
-                              itemBuilder: (context, index) {
-                                return Container(
-                                  width: 200,
-                                  margin: const EdgeInsets.only(right: 12),
-                                  child: Card(
-                                    color: ThemeColor.white,
-                                    elevation: 4,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
+                          contentAsync.when(
+                            loading:
+                                () => const SizedBox(
+                                  height: 160,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: ThemeColor.darkBlue,
                                     ),
-                                    child: Center(
-                                      child: Text(
-                                        'Training Resource',
-                                        style: AppWidget.bodyMedium(),
+                                  ),
+                                ),
+                            error:
+                                (e, _) => SizedBox(
+                                  height: 160,
+                                  child: Center(
+                                    child: Text(
+                                      'Failed to load content.',
+                                      style: AppWidget.bodySmall().copyWith(
+                                        color: ThemeColor.red,
                                       ),
                                     ),
                                   ),
+                                ),
+                            data: (contents) {
+                              if (contents.isEmpty) {
+                                return Container(
+                                  height: 120,
+                                  width: double.infinity,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: ThemeColor.white.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Text(
+                                    'More resources coming soon!',
+                                    style: AppWidget.bodyMedium().copyWith(
+                                      color: ThemeColor.grey100,
+                                    ),
+                                  ),
                                 );
-                              },
-                              shrinkWrap: true,
-                            ),
+                              }
+
+                              return SizedBox(
+                                height: 180,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: contents.length,
+                                  itemBuilder: (context, index) {
+                                    return SizedBox(
+                                      width: 240,
+                                      child: buildContentCard(
+                                        context,
+                                        contents[index],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -246,194 +310,190 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
       ),
     );
   }
+}
 
-  Widget _buildUpcomingCard(BuildContext context, AppointmentModel app) {
-    final now = DateTime.now();
-    final aDate = DateTime(
-      app.dateTime.year,
-      app.dateTime.month,
-      app.dateTime.day,
-    );
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+Widget _buildUpcomingCard(BuildContext context, AppointmentModel app) {
+  final now = DateTime.now();
+  final aDate = DateTime(
+    app.dateTime.year,
+    app.dateTime.month,
+    app.dateTime.day,
+  );
+  final tomorrow = DateTime(now.year, now.month, now.day + 1);
 
-    final timeStr = DateFormat('h:mm a').format(app.dateTime);
-    String dateDisplay;
+  final timeStr = DateFormat('h:mm a').format(app.dateTime);
+  String dateDisplay;
 
-    if (aDate == DateTime(now.year, now.month, now.day)) {
-      dateDisplay = 'Today, $timeStr';
-    } else if (aDate == tomorrow) {
-      dateDisplay = 'Tomorrow, $timeStr';
-    } else {
-      dateDisplay = DateFormat('d MMM, h:mm a').format(app.dateTime);
-    }
+  if (aDate == DateTime(now.year, now.month, now.day)) {
+    dateDisplay = 'Today, $timeStr';
+  } else if (aDate == tomorrow) {
+    dateDisplay = 'Tomorrow, $timeStr';
+  } else {
+    dateDisplay = DateFormat('d MMM, h:mm a').format(app.dateTime);
+  }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColor.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Upcoming Appointment', style: AppWidget.bodyLarge()),
-          16.heightBox,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: ThemeColor.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: ThemeColor.black.withValues(alpha: 0.05),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Upcoming Appointment', style: AppWidget.bodyLarge()),
+        16.heightBox,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: ThemeColor.grey100,
+                  child: Icon(Icons.person, color: ThemeColor.white, size: 30),
+                ),
+                4.heightBox,
+                Text(
+                  app.trainerName,
+                  style: AppWidget.bodySmall(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            16.widthBox,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: ThemeColor.grey100,
-                    child: Icon(
-                      Icons.person,
-                      color: ThemeColor.white,
-                      size: 30,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ThemeColor.aquaBlue,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      app.sport,
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.darkBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
+                  8.heightBox,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: ThemeColor.grey100,
+                      ),
+                      4.widthBox,
+                      Text(dateDisplay, style: AppWidget.bodySmall()),
+                    ],
+                  ),
                   4.heightBox,
-                  Text(
-                    app.trainerName,
-                    style: AppWidget.bodySmall(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: ThemeColor.grey100,
+                      ),
+                      4.widthBox,
+                      Expanded(
+                        child: Text(
+                          app.location,
+                          style: AppWidget.bodySmall(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              16.widthBox,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ThemeColor.aquaBlue,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        app.sport,
-                        style: AppWidget.bodySmall().copyWith(
-                          color: ThemeColor.darkBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    8.heightBox,
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 16,
-                          color: ThemeColor.grey100,
-                        ),
-                        4.widthBox,
-                        Text(dateDisplay, style: AppWidget.bodySmall()),
-                      ],
-                    ),
-                    4.heightBox,
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 16,
-                          color: ThemeColor.grey100,
-                        ),
-                        4.widthBox,
-                        Expanded(
-                          child: Text(
-                            app.location,
-                            style: AppWidget.bodySmall(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+            ),
+          ],
+        ),
+        12.heightBox,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                context.pushRoute(
+                  ChatRoute(
+                    trainerId: app.trainerId,
+                    trainerName: app.trainerName,
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
                 ),
-              ),
-            ],
-          ),
-          12.heightBox,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  context.pushRoute(
-                    ChatRoute(
-                      trainerId: app.trainerId,
-                      trainerName: app.trainerName,
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: ThemeColor.blue,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    'Chat with Coach',
-                    style: AppWidget.bodySmall().copyWith(
-                      color: ThemeColor.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                decoration: BoxDecoration(
+                  color: ThemeColor.blue,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  'Chat with Coach',
+                  style: AppWidget.bodySmall().copyWith(
+                    color: ThemeColor.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
-  Widget _buildEmptyUpcomingCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColor.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const Icon(Icons.event_busy, size: 48, color: ThemeColor.lightGrey),
-          12.heightBox,
-          Text(
-            'No upcoming appointments',
-            style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
-          ),
-          8.heightBox,
-          Text(
-            'Book a new session to get started!',
-            style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
-          ),
-        ],
-      ),
-    );
-  }
+Widget _buildEmptyUpcomingCard() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: ThemeColor.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: ThemeColor.black.withValues(alpha: 0.05),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        const Icon(Icons.event_busy, size: 48, color: ThemeColor.lightGrey),
+        12.heightBox,
+        Text(
+          'No upcoming appointments',
+          style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
+        ),
+        8.heightBox,
+        Text(
+          'Book a new session to get started!',
+          style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
+        ),
+      ],
+    ),
+  );
 }

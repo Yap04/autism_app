@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/appointment_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/chat_repository.dart';
+import '../../domain/repositories/content_repository.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../infrastructure/repositories/firebase_appointment_repository.dart';
 import '../../infrastructure/repositories/firebase_auth_repository.dart';
 import '../../infrastructure/repositories/firebase_chat_repository.dart';
+import '../../infrastructure/repositories/firebase_content_repository.dart';
 import '../../infrastructure/repositories/firebase_dashboard_repository.dart';
 import '../../infrastructure/repositories/firebase_transaction_repository.dart';
 import '../../infrastructure/repositories/firebase_user_repository.dart';
@@ -56,6 +58,11 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
   return FirebaseDashboardRepository(firestore);
+});
+
+final contentRepositoryProvider = Provider<ContentRepository>((ref) {
+  final firestore = FirebaseFirestore.instance;
+  return FirebaseContentRepository(firestore);
 });
 
 // Service Providers
