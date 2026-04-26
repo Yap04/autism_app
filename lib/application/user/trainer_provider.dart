@@ -29,6 +29,8 @@ final fetchTrainerProvider = FutureProvider.family<UserModel?, String>((
   ref,
   trainerId,
 ) async {
-  if (trainerId.isEmpty) return null;
-  return ref.read(userRepositoryProvider).getUserById(trainerId);
+  if (trainerId.isEmpty) {
+    return null;
+  }
+  return ref.watch(userRepositoryProvider).getUserById(trainerId);
 });
