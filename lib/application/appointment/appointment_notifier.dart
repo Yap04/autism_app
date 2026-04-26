@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/appointment_model.dart';
-import '../../domain/models/credit_transaction_model.dart';
+import '../../domain/models/transaction_model.dart';
 import '../../domain/models/user_model.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
@@ -36,6 +36,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     required DateTime dateTime,
     required PaymentMethod paymentMethod,
     required int recurringWeeks,
+    String? stripePaymentIntentId,
   }) async {
     final user = await ref.read(authNotifierProvider.future);
     if (user == null) {
@@ -45,6 +46,11 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     if (paymentMethod == PaymentMethod.credit &&
         user.sessionCredits < recurringWeeks) {
       throw Exception('Not enough credits. Please top up your credits.');
+    }
+
+    if (paymentMethod == PaymentMethod.singlePay &&
+        stripePaymentIntentId == null) {
+      throw Exception('Payment Intent ID is required for Stripe payments.');
     }
 
     try {
@@ -87,6 +93,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
                 paymentMethod == PaymentMethod.credit
                     ? PaymentChannel.credit
                     : PaymentChannel.stripe,
+            stripePaymentIntentId: stripePaymentIntentId,
           );
     } catch (e) {
       throw Exception('Failed to create appointment: $e');
@@ -101,7 +108,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     try {
       await ref
           .read(appointmentRepositoryProvider)
-          .updateAppointmentStatus(appointmentId, newStatus, paymentChannel);
+          .updateAppointmentStatus(appointmentId, newStatus);
     } catch (e) {
       throw Exception('Failed to update appointment status: $e');
     }

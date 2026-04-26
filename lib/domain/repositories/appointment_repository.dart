@@ -6,12 +6,12 @@ abstract class AppointmentRepository {
     required List<AppointmentModel> appointments,
     required bool useCredit,
     required PaymentChannel paymentChannel,
+    String? stripePaymentIntentId,
   });
 
   Future<void> updateAppointmentStatus(
     String appointmentId,
     AppointmentStatus status,
-    PaymentChannel paymentChannel,
   );
 
   Stream<List<AppointmentModel>> watchParentAppointments(String parentId);

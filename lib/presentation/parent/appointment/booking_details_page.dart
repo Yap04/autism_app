@@ -254,12 +254,14 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                       _selectedTime!.minute,
                     );
 
+                    String? stripePaymentId;
+
                     if (_selectedPaymentMethod == PaymentMethod.singlePay) {
-                      final paymentSuccess = await ref
+                      stripePaymentId = await ref
                           .read(stripeServiceProvider)
                           .makePayment(amount: totalPrice, currency: 'myr');
 
-                      if (!paymentSuccess) {
+                      if (stripePaymentId == null) {
                         if (context.mounted) {
                           AppSnackBar.error(
                             context,
@@ -281,6 +283,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                           dateTime: finalDateTime,
                           paymentMethod: _selectedPaymentMethod,
                           recurringWeeks: _selectedWeeks,
+                          stripePaymentIntentId: stripePaymentId,
                         );
 
                     if (context.mounted) {

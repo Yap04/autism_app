@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 import '../../domain/models/appointment_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../../domain/repositories/appointment_repository.dart';
+import '../services/stripe_service.dart';
 
 class FirebaseAppointmentRepository implements AppointmentRepository {
   FirebaseAppointmentRepository(this._firestore);
@@ -16,6 +18,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
     required List<AppointmentModel> appointments,
     required bool useCredit,
     required PaymentChannel paymentChannel,
+    String? stripePaymentIntentId,
   }) async {
     final batch = _firestore.batch();
 
@@ -58,7 +61,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
               ? -appointments.length.toDouble()
               : -80.0 * appointments.length;
 
-      final tx = CreditTransactionModel(
+      final tx = TransactionModel(
         id: txRef.id,
         parentId: parentId,
         type: useCredit ? TransactionType.deduct : TransactionType.payment,
@@ -68,6 +71,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
         description: description,
         createdAt: DateTime.now(),
         status: TransactionStatus.pending,
+        stripePaymentIntentId: stripePaymentIntentId,
       );
       batch.set(txRef, tx.toJson());
 
@@ -81,9 +85,10 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
   Future<void> updateAppointmentStatus(
     String appointmentId,
     AppointmentStatus status,
-    PaymentChannel paymentChannel,
   ) async {
     try {
+      String? stripePaymentIntentIdToRefund;
+
       await _firestore.runTransaction((transaction) async {
         final appRef = _appointmentsRef.doc(appointmentId);
         final appSnapshot = await transaction.get(appRef);
@@ -102,6 +107,9 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
         final isCreditUsed = appData['paymentMethod'] == 'credit';
         final parentId = appData['parentId'] as String;
 
+        final paymentChannel =
+            isCreditUsed ? PaymentChannel.credit : PaymentChannel.stripe;
+
         final transactionsQuery =
             await _firestore
                 .collection('users')
@@ -112,8 +120,25 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
                 .get();
 
         DocumentReference? originalTxRef;
+
+        // todo: change 80
+        var refundAmount = isCreditUsed ? 1.0 : 80.0;
+
         if (transactionsQuery.docs.isNotEmpty) {
           originalTxRef = transactionsQuery.docs.first.reference;
+          final txData = transactionsQuery.docs.first.data();
+
+          if (!isCreditUsed) {
+            final txData = transactionsQuery.docs.first.data();
+            stripePaymentIntentIdToRefund =
+                txData['stripePaymentIntentId'] as String?;
+          }
+
+          final originalAmount = (txData['amount'] as num?)?.toDouble() ?? 0.0;
+
+          if (originalAmount != 0) {
+            refundAmount = originalAmount.abs();
+          }
         }
 
         if (status == AppointmentStatus.accepted && originalTxRef != null) {
@@ -122,11 +147,14 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           });
         }
 
-        if (status == AppointmentStatus.rejected && isCreditUsed) {
-          final userRef = _firestore.collection('users').doc(parentId);
-          transaction.update(userRef, {
-            'sessionCredits': FieldValue.increment(1),
-          });
+        if (status == AppointmentStatus.rejected ||
+            status == AppointmentStatus.cancelled) {
+          if (isCreditUsed) {
+            final userRef = _firestore.collection('users').doc(parentId);
+            transaction.update(userRef, {
+              'sessionCredits': FieldValue.increment(refundAmount.toInt()),
+            });
+          }
 
           if (originalTxRef != null) {
             transaction.update(originalTxRef, {
@@ -141,19 +169,44 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
                   .doc(parentId)
                   .collection('transactions')
                   .doc();
-          final refundTx = CreditTransactionModel(
+
+          final refundDescription =
+              status == AppointmentStatus.cancelled
+                  ? 'Refund: Cancelled by Admin'
+                  : 'Refund: Rejected by Trainer';
+
+          final refundTx = TransactionModel(
             id: newTxRef.id,
             parentId: parentId,
             type: TransactionType.refund,
             paymentChannel: paymentChannel,
-            amount: 1,
-            description: 'Refund: Rejected by trainer',
+            amount: refundAmount,
+            description: refundDescription,
             createdAt: DateTime.now(),
             relatedAppointmentId: appointmentId,
           );
+
           transaction.set(newTxRef, refundTx.toJson());
         }
       });
+
+      if (stripePaymentIntentIdToRefund != null &&
+          (status == AppointmentStatus.rejected ||
+              status == AppointmentStatus.cancelled)) {
+        debugPrint(
+          'Initiating Stripe refund for: $stripePaymentIntentIdToRefund',
+        );
+
+        final refundSuccess = await StripeService().refundStripePayment(
+          stripePaymentIntentIdToRefund!,
+        );
+
+        if (!refundSuccess) {
+          debugPrint(
+            'CRITICAL: Stripe refund API call failed! Manual intervention required.',
+          );
+        }
+      }
     } catch (e) {
       throw Exception('Failed to update appointment status: $e');
     }
@@ -179,6 +232,21 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
     return _appointmentsRef
         .where('trainerId', isEqualTo: trainerId)
         .orderBy('dateTime', descending: false)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return AppointmentModel.fromJson(data);
+          }).toList();
+        });
+  }
+
+  @override
+  Stream<List<AppointmentModel>> watchAllAppointments() {
+    return _firestore
+        .collection('appointments')
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {

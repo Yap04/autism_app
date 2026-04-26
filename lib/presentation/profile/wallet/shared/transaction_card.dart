@@ -11,7 +11,7 @@ class TransactionCard extends StatelessWidget {
     required this.isCreditTab,
     super.key,
   });
-  final CreditTransactionModel transaction;
+  final TransactionModel transaction;
   final bool isCreditTab;
 
   @override
@@ -23,14 +23,23 @@ class TransactionCard extends StatelessWidget {
     String amountStr;
     Color amountColor;
 
+    final isPositive =
+        transaction.type == TransactionType.topUp ||
+        transaction.type == TransactionType.refund;
+    final sign = isPositive ? '+' : '-';
+
     if (isCreditTab) {
-      final isDeduction = transaction.type == TransactionType.deduct;
-      final sign = isDeduction ? '-' : '+';
       final val = absoluteAmount.toInt();
       amountStr = '$sign $val ${val <= 1 ? 'Credit' : 'Credits'}';
-      amountColor = isDeduction ? ThemeColor.black : ThemeColor.green;
     } else {
-      amountStr = '- RM ${absoluteAmount.toStringAsFixed(2)}';
+      amountStr = '$sign RM ${absoluteAmount.toStringAsFixed(2)}';
+    }
+
+    if (transaction.status == TransactionStatus.refunded) {
+      amountColor = ThemeColor.grey100;
+    } else if (isPositive) {
+      amountColor = ThemeColor.green;
+    } else {
       amountColor = ThemeColor.black;
     }
 

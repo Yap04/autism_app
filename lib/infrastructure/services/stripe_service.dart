@@ -6,13 +6,15 @@ import 'package:http/http.dart' as http;
 import '../../core/config/api_keys.dart';
 
 class StripeService {
-  Future<bool> makePayment({
+  Future<String?> makePayment({
     required double amount,
     required String currency,
   }) async {
     try {
       final paymentIntent = await _createPaymentIntent(amount, currency);
-      if (paymentIntent == null) return false;
+      if (paymentIntent == null) {
+        return null;
+      }
 
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
@@ -24,10 +26,10 @@ class StripeService {
 
       await Stripe.instance.presentPaymentSheet();
 
-      return true;
+      return paymentIntent['id'].toString();
     } catch (e) {
       debugPrint('Stripe Payment Error: $e');
-      return false;
+      return null;
     }
   }
 
@@ -57,6 +59,34 @@ class StripeService {
     } catch (err) {
       debugPrint('Create Intent Error: $err');
       return null;
+    }
+  }
+
+  Future<bool> refundStripePayment(String paymentIntentId) async {
+    try {
+      debugPrint('Initiating Stripe refund for: $paymentIntentId');
+
+      final response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/refunds'),
+        headers: {
+          'Authorization': 'Bearer ${ApiKeys.secretKey}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {'payment_intent': paymentIntentId},
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        debugPrint('Stripe Refund Successful: ${responseData['id']}');
+        return true;
+      } else {
+        debugPrint('Stripe Refund Failed: ${responseData['error']['message']}');
+        return false;
+      }
+    } catch (err) {
+      debugPrint('Refund Error: $err');
+      return false;
     }
   }
 }
