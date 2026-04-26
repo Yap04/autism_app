@@ -1,11 +1,15 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../core/utils/timestamp_converter.dart';
+
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
 enum UserRole { parent, trainer, admin }
 
 enum Gender { female, male, preferNotToSay }
+
+enum UserStatus { active, suspended }
 
 @freezed
 class UserModel with _$UserModel {
@@ -20,6 +24,8 @@ class UserModel with _$UserModel {
     String? address,
     String? userAvatarUrl,
     @Default(0) int sessionCredits,
+    @Default(UserStatus.active) UserStatus status,
+    @TimestampConverter() DateTime? createdAt,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
