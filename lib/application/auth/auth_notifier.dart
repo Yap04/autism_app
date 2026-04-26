@@ -13,7 +13,12 @@ class AuthNotifier extends _$AuthNotifier {
 
     final uid = await authRepo.getCurrentUserId();
     if (uid != null) {
-      return await userRepo.getUserById(uid);
+      final user = await userRepo.getUserById(uid);
+      if (user != null && user.status == UserStatus.suspended) {
+        await authRepo.signOut();
+        return null;
+      }
+      return user;
     }
     return null;
   }
@@ -32,7 +37,12 @@ class AuthNotifier extends _$AuthNotifier {
         email: email,
         password: password,
       );
-      final newUser = UserModel(id: uid, email: email, role: role);
+      final newUser = UserModel(
+        id: uid,
+        email: email,
+        role: role,
+        createdAt: DateTime.now(),
+      );
       await userRepo.saveUser(newUser);
 
       return newUser;
@@ -54,6 +64,13 @@ class AuthNotifier extends _$AuthNotifier {
 
       if (user == null) {
         throw Exception('User not found after login');
+      }
+
+      if (user.status == UserStatus.suspended) {
+        await authRepo.signOut();
+        throw Exception(
+          'Your account has been suspended by the administrator.',
+        );
       }
 
       return user;
