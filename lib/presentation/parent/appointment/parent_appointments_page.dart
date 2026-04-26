@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../application/appointment/appointment_notifier.dart';
+import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/curved_header_background.dart';
+import '../../shared/user_avatar.dart';
 
 class ParentAppointmentsPage extends ConsumerStatefulWidget {
   const ParentAppointmentsPage({super.key});
@@ -319,15 +321,27 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
             children: [
               Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 28,
-                    backgroundColor: ThemeColor.grey100,
-                    child: Icon(
-                      Icons.person,
-                      color: ThemeColor.white,
-                      size: 30,
-                    ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final trainerAsync = ref.watch(
+                        fetchTrainerProvider(trainerId),
+                      );
+
+                      return trainerAsync.when(
+                        data:
+                            (trainer) => UserAvatar(
+                              radius: 28,
+                              username: coachName,
+                              userAvatarUrl: trainer?.userAvatarUrl,
+                            ),
+                        loading: () => const CircleAvatar(),
+                        error:
+                            (err, stack) =>
+                                UserAvatar(radius: 28, username: coachName),
+                      );
+                    },
                   ),
+
                   6.heightBox,
                   Text(
                     coachName,
