@@ -167,13 +167,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     AppSnackBar.error(context, errorMessage);
                   } else if (authState.value != null) {
                     AppSnackBar.success(context, 'Successfully sign in!');
-                    
+
                     final userRole = authState.value!.role;
 
-                    if(userRole == UserRole.trainer){
+                    if (userRole == UserRole.trainer) {
                       context.replaceRoute(const TrainerBottomNavRoute());
-                    }else if(userRole == UserRole.parent){
+                    } else if (userRole == UserRole.parent) {
                       context.replaceRoute(const ParentBottomNavRoute());
+                    } else if (userRole == UserRole.admin) {
+                      context.replaceRoute(const AdminLayoutRoute());
                     }
                   }
                 },
