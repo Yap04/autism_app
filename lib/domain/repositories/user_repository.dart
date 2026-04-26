@@ -8,4 +8,8 @@ abstract class UserRepository {
   Future<void> updateUser(UserModel user);
 
   Future<List<UserModel>> getTrainers();
+
+  Stream<List<UserModel>> watchAllUsers();
+
+  Future<void> updateUserStatus(String userId, UserStatus status);
 }

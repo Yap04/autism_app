@@ -56,4 +56,26 @@ class FirebaseUserRepository implements UserRepository {
       throw Exception('Failed to update user: $e');
     }
   }
+
+  @override
+  Future<void> updateUserStatus(String userId, UserStatus status) async {
+    await _firestore.collection('users').doc(userId).update({
+      'status': status.name,
+    });
+  }
+
+  @override
+  Stream<List<UserModel>> watchAllUsers() {
+    return _firestore
+        .collection('users')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return UserModel.fromJson(data);
+          }).toList();
+        });
+  }
 }
