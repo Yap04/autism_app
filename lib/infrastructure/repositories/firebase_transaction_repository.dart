@@ -31,4 +31,19 @@ class FirebaseTransactionRepository implements TransactionRepository {
               .toList();
         });
   }
+
+  @override
+  Stream<List<TransactionModel>> watchAllTransactions() {
+    return _firestore
+        .collectionGroup('transactions')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return TransactionModel.fromJson(data);
+          }).toList();
+        });
+  }
 }
