@@ -193,12 +193,6 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
 
                         _buildDivider(),
                         _buildSettingItem(
-                          icon: Icons.wallet_outlined,
-                          title: 'Wallet',
-                          onTap: () => context.router.push(const WalletRoute()),
-                        ),
-                        _buildDivider(),
-                        _buildSettingItem(
                           icon: Icons.notifications_none_outlined,
                           title: 'Notifications',
                           trailingText: 'ON',
@@ -217,15 +211,16 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
                     _buildSettingsGroup(
                       children: [
                         _buildSettingItem(
-                          icon: Icons.help_outline,
-                          title: 'Help & Support',
-                          onTap: () {},
+                          icon: Icons.wallet_outlined,
+                          title: 'Wallet',
+                          onTap: () => context.router.push(const WalletRoute()),
                         ),
                         _buildDivider(),
                         _buildSettingItem(
                           icon: Icons.chat_bubble_outline,
                           title: 'Contact us',
-                          onTap: () {},
+                          onTap:
+                              () => context.router.push(const SupportRoute()),
                         ),
                       ],
                     ),
