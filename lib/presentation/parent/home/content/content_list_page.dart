@@ -54,7 +54,7 @@ class _ContentListPageState extends ConsumerState<ContentListPage> {
             ),
             itemCount: contents.length,
             itemBuilder: (context, index) {
-              return buildContentCard(context, contents[index]);
+              return buildContentCard(context, ref, contents[index]);
             },
           );
         },

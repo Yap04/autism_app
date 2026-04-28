@@ -6,4 +6,6 @@ abstract class ContentRepository {
   Future<void> createContent(ContentModel content);
 
   Future<void> togglePublishStatus(String contentId, bool currentStatus);
+
+  Future<void> incrementContentViews(String contentId);
 }

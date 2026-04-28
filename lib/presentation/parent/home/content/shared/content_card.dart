@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../../application/content/parent_content_provider.dart';
 import '../../../../../core/constant/color_constant.dart';
 import '../../../../../core/constant/textstyle_constant.dart';
 import '../../../../../core/extension/widget_ext.dart';
 import '../../../../../domain/models/content_model.dart';
 import '../../../../shared/snack_bar.dart';
 
-Widget buildContentCard(BuildContext context, ContentModel content) {
+Widget buildContentCard(
+  BuildContext context,
+  WidgetRef ref,
+  ContentModel content,
+) {
   IconData typeIcon;
   Color typeColor;
 
@@ -26,6 +32,8 @@ Widget buildContentCard(BuildContext context, ContentModel content) {
 
   return GestureDetector(
     onTap: () async {
+      await ref.read(incrementViewsProvider)(content.id);
+
       final urlString = content.contentUrl;
 
       if (urlString != null && urlString.trim().isNotEmpty) {

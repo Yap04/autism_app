@@ -13,3 +13,11 @@ final parentPublishedContentProvider =
         }).toList();
       });
     });
+
+final incrementViewsProvider =
+    Provider.autoDispose<Future<void> Function(String)>((ref) {
+      return (String contentId) async {
+        final repo = ref.read(contentRepositoryProvider);
+        await repo.incrementContentViews(contentId);
+      };
+    });

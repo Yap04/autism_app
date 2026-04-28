@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../../domain/models/content_model.dart';
 import '../../domain/repositories/content_repository.dart';
 
@@ -32,5 +33,16 @@ class FirebaseContentRepository implements ContentRepository {
   @override
   Future<void> togglePublishStatus(String contentId, bool currentStatus) async {
     await _contentRef.doc(contentId).update({'isPublished': !currentStatus});
+  }
+
+  @override
+  Future<void> incrementContentViews(String contentId) async {
+    try {
+      await _firestore.collection('contents').doc(contentId).update({
+        'viewsOrTakes': FieldValue.increment(1),
+      });
+    } catch (e) {
+      debugPrint('Failed to increment views for $contentId: $e');
+    }
   }
 }
