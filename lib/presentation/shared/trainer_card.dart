@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
@@ -14,6 +15,13 @@ class TrainerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isManuallyAccepting = trainer.isAcceptingRequests;
+    final hasResumeTimePassed =
+        trainer.resumeAt != null && now.isAfter(trainer.resumeAt!);
+
+    final isAvailable = isManuallyAccepting || hasResumeTimePassed;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -72,6 +80,7 @@ class TrainerCard extends StatelessWidget {
                       ],
                     ),
                     4.heightBox,
+                    //TODO: Replace with actual trainer description when available
                     Text(
                       'Experienced in autism sports training...',
                       style: AppWidget.bodySmall().copyWith(
@@ -87,13 +96,19 @@ class TrainerCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: ThemeColor.aquaBlue,
+                        color:
+                            isAvailable
+                                ? ThemeColor.aquaBlue
+                                : ThemeColor.lightGrey.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Available',
+                        isAvailable ? 'Available' : 'Not Available',
                         style: AppWidget.bodySmall().copyWith(
-                          color: ThemeColor.darkBlue,
+                          color:
+                              isAvailable
+                                  ? ThemeColor.darkBlue
+                                  : ThemeColor.grey100,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -147,33 +162,63 @@ class TrainerCard extends StatelessWidget {
                   ),
                 ],
               ),
-              GestureDetector(
-                onTap: () {
-                  context.pushRoute(
-                    BookingDetailsRoute(
-                      trainerId: trainer.id,
-                      trainerName: trainer.name ?? 'unknown',
-                      sport: 'Swimming',
-                      location: 'Kuala Lumpur',
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap:
+                        isAvailable
+                            ? () {
+                              context.pushRoute(
+                                BookingDetailsRoute(
+                                  trainerId: trainer.id,
+                                  trainerName: trainer.name ?? 'unknown',
+                                  sport: 'Swimming',
+                                  location: 'Kuala Lumpur',
+                                ),
+                              );
+                            }
+                            : null,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            isAvailable
+                                ? ThemeColor.blue
+                                : ThemeColor.lightGrey,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        isAvailable ? 'Book Now' : 'Unavailable',
+                        style: AppWidget.bodyMedium().copyWith(
+                          color:
+                              isAvailable
+                                  ? ThemeColor.white
+                                  : ThemeColor.grey100,
+                          fontWeight:
+                              isAvailable ? FontWeight.normal : FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
                   ),
-                  decoration: BoxDecoration(
-                    color: ThemeColor.blue,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Book Now',
-                    style: AppWidget.bodyMedium().copyWith(
-                      color: ThemeColor.white,
+
+                  if (!isAvailable &&
+                      trainer.resumeAt != null &&
+                      trainer.resumeAt!.isAfter(now))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Available at ${DateFormat('hh:mm a').format(trainer.resumeAt!)}',
+                        style: AppWidget.bodyExtraSmall().copyWith(
+                          color: ThemeColor.orange,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                ],
               ),
             ],
           ),

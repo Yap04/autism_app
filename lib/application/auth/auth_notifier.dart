@@ -84,4 +84,60 @@ class AuthNotifier extends _$AuthNotifier {
       return null;
     });
   }
+
+  void updateLocalUser(UserModel updatedUser) {
+    state = AsyncData(updatedUser);
+  }
+
+  Future<void> toggleAcceptingRequests(bool value) async {
+    final currentUser = state.value;
+    if (currentUser == null) {
+      return;
+    }
+
+    final updatedUser = currentUser.copyWith(isAcceptingRequests: value);
+    state = AsyncData(updatedUser);
+
+    try {
+      await ref.read(userRepositoryProvider).updateUser(updatedUser);
+    } catch (e) {
+      state = AsyncData(currentUser);
+      rethrow;
+    }
+  }
+
+  Future<void> pauseAcceptingRequests(Duration? duration) async {
+    final currentUser = state.value;
+    if (currentUser == null) {
+      return;
+    }
+
+    DateTime? resumeTime;
+    if (duration != null) {
+      resumeTime = DateTime.now().add(duration);
+    }
+
+    final updatedUser = currentUser.copyWith(
+      isAcceptingRequests: false,
+      resumeAt: resumeTime,
+    );
+
+    state = AsyncData(updatedUser);
+    await ref.read(userRepositoryProvider).updateUser(updatedUser);
+  }
+
+  Future<void> resumeAcceptingRequests() async {
+    final currentUser = state.value;
+    if (currentUser == null) {
+      return;
+    }
+
+    final updatedUser = currentUser.copyWith(
+      isAcceptingRequests: true,
+      resumeAt: null,
+    );
+
+    state = AsyncData(updatedUser);
+    await ref.read(userRepositoryProvider).updateUser(updatedUser);
+  }
 }

@@ -25,6 +25,9 @@ class UserModel with _$UserModel {
     String? userAvatarUrl,
     @Default(0) int sessionCredits,
     @Default(UserStatus.active) UserStatus status,
+    @Default(true) bool isAcceptingRequests,
+    DateTime? resumeAt,
+    List<dynamic>? operatingHours,
     @TimestampConverter() DateTime? createdAt,
   }) = _UserModel;
 
