@@ -12,6 +12,7 @@ import '../../domain/models/appointment_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../shared/curved_header_background.dart';
 import '../shared/snack_bar.dart';
+import '../shared/user_avatar.dart';
 
 class TrainerHomePage extends ConsumerStatefulWidget {
   const TrainerHomePage({super.key});
@@ -25,6 +26,35 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
   Widget build(BuildContext context) {
     final currentUser = ref.watch(authNotifierProvider).value;
     final appointmentsAsync = ref.watch(appointmentNotifierProvider);
+
+    final appointments = appointmentsAsync.value ?? [];
+
+    final today = DateTime.now();
+    final acceptedAppointments =
+        appointments
+            .where((a) => a.status == AppointmentStatus.accepted)
+            .toList();
+
+    final todaySessionsCount =
+        acceptedAppointments
+            .where(
+              (a) =>
+                  a.dateTime.year == today.year &&
+                  a.dateTime.month == today.month &&
+                  a.dateTime.day == today.day,
+            )
+            .length;
+
+    // TODO: need the change the max slots
+    const maxSlotsPerDay = 10;
+    final availableSlots = (maxSlotsPerDay - todaySessionsCount).clamp(
+      0,
+      maxSlotsPerDay,
+    );
+    final slotProgress = availableSlots / maxSlotsPerDay;
+
+    final uniqueParentsCount =
+        acceptedAppointments.map((a) => a.parentId).toSet().length;
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -50,14 +80,11 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                             'Good Morning,\n${currentUser?.name ?? 'Trainer'}!',
                             style: AppWidget.h2TextFieldStyle(),
                           ),
-                          const CircleAvatar(
+                          UserAvatar(
                             radius: 24,
-                            backgroundColor: ThemeColor.white,
-                            child: Icon(
-                              Icons.person,
-                              color: ThemeColor.grey100,
-                              size: 30,
-                            ),
+                            username:
+                                currentUser?.name ?? currentUser?.nickname,
+                            userAvatarUrl: currentUser?.userAvatarUrl,
                           ),
                         ],
                       ),
@@ -88,70 +115,90 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                               ),
                             ),
                             16.heightBox,
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            Column(
                               children: [
-                                Column(
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Baki Slots',
-                                      style: AppWidget.bodySmall().copyWith(
-                                        color: ThemeColor.grey100,
+                                    Expanded(
+                                      child: Text(
+                                        'Available\nSlots',
+                                        textAlign: TextAlign.center,
+                                        style: AppWidget.bodySmall().copyWith(
+                                          color: ThemeColor.grey100,
+                                          height: 1.2,
+                                        ),
                                       ),
                                     ),
-                                    8.heightBox,
-                                    SizedBox(
-                                      height: 56,
-                                      width: 56,
-                                      child: Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            value: 0.6,
-                                            strokeWidth: 6,
-                                            backgroundColor: ThemeColor.aquaBlue
-                                                .withValues(alpha: 0.4),
-                                            valueColor:
-                                                const AlwaysStoppedAnimation<
-                                                  Color
-                                                >(ThemeColor.darkBlue),
-                                          ),
-                                          Text(
-                                            '8',
-                                            style: AppWidget.h2TextFieldStyle(),
-                                          ),
-                                        ],
+                                    Expanded(
+                                      child: Text(
+                                        'Today\nSessions',
+                                        textAlign: TextAlign.center,
+                                        style: AppWidget.bodySmall().copyWith(
+                                          color: ThemeColor.grey100,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        'Total\nMembers',
+                                        textAlign: TextAlign.center,
+                                        style: AppWidget.bodySmall().copyWith(
+                                          color: ThemeColor.grey100,
+                                          height: 1.2,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                Column(
+
+                                8.heightBox,
+                                
+                                Row(
                                   children: [
-                                    Text(
-                                      'Today Sessions',
-                                      style: AppWidget.bodySmall().copyWith(
-                                        color: ThemeColor.grey100,
+                                    Expanded(
+                                      child: Center(
+                                        child: SizedBox(
+                                          height: 56,
+                                          width: 56,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              CircularProgressIndicator(
+                                                value: slotProgress,
+                                                strokeWidth: 6,
+                                                backgroundColor: ThemeColor
+                                                    .aquaBlue
+                                                    .withValues(alpha: 0.4),
+                                                valueColor:
+                                                    const AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(ThemeColor.darkBlue),
+                                              ),
+                                              Text(
+                                                '$availableSlots',
+                                                style:
+                                                    AppWidget.h2TextFieldStyle(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    16.heightBox,
-                                    Text(
-                                      '4',
-                                      style: AppWidget.h1TextFieldStyle(),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    Text(
-                                      'Jumlah Ahli',
-                                      style: AppWidget.bodySmall().copyWith(
-                                        color: ThemeColor.grey100,
+                                    Expanded(
+                                      child: Text(
+                                        '$todaySessionsCount',
+                                        textAlign: TextAlign.center,
+                                        style: AppWidget.h1TextFieldStyle(),
                                       ),
                                     ),
-                                    16.heightBox,
-                                    Text(
-                                      '12',
-                                      style: AppWidget.h1TextFieldStyle(),
+                                    Expanded(
+                                      child: Text(
+                                        '$uniqueParentsCount',
+                                        textAlign: TextAlign.center,
+                                        style: AppWidget.h1TextFieldStyle(),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -165,7 +212,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'Permohonan Baru',
+                        'New Requests',
                         style: AppWidget.h3TextFieldStyle(),
                       ),
                     ),
