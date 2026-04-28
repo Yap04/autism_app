@@ -97,6 +97,74 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     }
   }
 
+  Future<void> _submitBooking() async {
+    if (_selectedTime == null) {
+      AppSnackBar.error(context, 'Please select a time.');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final finalDateTime = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      final totalPrice = _sessionPrice * _selectedWeeks;
+      String? stripePaymentId;
+
+      if (_selectedPaymentMethod == PaymentMethod.singlePay) {
+        stripePaymentId = await ref
+            .read(stripeServiceProvider)
+            .makePayment(amount: totalPrice, currency: 'myr');
+
+        if (stripePaymentId == null) {
+          if (mounted) {
+            AppSnackBar.error(context, 'Payment cancelled or failed.');
+          }
+          setState(() => _isLoading = false);
+          return;
+        }
+      }
+
+      await ref
+          .read(appointmentNotifierProvider.notifier)
+          .createAppointment(
+            trainerId: widget.trainerId,
+            trainerName: widget.trainerName,
+            sport: widget.sport,
+            location: widget.location,
+            dateTime: finalDateTime,
+            paymentMethod: _selectedPaymentMethod,
+            recurringWeeks: _selectedWeeks,
+            stripePaymentIntentId: stripePaymentId,
+          );
+
+      if (_selectedPaymentMethod == PaymentMethod.credit) {
+        final currentUser = ref.read(authNotifierProvider).value;
+        if (currentUser != null) {
+          final updatedUser = currentUser.copyWith(
+            sessionCredits: currentUser.sessionCredits - _selectedWeeks,
+          );
+          ref.read(authNotifierProvider.notifier).updateLocalUser(updatedUser);
+        }
+      }
+
+      if (mounted) {
+        context.router.maybePop();
+        AppSnackBar.success(context, '$_selectedWeeks Booking(s) Confirmed!');
+      }
+    } catch (e) {
+      AppSnackBar.error(context, e.toString());
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   void _updateWeeks(int weeks) {
     setState(() {
       _selectedWeeks = weeks;
@@ -238,69 +306,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                         ? 'Confirm & Deduct $requiredCredits Credit(s)'
                         : 'Proceed to Pay RM ${totalPrice.toStringAsFixed(2)}',
                 isLoading: _isLoading,
-                onPressed: () async {
-                  if (_selectedTime == null) {
-                    AppSnackBar.error(context, 'Please select a time.');
-                    return;
-                  }
-
-                  setState(() => _isLoading = true);
-                  try {
-                    final finalDateTime = DateTime(
-                      _selectedDate.year,
-                      _selectedDate.month,
-                      _selectedDate.day,
-                      _selectedTime!.hour,
-                      _selectedTime!.minute,
-                    );
-
-                    String? stripePaymentId;
-
-                    if (_selectedPaymentMethod == PaymentMethod.singlePay) {
-                      stripePaymentId = await ref
-                          .read(stripeServiceProvider)
-                          .makePayment(amount: totalPrice, currency: 'myr');
-
-                      if (stripePaymentId == null) {
-                        if (context.mounted) {
-                          AppSnackBar.error(
-                            context,
-                            'Payment cancelled or failed.',
-                          );
-                        }
-                        setState(() => _isLoading = false);
-                        return;
-                      }
-                    }
-
-                    await ref
-                        .read(appointmentNotifierProvider.notifier)
-                        .createAppointment(
-                          trainerId: widget.trainerId,
-                          trainerName: widget.trainerName,
-                          sport: widget.sport,
-                          location: widget.location,
-                          dateTime: finalDateTime,
-                          paymentMethod: _selectedPaymentMethod,
-                          recurringWeeks: _selectedWeeks,
-                          stripePaymentIntentId: stripePaymentId,
-                        );
-
-                    if (context.mounted) {
-                      context.router.maybePop();
-                      AppSnackBar.success(
-                        context,
-                        '$_selectedWeeks Booking(s) Confirmed!',
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      AppSnackBar.error(context, e.toString());
-                    }
-                  } finally {
-                    if (mounted) setState(() => _isLoading = false);
-                  }
-                },
+                onPressed: _submitBooking,
               ),
             ),
           ],
