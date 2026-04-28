@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
 import '../../../application/content/parent_content_provider.dart';
+import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
@@ -99,7 +100,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                         }
 
                         final nextApp = upcomingApps.first;
-                        return _buildUpcomingCard(context, nextApp);
+                        return _buildUpcomingCard(context, ref, nextApp);
                       },
                     ),
                     16.heightBox,
@@ -193,6 +194,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                                       width: 240,
                                       child: buildContentCard(
                                         context,
+                                        ref,
                                         contents[index],
                                       ),
                                     );
@@ -312,7 +314,11 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
   }
 }
 
-Widget _buildUpcomingCard(BuildContext context, AppointmentModel app) {
+Widget _buildUpcomingCard(
+  BuildContext context,
+  WidgetRef ref,
+  AppointmentModel app,
+) {
   final now = DateTime.now();
   final aDate = DateTime(
     app.dateTime.year,
@@ -331,6 +337,8 @@ Widget _buildUpcomingCard(BuildContext context, AppointmentModel app) {
   } else {
     dateDisplay = DateFormat('d MMM, h:mm a').format(app.dateTime);
   }
+
+  final trainerAsync = ref.watch(fetchTrainerProvider(app.trainerId));
 
   return Container(
     padding: const EdgeInsets.all(16),
@@ -355,11 +363,36 @@ Widget _buildUpcomingCard(BuildContext context, AppointmentModel app) {
           children: [
             Column(
               children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: ThemeColor.grey100,
-                  child: Icon(Icons.person, color: ThemeColor.white, size: 30),
+                trainerAsync.when(
+                  data: (trainer) {
+                    return UserAvatar(
+                      radius: 30,
+                      username:
+                          trainer?.name ?? trainer?.nickname ?? app.trainerName,
+                      userAvatarUrl: trainer?.userAvatarUrl,
+                    );
+                  },
+                  loading:
+                      () => const CircleAvatar(
+                        radius: 30,
+                        backgroundColor: ThemeColor.grey100,
+                        child: CircularProgressIndicator(
+                          color: ThemeColor.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                  error:
+                      (_, _) => const CircleAvatar(
+                        radius: 30,
+                        backgroundColor: ThemeColor.grey100,
+                        child: Icon(
+                          Icons.error_outline,
+                          color: ThemeColor.white,
+                          size: 30,
+                        ),
+                      ),
                 ),
+
                 4.heightBox,
                 Text(
                   app.trainerName,
