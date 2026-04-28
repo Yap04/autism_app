@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../domain/models/ticket_model.dart';
 import '../../presentation/admin/appointment/admin_appointments_page.dart';
 import '../../presentation/admin/content/admin_content_editor_page.dart';
 import '../../presentation/admin/content/admin_content_page.dart';
@@ -22,6 +23,9 @@ import '../../presentation/parent/home/parent_progress_page.dart';
 import '../../presentation/parent/parent_bottom_nav_page.dart';
 import '../../presentation/profile/edit_profile_page.dart';
 import '../../presentation/profile/profile_page.dart';
+import '../../presentation/profile/support/create_ticket_page.dart';
+import '../../presentation/profile/support/support_page.dart';
+import '../../presentation/profile/support/ticket_chat_page.dart';
 import '../../presentation/profile/trainer_dashboard_page.dart';
 import '../../presentation/profile/wallet/all_transactions_page.dart';
 import '../../presentation/profile/wallet/wallet_page.dart';
@@ -47,6 +51,9 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ChatRoute.page),
     AutoRoute(page: AllTransactionsRoute.page),
     AutoRoute(page: ContentListRoute.page),
+    AutoRoute(page: SupportRoute.page),
+    AutoRoute(page: CreateTicketRoute.page),
+    AutoRoute(page: TicketChatRoute.page),
 
     // Admin Web Panel Routes
     AutoRoute(
