@@ -20,7 +20,7 @@ class TrainerListPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         iconTheme: const IconThemeData(color: ThemeColor.black),
-        title: Text('All Trainers', style: AppWidget.h3TextFieldStyle()),
+        title: Text('Trainer List', style: AppWidget.h2TextFieldStyle()),
         centerTitle: true,
       ),
       body: trainersAsync.when(
