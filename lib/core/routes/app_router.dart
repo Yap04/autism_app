@@ -21,12 +21,13 @@ import '../../presentation/parent/appointment/trainer_list_page.dart';
 import '../../presentation/parent/home/content/content_list_page.dart';
 import '../../presentation/parent/home/parent_progress_page.dart';
 import '../../presentation/parent/parent_bottom_nav_page.dart';
+import '../../presentation/profile/dashboard/map_picker_page.dart';
+import '../../presentation/profile/dashboard/trainer_dashboard_page.dart';
 import '../../presentation/profile/edit_profile_page.dart';
 import '../../presentation/profile/profile_page.dart';
 import '../../presentation/profile/support/create_ticket_page.dart';
 import '../../presentation/profile/support/support_page.dart';
 import '../../presentation/profile/support/ticket_chat_page.dart';
-import '../../presentation/profile/trainer_dashboard_page.dart';
 import '../../presentation/profile/wallet/all_transactions_page.dart';
 import '../../presentation/profile/wallet/wallet_page.dart';
 import '../../presentation/trainer/trainer_bottom_nav_page.dart';
@@ -47,6 +48,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: EditProfileRoute.page),
     AutoRoute(page: TrainerListRoute.page),
     AutoRoute(page: TrainerDashboardRoute.page),
+    AutoRoute(page: MapPickerRoute.page),
     AutoRoute(page: WalletRoute.page),
     AutoRoute(page: ChatRoute.page),
     AutoRoute(page: AllTransactionsRoute.page),
