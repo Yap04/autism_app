@@ -40,7 +40,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   int _selectedWeeks = 1;
   final int _maxWeeks = 4;
 
-  final double _sessionPrice = 80;
+  int _selectedDuration = 60;
+
+  final double _hourlyPrice = 80;
   late PaymentMethod _selectedPaymentMethod;
 
   @override
@@ -54,6 +56,49 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         initialCredits >= _selectedWeeks
             ? PaymentMethod.credit
             : PaymentMethod.singlePay;
+  }
+
+  String _getEndTimeString(BuildContext context) {
+    if (_selectedTime == null) return '';
+
+    final startDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
+    );
+
+    final endDateTime = startDateTime.add(Duration(minutes: _selectedDuration));
+
+    return DateFormat('hh:mm a').format(endDateTime);
+  }
+
+  bool _isDaySelectable(DateTime day, List<dynamic>? operatingHours) {
+    if (operatingHours == null || operatingHours.isEmpty) {
+      return true;
+    }
+
+    final weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    final dayString = weekdays[day.weekday - 1];
+
+    final dayConfig = operatingHours.firstWhere(
+      (e) => (e as Map)['day'] == dayString,
+      orElse: () => null,
+    );
+
+    if (dayConfig != null) {
+      return (dayConfig as Map)['isOpen'] == true;
+    }
+    return true;
   }
 
   Future<void> _pickDate() async {
@@ -114,7 +159,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         _selectedTime!.minute,
       );
 
-      final totalPrice = _sessionPrice * _selectedWeeks;
+      final totalPrice = _hourlyPrice * _selectedWeeks;
       String? stripePaymentId;
 
       if (_selectedPaymentMethod == PaymentMethod.singlePay) {
@@ -139,6 +184,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
             sport: widget.sport,
             location: widget.location,
             dateTime: finalDateTime,
+            duration: _selectedDuration,
             paymentMethod: _selectedPaymentMethod,
             recurringWeeks: _selectedWeeks,
             stripePaymentIntentId: stripePaymentId,
@@ -147,8 +193,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       if (_selectedPaymentMethod == PaymentMethod.credit) {
         final currentUser = ref.read(authNotifierProvider).value;
         if (currentUser != null) {
+          final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
           final updatedUser = currentUser.copyWith(
-            sessionCredits: currentUser.sessionCredits - _selectedWeeks,
+            sessionCredits: currentUser.sessionCredits - requiredCredits,
           );
           ref.read(authNotifierProvider.notifier).updateLocalUser(updatedUser);
         }
@@ -171,7 +218,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       final user = ref.read(authNotifierProvider).value;
       final currentCredits = user?.sessionCredits ?? 0;
 
-      if (currentCredits < _selectedWeeks &&
+      final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
+
+      if (currentCredits < requiredCredits &&
           _selectedPaymentMethod == PaymentMethod.credit) {
         _selectedPaymentMethod = PaymentMethod.singlePay;
       }
@@ -237,6 +286,21 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                         ),
                       ],
                     ),
+
+                    if (_selectedTime != null) ...[
+                      8.heightBox,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Text(
+                          'This session will end at ${_getEndTimeString(context)}.',
+                          style: AppWidget.bodyExtraSmall().copyWith(
+                            color: ThemeColor.darkBlue,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
 
                     24.heightBox,
 
@@ -440,6 +504,47 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDurationOption(int minutes, String label) {
+    final isSelected = _selectedDuration == minutes;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedDuration = minutes;
+            final user = ref.read(authNotifierProvider).value;
+            final currentCredits = user?.sessionCredits ?? 0;
+            final requiredCredits = (minutes ~/ 60) * _selectedWeeks;
+
+            if (currentCredits < requiredCredits &&
+                _selectedPaymentMethod == PaymentMethod.credit) {
+              _selectedPaymentMethod = PaymentMethod.singlePay;
+            }
+          });
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? ThemeColor.darkBlue : ThemeColor.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? ThemeColor.darkBlue : ThemeColor.lightGrey,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: AppWidget.bodyMedium().copyWith(
+                color: isSelected ? ThemeColor.white : ThemeColor.black,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
         ),
       ),
     );

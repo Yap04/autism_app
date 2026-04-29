@@ -223,9 +223,10 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                     final startStr = DateFormat(
                                       'hh:mm a',
                                     ).format(app.dateTime);
+
                                     final endStr = DateFormat('hh:mm a').format(
                                       app.dateTime.add(
-                                        const Duration(hours: 1),
+                                    Duration(minutes: app.duration),
                                       ),
                                     );
 
@@ -234,10 +235,10 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                         app.status.name.substring(1);
 
                                     return Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 16,
-                                      ),
+                                  padding: const EdgeInsets.only(bottom: 16),
                                       child: _buildAppointmentCard(
+                                    appointmentId: app.id,
+                                    dateTime: app.dateTime,
                                         time: '$startStr - $endStr',
                                         status: statusStr,
                                         coachName: app.trainerName,
@@ -263,6 +264,8 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
   }
 
   Widget _buildAppointmentCard({
+    required String appointmentId,
+    required DateTime dateTime,
     required String time,
     required String status,
     required String coachName,

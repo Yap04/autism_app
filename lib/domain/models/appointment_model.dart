@@ -21,6 +21,7 @@ class AppointmentModel with _$AppointmentModel {
     required String trainerName,
     required String sport,
     required String location,
+    required int duration,
 
     @TimestampConverter() required DateTime dateTime,
     required AppointmentStatus status,

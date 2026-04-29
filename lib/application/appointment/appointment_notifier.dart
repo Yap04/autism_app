@@ -36,6 +36,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     required DateTime dateTime,
     required PaymentMethod paymentMethod,
     required int recurringWeeks,
+    required int duration,
     String? stripePaymentIntentId,
   }) async {
     final user = await ref.read(authNotifierProvider.future);
@@ -73,6 +74,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
             trainerName: trainerName,
             sport: sport,
             location: location,
+            duration: duration,
             dateTime: sessionDate,
             status: AppointmentStatus.pending,
             createdAt: DateTime.now(),
