@@ -22,6 +22,13 @@ class TrainerCard extends StatelessWidget {
 
     final isAvailable = isManuallyAccepting || hasResumeTimePassed;
 
+    final bioText =
+        (trainer.bio?.isNotEmpty ?? false)
+            ? trainer.bio!
+            : 'No description provided.';
+    final sportsList =
+        trainer.sports.isNotEmpty ? trainer.sports : ['Not specified'];
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -80,9 +87,8 @@ class TrainerCard extends StatelessWidget {
                       ],
                     ),
                     4.heightBox,
-                    //TODO: Replace with actual trainer description when available
                     Text(
-                      'Experienced in autism sports training...',
+                      bioText,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -120,48 +126,41 @@ class TrainerCard extends StatelessWidget {
           ),
           16.heightBox,
           Text(
-            'Specialized Certifications',
+            'Coaching Sports:',
             style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
           ),
           8.heightBox,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: ThemeColor.lightOrange.withValues(
-                      alpha: 0.3,
-                    ),
-                    child: const Icon(
-                      Icons.emoji_events,
-                      size: 16,
-                      color: ThemeColor.orange,
-                    ),
-                  ),
-                  8.widthBox,
-                  const CircleAvatar(
-                    radius: 14,
-                    backgroundColor: ThemeColor.aquaBlue,
-                    child: Icon(
-                      Icons.security,
-                      size: 16,
-                      color: ThemeColor.darkBlue,
-                    ),
-                  ),
-                  8.widthBox,
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: ThemeColor.red.withValues(alpha: 0.3),
-                    child: const Icon(
-                      Icons.medical_services,
-                      size: 16,
-                      color: ThemeColor.negative,
-                    ),
-                  ),
-                ],
+              Expanded(
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children:
+                      sportsList.map((sport) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.lightGrey.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            sport,
+                            style: AppWidget.bodyExtraSmall().copyWith(
+                              color: ThemeColor.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                ),
               ),
+              16.widthBox,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -173,8 +172,11 @@ class TrainerCard extends StatelessWidget {
                                 BookingDetailsRoute(
                                   trainerId: trainer.id,
                                   trainerName: trainer.name ?? 'unknown',
-                                  sport: 'Swimming',
-                                  location: 'Kuala Lumpur',
+                                  sport:
+                                      trainer.sports.isNotEmpty
+                                          ? trainer.sports.first
+                                          : 'Sports',
+                                  location: trainer.location ?? 'Kuala Lumpur',
                                 ),
                               );
                             }
