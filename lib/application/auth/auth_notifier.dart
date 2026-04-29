@@ -89,6 +89,8 @@ class AuthNotifier extends _$AuthNotifier {
     state = AsyncData(updatedUser);
   }
 
+  // For Trainers:
+
   Future<void> toggleAcceptingRequests(bool value) async {
     final currentUser = state.value;
     if (currentUser == null) {
@@ -139,5 +141,36 @@ class AuthNotifier extends _$AuthNotifier {
 
     state = AsyncData(updatedUser);
     await ref.read(userRepositoryProvider).updateUser(updatedUser);
+  }
+
+  Future<void> updatePublicProfile({
+    String? bio,
+    String? location,
+    List<String>? sports,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final currentUser = state.value;
+    if (currentUser == null) {
+      return;
+    }
+
+    final updatedUser = currentUser.copyWith(
+      bio: bio ?? currentUser.bio,
+      location: location ?? currentUser.location,
+      sports: sports ?? currentUser.sports,
+      latitude: latitude ?? currentUser.latitude,
+      longitude: longitude ?? currentUser.longitude,
+    );
+
+    state = AsyncData(updatedUser);
+
+    try {
+      final userRepo = ref.read(userRepositoryProvider);
+      await userRepo.updateUser(updatedUser);
+    } catch (e) {
+      state = AsyncData(currentUser);
+      throw Exception('Failed to update profile to server: $e');
+    }
   }
 }
