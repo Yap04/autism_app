@@ -616,16 +616,17 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.pool,
+                          Icon(
+                            getSportIcon(sport),
                             size: 14,
-                            color: ThemeColor.black,
+                            color: ThemeColor.darkBlue,
                           ),
                           4.widthBox,
                           Text(
                             sport,
                             style: AppWidget.bodySmall().copyWith(
                               fontWeight: FontWeight.w600,
+                              color: ThemeColor.darkBlue,
                             ),
                           ),
                         ],
@@ -640,6 +641,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
                     4.heightBox,
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(
                           Icons.location_on,
@@ -653,7 +655,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.grey100,
                             ),
-                            maxLines: 1,
+                            maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

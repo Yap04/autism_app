@@ -8,6 +8,7 @@ import '../../../application/providers/repository_providers.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/bottom_action_button.dart';
@@ -44,6 +45,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
   final double _hourlyPrice = 80;
   late PaymentMethod _selectedPaymentMethod;
+
+  String? _selectedSport;
 
   @override
   void initState() {
@@ -181,7 +184,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           .createAppointment(
             trainerId: widget.trainerId,
             trainerName: widget.trainerName,
-            sport: widget.sport,
+            sport: _selectedSport ?? widget.sport,
             location: widget.location,
             dateTime: finalDateTime,
             duration: _selectedDuration,
@@ -232,15 +235,46 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     final user = ref.watch(authNotifierProvider).value;
     final credits = user?.sessionCredits ?? 0;
 
-    final trainerImageUrl =
-        ref
-            .watch(fetchTrainerProvider(widget.trainerId))
-            .asData
-            ?.value
-            ?.userAvatarUrl;
+    final trainerAsync = ref.watch(fetchTrainerProvider(widget.trainerId));
+    final trainer = trainerAsync.asData?.value;
+    final trainerImageUrl = trainer?.userAvatarUrl;
+    final operatingHours = trainer?.operatingHours;
 
-    final requiredCredits = _selectedWeeks;
-    final totalPrice = _sessionPrice * _selectedWeeks;
+    final availableSports =
+        (trainer?.sports != null && trainer!.sports.isNotEmpty)
+            ? trainer.sports
+            : [widget.sport];
+
+    if (_selectedSport == null && availableSports.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _selectedSport = availableSports.first);
+        }
+      });
+    }
+
+    final displaySport = _selectedSport ?? widget.sport;
+
+    if (operatingHours != null &&
+        !_isDaySelectable(_selectedDate, operatingHours)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        var nextValidDate = _selectedDate;
+        for (var i = 0; i < 30; i++) {
+          nextValidDate = nextValidDate.add(const Duration(days: 1));
+          if (_isDaySelectable(nextValidDate, operatingHours)) {
+            if (mounted) {
+              setState(() => _selectedDate = nextValidDate);
+            }
+            break;
+          }
+        }
+      });
+    }
+
+    // Credit Required: 1 hour = 1 credit. 2 hours = 2 credits. Then multiply by weeks.
+    final durationInHours = _selectedDuration / 60.0;
+    final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
+    final totalPrice = _hourlyPrice * durationInHours * _selectedWeeks;
     final hasEnoughCredits = credits >= requiredCredits;
 
     return Scaffold(
