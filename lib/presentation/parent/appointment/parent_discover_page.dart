@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
@@ -13,6 +15,7 @@ import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
+import '../../../domain/models/user_model.dart';
 import '../../shared/app_text_field.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/trainer_card.dart';
@@ -21,19 +24,20 @@ class ParentDiscoverPage extends ConsumerStatefulWidget {
   const ParentDiscoverPage({super.key});
 
   @override
-  ConsumerState<ParentDiscoverPage> createState() => _DiscoverPageState();
+  ConsumerState<ParentDiscoverPage> createState() => _ParentDiscoverPageState();
 }
 
-class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
+class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
   final TextEditingController _searchController = TextEditingController();
   bool _hasLocationPermission = false;
 
   final Completer<GoogleMapController> _mapController =
       Completer<GoogleMapController>();
 
-  // default location: miri
+  Set<Marker> _markers = {};
+
   static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(4.3995, 113.9914),
+    target: LatLng(3.1390, 101.6869),
     zoom: 14.5,
   );
 
@@ -87,6 +91,147 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
     );
   }
 
+  Future<void> _checkInitialLocation() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return;
+    }
+
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _hasLocationPermission = true;
+      });
+    }
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+
+      final controller = await _mapController.future;
+      await controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 14.5,
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<BitmapDescriptor> _createAvatarMarker(
+    String? url,
+    String fallbackName,
+  ) async {
+    const size = 130;
+    const strokeWidth = 6.0;
+
+    const radius = (size / 2) - (strokeWidth / 2);
+    const center = Offset(size / 2, size / 2);
+
+    final pictureRecorder = ui.PictureRecorder();
+    final canvas = Canvas(pictureRecorder);
+
+    final borderPaint =
+        Paint()
+          ..color = ThemeColor.darkBlue
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.stroke;
+
+    final bgPaint = Paint()..color = ThemeColor.white;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    if (url != null && url.trim().isNotEmpty) {
+      try {
+        final request = await HttpClient()
+            .getUrl(Uri.parse(url))
+            .timeout(const Duration(seconds: 5));
+        final response = await request.close().timeout(
+          const Duration(seconds: 5),
+        );
+        final bytes = await consolidateHttpClientResponseBytes(response);
+
+        final codec = await ui.instantiateImageCodec(
+          bytes,
+          targetWidth: size,
+          targetHeight: size,
+        );
+        final fi = await codec.getNextFrame();
+
+        final clipPath =
+            Path()..addOval(Rect.fromCircle(center: center, radius: radius));
+        canvas
+          ..save()
+          ..clipPath(clipPath)
+          ..drawImage(fi.image, Offset.zero, Paint())
+          ..restore();
+      } catch (e) {
+        print('Error: $e');
+      }
+    }
+
+    canvas.drawCircle(center, radius, borderPaint);
+
+    final image = await pictureRecorder.endRecording().toImage(size, size);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+  }
+
+  bool _isGeneratingMarkers = false;
+
+  Future<void> _generateMarkers(List<UserModel> trainers) async {
+    if (_isGeneratingMarkers) {
+      return;
+    }
+    _isGeneratingMarkers = true;
+
+    final newMarkers = <Marker>{};
+    for (final trainer in trainers) {
+      if (trainer.latitude != null && trainer.longitude != null) {
+        final icon = await _createAvatarMarker(
+          trainer.userAvatarUrl,
+          trainer.name ?? 'Trainer',
+        );
+
+        newMarkers.add(
+          Marker(
+            markerId: MarkerId(trainer.id),
+            position: LatLng(trainer.latitude!, trainer.longitude!),
+            icon: icon,
+            infoWindow: InfoWindow(
+              title: trainer.name,
+              snippet: trainer.sports.isNotEmpty ? trainer.sports.first : '',
+            ),
+          ),
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _markers = Set.from(newMarkers);
+      });
+    }
+    _isGeneratingMarkers = false;
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -94,7 +239,26 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    _checkInitialLocation();
+
+    final initialTrainers = ref.read(trainerListProvider).value;
+    if (initialTrainers != null && initialTrainers.isNotEmpty) {
+      _generateMarkers(initialTrainers);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<List<UserModel>>>(trainerListProvider, (
+      previous,
+      next,
+    ) {
+      next.whenData(_generateMarkers);
+    });
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
@@ -121,7 +285,7 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                12.widthBox,
                 Container(
                   height: 50,
                   width: 50,
@@ -154,6 +318,7 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                       myLocationButtonEnabled: false,
                       mapToolbarEnabled: false,
                       myLocationEnabled: _hasLocationPermission,
+                      markers: _markers,
 
                       gestureRecognizers: const {
                         Factory<OneSequenceGestureRecognizer>(
@@ -172,23 +337,6 @@ class _DiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                         backgroundColor: ThemeColor.white,
                         child: Icon(
                           Icons.my_location,
-                          color: ThemeColor.grey100,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Positioned(
-                    top: 70,
-                    right: 16,
-                    child: GestureDetector(
-                      onTap: () {
-                        print('Navigation tapped');
-                      },
-                      child: const CircleAvatar(
-                        backgroundColor: ThemeColor.white,
-                        child: Icon(
-                          Icons.navigation,
                           color: ThemeColor.grey100,
                         ),
                       ),
