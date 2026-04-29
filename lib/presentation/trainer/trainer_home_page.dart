@@ -13,6 +13,7 @@ import '../../domain/models/transaction_model.dart';
 import '../shared/curved_header_background.dart';
 import '../shared/snack_bar.dart';
 import '../shared/user_avatar.dart';
+import 'shared/stat_item.dart';
 
 class TrainerHomePage extends ConsumerStatefulWidget {
   const TrainerHomePage({super.key});
@@ -118,48 +119,11 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                             Column(
                               children: [
                                 Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        'Available\nSlots',
-                                        textAlign: TextAlign.center,
-                                        style: AppWidget.bodySmall().copyWith(
-                                          color: ThemeColor.grey100,
-                                          height: 1.2,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Today\nSessions',
-                                        textAlign: TextAlign.center,
-                                        style: AppWidget.bodySmall().copyWith(
-                                          color: ThemeColor.grey100,
-                                          height: 1.2,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Total\nMembers',
-                                        textAlign: TextAlign.center,
-                                        style: AppWidget.bodySmall().copyWith(
-                                          color: ThemeColor.grey100,
-                                          height: 1.2,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                8.heightBox,
-                                
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Center(
-                                        child: SizedBox(
+                                      child: StatItem(
+                                        label: 'Available\nSlots',
+                                        valueWidget: SizedBox(
                                           height: 56,
                                           width: 56,
                                           child: Stack(
@@ -187,17 +151,15 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                       ),
                                     ),
                                     Expanded(
-                                      child: Text(
-                                        '$todaySessionsCount',
-                                        textAlign: TextAlign.center,
-                                        style: AppWidget.h1TextFieldStyle(),
+                                      child: StatItem(
+                                        label: 'Today\nSessions',
+                                        value: '$todaySessionsCount',
                                       ),
                                     ),
                                     Expanded(
-                                      child: Text(
-                                        '$uniqueParentsCount',
-                                        textAlign: TextAlign.center,
-                                        style: AppWidget.h1TextFieldStyle(),
+                                      child: StatItem(
+                                        label: 'Total\nMembers',
+                                        value: '$uniqueParentsCount',
                                       ),
                                     ),
                                   ],
@@ -226,9 +188,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                 color: ThemeColor.darkBlue,
                               ),
                             ),
-                        error:
-                            (error, stack) =>
-                                Center(child: Text('Error: $error')),
+                        error: (err, _) => Center(child: Text('Error: $err')),
                         data: (appointments) {
                           final pendingRequests =
                               appointments
@@ -281,7 +241,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                             () => const Center(
                               child: CircularProgressIndicator(),
                             ),
-                        error: (err, stack) => Text('Error: $err'),
+                        error: (err, _) => Text('Error: $err'),
                         data: (appointments) {
                           final today = DateTime.now();
                           final todaySessions =
@@ -486,10 +446,14 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                           color: ThemeColor.grey100,
                         ),
                         4.widthBox,
-                        Text(
-                          appointment.location,
-                          style: AppWidget.bodySmall().copyWith(
-                            color: ThemeColor.grey100,
+                        Expanded(
+                          child: Text(
+                            appointment.location,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: AppWidget.bodySmall().copyWith(
+                              color: ThemeColor.grey100,
+                            ),
                           ),
                         ),
                       ],

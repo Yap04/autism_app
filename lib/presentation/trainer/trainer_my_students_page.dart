@@ -4,6 +4,7 @@ import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
 import '../shared/curved_header_background.dart';
+import 'shared/stat_item.dart';
 
 class TrainerMyStudentsPage extends StatelessWidget {
   const TrainerMyStudentsPage({super.key});
@@ -42,17 +43,28 @@ class TrainerMyStudentsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Ringkasan',
-                            style: AppWidget.h3TextFieldStyle(),
-                          ),
+                          Text('Summary', style: AppWidget.h3TextFieldStyle()),
                           16.heightBox,
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          const Row(
                             children: [
-                              _buildStatItem('Total\nStudents', '12'),
-                              _buildStatItem('Sesi Aktif', '8'),
-                              _buildStatItem('Laporan\nBelum Selesai', '2'),
+                              Expanded(
+                                child: StatItem(
+                                  label: 'Total\nStudents',
+                                  value: '12',
+                                ),
+                              ),
+                              Expanded(
+                                child: StatItem(
+                                  label: 'Active\nSessions',
+                                  value: '8',
+                                ),
+                              ),
+                              Expanded(
+                                child: StatItem(
+                                  label: 'Pending\nReports',
+                                  value: '2',
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -90,23 +102,6 @@ class TrainerMyStudentsPage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: AppWidget.bodySmall().copyWith(
-            color: ThemeColor.grey100,
-            height: 1.2,
-          ),
-        ),
-        8.heightBox,
-        Text(value, style: AppWidget.h1TextFieldStyle()),
-      ],
     );
   }
 
