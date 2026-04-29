@@ -7,10 +7,12 @@ import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/curved_header_background.dart';
+import '../../shared/snack_bar.dart';
 import '../../shared/user_avatar.dart';
 
 class ParentAppointmentsPage extends ConsumerStatefulWidget {
@@ -280,6 +282,8 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final appointmentsState = ref.watch(appointmentNotifierProvider);
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       body: SingleChildScrollView(
@@ -320,6 +324,18 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                         selectedDayPredicate: (day) {
                           return isSameDay(_selectedDay, day);
                         },
+
+                        eventLoader: (day) {
+                          return appointmentsState.maybeWhen(
+                            data: (appointments) {
+                              return appointments.where((app) {
+                                return isSameDay(app.dateTime, day);
+                              }).toList();
+                            },
+                            orElse: () => [],
+                          );
+                        },
+
                         onDaySelected: (selectedDay, focusedDay) {
                           if (!isSameDay(_selectedDay, selectedDay)) {
                             setState(() {
@@ -371,6 +387,11 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                           ),
                           defaultTextStyle: TextStyle(color: ThemeColor.black),
                           weekendTextStyle: TextStyle(color: ThemeColor.black),
+                          markersMaxCount: 1,
+                          markerDecoration: BoxDecoration(
+                            color: ThemeColor.orange,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
                     ),
@@ -407,93 +428,91 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
                     12.heightBox,
 
-                    ref
-                        .watch(appointmentNotifierProvider)
-                        .when(
-                          loading:
-                              () => const Center(
-                                child: CircularProgressIndicator(
-                                  color: ThemeColor.darkBlue,
+                    appointmentsState.when(
+                      loading:
+                          () => const Center(
+                            child: CircularProgressIndicator(
+                              color: ThemeColor.darkBlue,
+                            ),
+                          ),
+                      error: (err, _) => Center(child: Text('Error: $err')),
+                      data: (appointments) {
+                        final targetDate = _selectedDay ?? DateTime.now();
+                        final filteredAppointments =
+                            appointments.where((app) {
+                                final isSameDate =
+                                    app.dateTime.year == targetDate.year &&
+                                    app.dateTime.month == targetDate.month &&
+                                    app.dateTime.day == targetDate.day;
+                                if (!isSameDate) {
+                                  return false;
+                                }
+                                if (_selectedTab == 'Pending') {
+                                  return app.status ==
+                                      AppointmentStatus.pending;
+                                } else if (_selectedTab == 'Upcoming') {
+                                  return app.status ==
+                                      AppointmentStatus.accepted;
+                                } else {
+                                  return app.status ==
+                                          AppointmentStatus.completed ||
+                                      app.status ==
+                                          AppointmentStatus.rejected ||
+                                      app.status == AppointmentStatus.cancelled;
+                                }
+                              }).toList()
+                              ..sort(
+                                (a, b) => a.dateTime.compareTo(b.dateTime),
+                              );
+
+                        if (filteredAppointments.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: Center(
+                              child: Text(
+                                'No ${_selectedTab.toLowerCase()} appointments for this date.',
+                                style: AppWidget.bodyMedium().copyWith(
+                                  color: ThemeColor.grey100,
                                 ),
                               ),
-                      error: (err, _) => Center(child: Text('Error: $err')),
-                          data: (appointments) {
-                            final targetDate = _selectedDay ?? DateTime.now();
-                            final filteredAppointments =
-                                appointments.where((app) {
-                                    final isSameDate =
-                                        app.dateTime.year == targetDate.year &&
-                                    app.dateTime.month == targetDate.month &&
-                                        app.dateTime.day == targetDate.day;
-                                    if (!isSameDate) {
-                                      return false;
-                                    }
-                                    if (_selectedTab == 'Pending') {
-                                      return app.status ==
-                                          AppointmentStatus.pending;
-                                    } else if (_selectedTab == 'Upcoming') {
-                                      return app.status ==
-                                          AppointmentStatus.accepted;
-                                    } else {
-                                      return app.status ==
-                                              AppointmentStatus.completed ||
-                                          app.status ==
-                                              AppointmentStatus.rejected ||
-                                      app.status == AppointmentStatus.cancelled;
-                                    }
-                                  }).toList()
-                                  ..sort(
-                                    (a, b) => a.dateTime.compareTo(b.dateTime),
-                                  );
+                            ),
+                          );
+                        }
+                        return Column(
+                          children:
+                              filteredAppointments.map((app) {
+                                final startStr = DateFormat(
+                                  'hh:mm a',
+                                ).format(app.dateTime);
 
-                            if (filteredAppointments.isEmpty) {
-                              return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 40),
-                                child: Center(
-                                  child: Text(
-                                    'No ${_selectedTab.toLowerCase()} appointments for this date.',
-                                    style: AppWidget.bodyMedium().copyWith(
-                                      color: ThemeColor.grey100,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            return Column(
-                              children:
-                                  filteredAppointments.map((app) {
-                                    final startStr = DateFormat(
-                                      'hh:mm a',
-                                    ).format(app.dateTime);
-
-                                    final endStr = DateFormat('hh:mm a').format(
-                                      app.dateTime.add(
+                                final endStr = DateFormat('hh:mm a').format(
+                                  app.dateTime.add(
                                     Duration(minutes: app.duration),
-                                      ),
-                                    );
+                                  ),
+                                );
 
-                                    final statusStr =
-                                        app.status.name[0].toUpperCase() +
-                                        app.status.name.substring(1);
+                                final statusStr =
+                                    app.status.name[0].toUpperCase() +
+                                    app.status.name.substring(1);
 
-                                    return Padding(
+                                return Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
-                                      child: _buildAppointmentCard(
+                                  child: _buildAppointmentCard(
                                     appointmentId: app.id,
                                     dateTime: app.dateTime,
-                                        time: '$startStr - $endStr',
-                                        status: statusStr,
-                                        coachName: app.trainerName,
-                                        sport: app.sport,
-                                        title: '${app.sport} Session',
-                                        location: app.location,
-                                        trainerId: app.trainerId,
-                                      ),
-                                    );
-                                  }).toList(),
-                            );
-                          },
-                        ),
+                                    time: '$startStr - $endStr',
+                                    status: statusStr,
+                                    coachName: app.trainerName,
+                                    sport: app.sport,
+                                    title: '${app.sport} Session',
+                                    location: app.location,
+                                    trainerId: app.trainerId,
+                                  ),
+                                );
+                              }).toList(),
+                        );
+                      },
+                    ),
                     40.heightBox,
                   ],
                 ),
