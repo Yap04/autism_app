@@ -19,4 +19,9 @@ abstract class AppointmentRepository {
   Stream<List<AppointmentModel>> watchTrainerAppointments(String trainerId);
 
   Stream<List<AppointmentModel>> watchAllAppointments();
+
+  Future<void> rescheduleAppointment(
+    String appointmentId,
+    DateTime newDateTime,
+  );
 }

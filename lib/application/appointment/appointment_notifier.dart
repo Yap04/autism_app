@@ -145,4 +145,17 @@ class AppointmentNotifier extends _$AppointmentNotifier {
       );
     }
   }
+
+  Future<void> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime newDateTime,
+  }) async {
+    try {
+      await ref
+          .read(appointmentRepositoryProvider)
+          .rescheduleAppointment(appointmentId, newDateTime);
+    } catch (e) {
+      throw Exception('Failed to reschedule: $e');
+    }
+  }
 }

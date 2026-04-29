@@ -26,6 +26,252 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
   DateTime? _selectedDay;
   String _selectedTab = 'Upcoming';
 
+  bool _isDaySelectable(DateTime day, List<dynamic>? operatingHours) {
+    if (operatingHours == null || operatingHours.isEmpty) {
+      return true;
+    }
+    final weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    final dayString = weekdays[day.weekday - 1];
+    final dayConfig = operatingHours.firstWhere(
+      (e) => (e as Map)['day'] == dayString,
+      orElse: () => null,
+    );
+    return !(dayConfig != null) || (dayConfig as Map)['isOpen'] == true;
+  }
+
+  void _showRescheduleModal(
+    BuildContext context,
+    String appointmentId,
+    String trainerId,
+    DateTime currentDateTime,
+  ) {
+    var selectedDate = currentDateTime;
+    TimeOfDay? selectedTime = TimeOfDay.fromDateTime(currentDateTime);
+    var isLoading = false;
+
+    final trainer = ref.read(fetchTrainerProvider(trainerId)).asData?.value;
+    final operatingHours = trainer?.operatingHours;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: ThemeColor.cream,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: ThemeColor.lightGrey,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    24.heightBox,
+                    Text(
+                      'Reschedule Session',
+                      style: AppWidget.h2TextFieldStyle(),
+                    ),
+                    16.heightBox,
+
+                    Text(
+                      'Select New Date',
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                    ),
+                    8.heightBox,
+                    GestureDetector(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate:
+                              selectedDate.isBefore(DateTime.now())
+                                  ? DateTime.now().add(const Duration(days: 1))
+                                  : selectedDate,
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 90),
+                          ),
+                          selectableDayPredicate:
+                              (day) => _isDaySelectable(day, operatingHours),
+                        );
+                        if (picked != null) {
+                          setModalState(() {
+                            selectedDate = picked;
+                            selectedTime = null;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ThemeColor.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: ThemeColor.lightGrey),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_month,
+                              color: ThemeColor.darkBlue,
+                              size: 20,
+                            ),
+                            12.widthBox,
+                            Text(
+                              DateFormat('dd MMM yyyy').format(selectedDate),
+                              style: AppWidget.bodyLarge().copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    16.heightBox,
+
+                    Text(
+                      'Select New Time',
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                    ),
+                    8.heightBox,
+                    GestureDetector(
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: selectedTime ?? TimeOfDay.now(),
+                        );
+                        if (picked != null) {
+                          setModalState(() => selectedTime = picked);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ThemeColor.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: ThemeColor.lightGrey),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              color: ThemeColor.darkBlue,
+                              size: 20,
+                            ),
+                            12.widthBox,
+                            Text(
+                              selectedTime?.format(context) ?? 'Select Time',
+                              style: AppWidget.bodyLarge().copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    32.heightBox,
+
+                    GestureDetector(
+                      onTap:
+                          isLoading || selectedTime == null
+                              ? null
+                              : () async {
+                                setModalState(() => isLoading = true);
+                                try {
+                                  final newDateTime = DateTime(
+                                    selectedDate.year,
+                                    selectedDate.month,
+                                    selectedDate.day,
+                                    selectedTime!.hour,
+                                    selectedTime!.minute,
+                                  );
+
+                                  await ref
+                                      .read(
+                                        appointmentNotifierProvider.notifier,
+                                      )
+                                      .rescheduleAppointment(
+                                        appointmentId: appointmentId,
+                                        newDateTime: newDateTime,
+                                      );
+
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                    AppSnackBar.success(
+                                      context,
+                                      'Rescheduled successfully!',
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    AppSnackBar.error(context, e.toString());
+                                  }
+                                  setModalState(() => isLoading = false);
+                                }
+                              },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color:
+                              isLoading || selectedTime == null
+                                  ? ThemeColor.darkBlue.withValues(alpha: 0.5)
+                                  : ThemeColor.darkBlue,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child:
+                            isLoading
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: ThemeColor.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Text(
+                                  'Confirm Reschedule',
+                                  style: AppWidget.bodyMedium().copyWith(
+                                    color: ThemeColor.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -170,15 +416,14 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                   color: ThemeColor.darkBlue,
                                 ),
                               ),
-                          error: (e, stack) => Center(child: Text('Error: $e')),
+                      error: (err, _) => Center(child: Text('Error: $err')),
                           data: (appointments) {
                             final targetDate = _selectedDay ?? DateTime.now();
                             final filteredAppointments =
                                 appointments.where((app) {
                                     final isSameDate =
                                         app.dateTime.year == targetDate.year &&
-                                        app.dateTime.month ==
-                                            targetDate.month &&
+                                    app.dateTime.month == targetDate.month &&
                                         app.dateTime.day == targetDate.day;
                                     if (!isSameDate) {
                                       return false;
@@ -194,8 +439,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                               AppointmentStatus.completed ||
                                           app.status ==
                                               AppointmentStatus.rejected ||
-                                          app.status ==
-                                              AppointmentStatus.cancelled;
+                                      app.status == AppointmentStatus.cancelled;
                                     }
                                   }).toList()
                                   ..sort(
@@ -204,9 +448,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
 
                             if (filteredAppointments.isEmpty) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 40,
-                                ),
+                            padding: const EdgeInsets.symmetric(vertical: 40),
                                 child: Center(
                                   child: Text(
                                     'No ${_selectedTab.toLowerCase()} appointments for this date.',
@@ -274,6 +516,9 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     required String location,
     required String trainerId,
   }) {
+    final isRescheduleDisabled =
+        status == 'Completed' || status == 'Cancelled' || status == 'Rejected';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -339,7 +584,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                             ),
                         loading: () => const CircleAvatar(),
                         error:
-                            (err, stack) =>
+                            (err, _) =>
                                 UserAvatar(radius: 28, username: coachName),
                       );
                     },
@@ -448,7 +693,17 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
               12.widthBox,
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap:
+                      isRescheduleDisabled
+                          ? null
+                          : () {
+                            _showRescheduleModal(
+                              context,
+                              appointmentId,
+                              trainerId,
+                              dateTime,
+                            );
+                          },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     alignment: Alignment.center,
@@ -460,6 +715,12 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                       'Reschedule',
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
+                        color:
+                            (status == 'Completed' ||
+                                    status == 'Cancelled' ||
+                                    status == 'Rejected')
+                                ? ThemeColor.grey100
+                                : ThemeColor.black,
                       ),
                     ),
                   ),

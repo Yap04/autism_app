@@ -256,4 +256,19 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           }).toList();
         });
   }
+
+  @override
+  Future<void> rescheduleAppointment(
+    String appointmentId,
+    DateTime newDateTime,
+  ) async {
+    try {
+      await _appointmentsRef.doc(appointmentId).update({
+        'dateTime': Timestamp.fromDate(newDateTime),
+        'status': AppointmentStatus.pending.name,
+      });
+    } catch (e) {
+      throw Exception('Failed to reschedule appointment: $e');
+    }
+  }
 }
