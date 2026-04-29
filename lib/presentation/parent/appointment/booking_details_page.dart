@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
@@ -105,11 +106,26 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   }
 
   Future<void> _pickDate() async {
+    final trainer =
+        ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
+    final operatingHours = trainer?.operatingHours;
+
+    var validInitialDate = _selectedDate;
+    var attempts = 0;
+    while (!_isDaySelectable(validInitialDate, operatingHours) &&
+        attempts < 30) {
+      validInitialDate = validInitialDate.add(const Duration(days: 1));
+      attempts++;
+    }
+
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
+      selectableDayPredicate: (DateTime day) {
+        return _isDaySelectable(day, operatingHours);
+      },
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -130,7 +146,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: _selectedTime ?? TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -140,8 +156,59 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         );
       },
     );
-    if (picked != null && picked != _selectedTime) {
-      setState(() => _selectedTime = picked);
+    if (picked != null) {
+      final trainer =
+          ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
+      final operatingHours = trainer?.operatingHours;
+
+      var startStr = '08:00 AM';
+      var endStr = '10:00 PM';
+
+      if (operatingHours != null && operatingHours.isNotEmpty) {
+        final weekdays = [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ];
+        final dayString = weekdays[_selectedDate.weekday - 1];
+
+        final dayConfig = operatingHours.firstWhere(
+          (e) => (e as Map)['day'] == dayString,
+          orElse: () => null,
+        );
+
+        if (dayConfig != null && (dayConfig as Map)['isOpen'] == true) {
+          startStr = dayConfig['start'].toString();
+          endStr = dayConfig['end'].toString();
+        }
+      }
+
+      try {
+        final format = DateFormat('hh:mm a');
+        final startTime = format.parse(startStr);
+        final endTime = format.parse(endStr);
+
+        final pickedMinutes = picked.hour * 60 + picked.minute;
+        final startMinutes = startTime.hour * 60 + startTime.minute;
+        final endMinutes = endTime.hour * 60 + endTime.minute;
+
+        if (pickedMinutes >= startMinutes && pickedMinutes <= endMinutes) {
+          setState(() => _selectedTime = picked);
+        } else {
+          if (mounted) {
+            AppSnackBar.error(
+              context,
+              'Please select a time between $startStr and $endStr.',
+            );
+          }
+        }
+      } catch (e) {
+        setState(() => _selectedTime = picked);
+      }
     }
   }
 
@@ -293,7 +360,103 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTrainerCard(trainerImageUrl),
+                    _buildTrainerCard(trainerImageUrl, displaySport),
+
+                    24.heightBox,
+
+                    Text('Select Sport', style: AppWidget.h3TextFieldStyle()),
+                    16.heightBox,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children:
+                            availableSports.map((sport) {
+                              final isSelected = _selectedSport == sport;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: GestureDetector(
+                                  onTap:
+                                      () => setState(
+                                        () => _selectedSport = sport,
+                                      ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? ThemeColor.darkBlue
+                                              : ThemeColor.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color:
+                                            isSelected
+                                                ? ThemeColor.darkBlue
+                                                : ThemeColor.lightGrey,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          getSportIcon(sport),
+                                          color:
+                                              isSelected
+                                                  ? ThemeColor.white
+                                                  : ThemeColor.darkBlue,
+                                          size: 18,
+                                        ),
+                                        8.widthBox,
+                                        Text(
+                                          sport,
+                                          style: AppWidget.bodyMedium()
+                                              .copyWith(
+                                                color:
+                                                    isSelected
+                                                        ? ThemeColor.white
+                                                        : ThemeColor.black,
+                                                fontWeight:
+                                                    isSelected
+                                                        ? FontWeight.bold
+                                                        : FontWeight.w600,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ),
+
+                    24.heightBox,
+
+                    _buildOperatingHoursSection(operatingHours),
+
+                    24.heightBox,
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Duration', style: AppWidget.h3TextFieldStyle()),
+                      ],
+                    ),
+                    8.heightBox,
+                    Text(
+                      'Select the length of each session.',
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                    ),
+                    16.heightBox,
+                    Row(
+                      children: [
+                        _buildDurationOption(60, '1 Hour'),
+                        _buildDurationOption(120, '2 Hours'),
+                      ],
+                    ),
 
                     32.heightBox,
 
@@ -413,7 +576,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     );
   }
 
-  Widget _buildTrainerCard(String? imageUrl) {
+  Widget _buildTrainerCard(String? imageUrl, String selectedSport) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -427,83 +590,88 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          UserAvatar(
-            radius: 36,
-            userAvatarUrl: imageUrl,
-            username: widget.trainerName,
-          ),
-          16.widthBox,
+          Row(
+            children: [
+              UserAvatar(
+                radius: 36,
+                userAvatarUrl: imageUrl,
+                username: widget.trainerName,
+              ),
+              16.widthBox,
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.trainerName,
-                  style: AppWidget.bodyLarge().copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                8.heightBox,
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: ThemeColor.aquaBlue.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.sports_soccer,
-                        size: 14,
-                        color: ThemeColor.darkBlue,
-                      ),
-                      4.widthBox,
-                      Text(
-                        widget.sport,
-                        style: AppWidget.bodySmall().copyWith(
-                          color: ThemeColor.darkBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                8.heightBox,
-
-                Row(
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: ThemeColor.grey100,
+                    Text(
+                      widget.trainerName,
+                      style: AppWidget.bodyLarge().copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    4.widthBox,
-                    Expanded(
-                      child: Text(
-                        widget.location,
-                        style: AppWidget.bodySmall().copyWith(
-                          color: ThemeColor.grey100,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+
+                    8.heightBox,
+
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.aquaBlue.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            getSportIcon(selectedSport),
+                            size: 14,
+                            color: ThemeColor.darkBlue,
+                          ),
+                          4.widthBox,
+                          Text(
+                            selectedSport,
+                            style: AppWidget.bodySmall().copyWith(
+                              color: ThemeColor.darkBlue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+
+          16.heightBox,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.location_on,
+                size: 16,
+                color: ThemeColor.grey100,
+              ),
+              4.widthBox,
+              Expanded(
+                child: Text(
+                  widget.location,
+                  style: AppWidget.bodySmall().copyWith(
+                    color: ThemeColor.grey100,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -608,6 +776,106 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildOperatingHoursSection(List<dynamic>? operatingHours) {
+    final defaultSchedule = <Map<String, dynamic>>[
+      {'day': 'Monday', 'isOpen': true, 'start': '08:00 AM', 'end': '10:00 PM'},
+      {
+        'day': 'Tuesday',
+        'isOpen': true,
+        'start': '08:00 AM',
+        'end': '10:00 PM',
+      },
+      {
+        'day': 'Wednesday',
+        'isOpen': true,
+        'start': '08:00 AM',
+        'end': '10:00 PM',
+      },
+      {
+        'day': 'Thursday',
+        'isOpen': true,
+        'start': '08:00 AM',
+        'end': '10:00 PM',
+      },
+      {'day': 'Friday', 'isOpen': true, 'start': '08:00 AM', 'end': '10:00 PM'},
+      {
+        'day': 'Saturday',
+        'isOpen': true,
+        'start': '08:00 AM',
+        'end': '10:00 PM',
+      },
+      {'day': 'Sunday', 'isOpen': true, 'start': '08:00 AM', 'end': '10:00 PM'},
+    ];
+
+    final displayHours =
+        (operatingHours != null && operatingHours.isNotEmpty)
+            ? operatingHours
+            : defaultSchedule;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Operating Hours', style: AppWidget.h3TextFieldStyle()),
+        16.heightBox,
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: ThemeColor.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: ThemeColor.lightGrey),
+          ),
+          child: Column(
+            children:
+                displayHours.map((e) {
+                  final schedule = e as Map<dynamic, dynamic>;
+                  final isOpen = schedule['isOpen'] as bool? ?? false;
+                  final day = schedule['day']?.toString() ?? '';
+                  final start = schedule['start']?.toString() ?? '';
+                  final end = schedule['end']?.toString() ?? '';
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 90,
+                          child: Text(
+                            day,
+                            style: AppWidget.bodySmall().copyWith(
+                              fontWeight:
+                                  isOpen ? FontWeight.w600 : FontWeight.normal,
+                              color:
+                                  isOpen
+                                      ? ThemeColor.black
+                                      : ThemeColor.grey100,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            isOpen ? '$start - $end' : 'Rest Day',
+                            textAlign: TextAlign.right,
+                            style: AppWidget.bodySmall().copyWith(
+                              fontWeight:
+                                  isOpen ? FontWeight.bold : FontWeight.normal,
+                              color:
+                                  isOpen
+                                      ? ThemeColor.darkBlue
+                                      : ThemeColor.grey100,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
