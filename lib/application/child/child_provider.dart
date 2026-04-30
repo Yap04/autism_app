@@ -3,10 +3,10 @@ import '../../domain/models/child_model.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
 
-part 'child_providers.g.dart';
+part 'child_provider.g.dart';
 
 @riverpod
-Stream<List<ChildModel>> parentChildren(ParentChildrenRef ref) {
+Stream<List<ChildModel>> userChildren(UserChildrenRef ref) {
   final currentUser = ref.watch(authNotifierProvider).value;
 
   if (currentUser == null) {
