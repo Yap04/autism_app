@@ -201,7 +201,8 @@ class AdminUsersPage extends ConsumerWidget {
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 onTap:
-                    () => ref.read(userRoleFilterProvider.notifier).state = f,
+                    () =>
+                        ref.read(userRoleFilterProvider.notifier).setFilter(f),
                 child: Container(
                   margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.symmetric(

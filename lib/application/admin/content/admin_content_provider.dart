@@ -1,15 +1,24 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/models/content_model.dart';
 import '../../providers/repository_providers.dart';
 
-final allContentStreamProvider = StreamProvider.autoDispose<List<ContentModel>>(
-  (ref) {
-    final repo = ref.watch(contentRepositoryProvider);
-    return repo.watchAllContent();
-  },
-);
+part 'admin_content_provider.g.dart';
 
-final contentTabProvider = StateProvider<ContentTarget>(
-  (ref) => ContentTarget.parent,
-);
+@riverpod
+Stream<List<ContentModel>> allContentStream(AllContentStreamRef ref) {
+  final repo = ref.watch(contentRepositoryProvider);
+  return repo.watchAllContent();
+}
+
+@riverpod
+class ContentTab extends _$ContentTab {
+  @override
+  ContentTarget build() {
+    return ContentTarget.parent;
+  }
+
+  void updateTab(ContentTarget newTarget) {
+    state = newTarget;
+  }
+}

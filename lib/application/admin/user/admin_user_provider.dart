@@ -1,13 +1,24 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/models/user_model.dart';
 import '../../providers/repository_providers.dart';
 
-final allUsersStreamProvider = StreamProvider.autoDispose<List<UserModel>>((
-  ref,
-) {
+part 'admin_user_provider.g.dart';
+
+@riverpod
+Stream<List<UserModel>> allUsersStream(AllUsersStreamRef ref) {
   final repo = ref.watch(userRepositoryProvider);
   return repo.watchAllUsers();
-});
+}
 
-final userRoleFilterProvider = StateProvider<String>((ref) => 'All');
+@riverpod
+class UserRoleFilter extends _$UserRoleFilter {
+  @override
+  String build() {
+    return 'All';
+  }
+
+  void setFilter(String role) {
+    state = role;
+  }
+}

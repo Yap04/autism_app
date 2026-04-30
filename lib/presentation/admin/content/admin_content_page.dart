@@ -191,7 +191,7 @@ class AdminContentPage extends ConsumerWidget {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => ref.read(contentTabProvider.notifier).state = target,
+        onTap: () => ref.read(contentTabProvider.notifier).updateTab(target),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(

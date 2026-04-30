@@ -1,12 +1,26 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/models/transaction_model.dart';
 import '../../providers/repository_providers.dart';
 
-final allTransactionsStreamProvider =
-    StreamProvider.autoDispose<List<TransactionModel>>((ref) {
-      final repo = ref.watch(transactionRepositoryProvider);
-      return repo.watchAllTransactions();
-    });
+part 'admin_transaction_provider.g.dart';
 
-final transactionFilterProvider = StateProvider<String>((ref) => 'All');
+@riverpod
+Stream<List<TransactionModel>> allTransactionsStream(
+  AllTransactionsStreamRef ref,
+) {
+  final repo = ref.watch(transactionRepositoryProvider);
+  return repo.watchAllTransactions();
+}
+
+@riverpod
+class TransactionFilter extends _$TransactionFilter {
+  @override
+  String build() {
+    return 'All';
+  }
+
+  void setFilter(String filter) {
+    state = filter;
+  }
+}

@@ -86,8 +86,9 @@ class AdminAppointmentsPage extends ConsumerWidget {
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 onTap:
-                    () =>
-                        ref.read(appointmentFilterProvider.notifier).state = f,
+                    () => ref
+                        .read(appointmentFilterProvider.notifier)
+                        .updateFilter(f),
                 child: Container(
                   margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.symmetric(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/auth/auth_notifier.dart';
 import '../../../application/payment/payment_notifier.dart';
+import '../../../application/payment/payment_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
@@ -47,7 +48,7 @@ class _WalletPageState extends ConsumerState<WalletPage>
     final currentUser = ref.watch(authNotifierProvider).value;
     final currentCredits = currentUser?.sessionCredits ?? 0;
     final transactionsAsync = ref.watch(
-      userTransactionsStreamProvider(currentUser?.id ?? ''),
+      userTransactionsProvider(currentUser?.id ?? ''),
     );
 
     return Scaffold(

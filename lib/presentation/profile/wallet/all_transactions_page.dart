@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/auth/auth_notifier.dart';
-import '../../../application/payment/payment_notifier.dart';
+import '../../../application/payment/payment_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../domain/models/transaction_model.dart';
@@ -50,7 +50,7 @@ class _AllTransactionsPageState extends ConsumerState<AllTransactionsPage>
   Widget build(BuildContext context) {
     final currentUser = ref.watch(authNotifierProvider).value;
     final transactionsAsync = ref.watch(
-      userTransactionsStreamProvider(currentUser?.id ?? ''),
+      userTransactionsProvider(currentUser?.id ?? ''),
     );
 
     return Scaffold(
@@ -130,7 +130,7 @@ class _AllTransactionsPageState extends ConsumerState<AllTransactionsPage>
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (err, _) => Center(child: Text('Error: $err')),
     );
   }
 }

@@ -1,12 +1,13 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/user_model.dart';
 import '../providers/repository_providers.dart';
 
-final userByIdProvider = FutureProvider.family<UserModel?, String>((
-  ref,
-  userId,
-) async {
+part 'chat_user_provider.g.dart';
+
+@riverpod
+Future<UserModel?> userById(UserByIdRef ref, String userId) async {
   if (userId.isEmpty) return null;
-  return ref.read(userRepositoryProvider).getUserById(userId);
-});
+
+  return ref.watch(userRepositoryProvider).getUserById(userId);
+}

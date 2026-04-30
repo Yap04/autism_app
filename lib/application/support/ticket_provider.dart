@@ -1,25 +1,29 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/ticket_message_model.dart';
 import '../../domain/models/ticket_model.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
 
-final userTicketsStreamProvider = StreamProvider.autoDispose<List<TicketModel>>(
-  (ref) {
-    final user = ref.watch(authNotifierProvider).value;
+part 'ticket_provider.g.dart';
 
-    if (user == null) {
-      return Stream.value([]);
-    }
+@riverpod
+Stream<List<TicketModel>> userTicketsStream(UserTicketsStreamRef ref) {
+  final user = ref.watch(authNotifierProvider).value;
 
-    final repo = ref.watch(ticketRepositoryProvider);
-    return repo.watchUserTickets(user.id);
-  },
-);
+  if (user == null) {
+    return Stream.value([]);
+  }
 
-final ticketMessagesProvider = StreamProvider.family
-    .autoDispose<List<TicketMessageModel>, String>((ref, ticketId) {
-      final repo = ref.watch(ticketRepositoryProvider);
-      return repo.watchTicketMessages(ticketId);
-    });
+  final repo = ref.watch(ticketRepositoryProvider);
+  return repo.watchUserTickets(user.id);
+}
+
+@riverpod
+Stream<List<TicketMessageModel>> ticketMessages(
+  TicketMessagesRef ref,
+  String ticketId,
+) {
+  final repo = ref.watch(ticketRepositoryProvider);
+  return repo.watchTicketMessages(ticketId);
+}

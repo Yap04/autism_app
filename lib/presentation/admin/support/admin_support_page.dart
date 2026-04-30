@@ -227,7 +227,7 @@ class _AdminSupportPageState extends ConsumerState<AdminSupportPage> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {
-          ref.read(selectedTicketIdProvider.notifier).state = ticket.id;
+          ref.read(selectedTicketIdProvider.notifier).set(ticket.id);
         },
         child: Container(
           color:

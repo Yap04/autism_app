@@ -1,11 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../domain/models/dashboard_stats_model.dart';
 import '../../providers/repository_providers.dart';
 
-final dashboardStatsProvider = FutureProvider.autoDispose<DashboardStatsModel>((
-  ref,
-) async {
-  final repository = ref.read(dashboardRepositoryProvider);
+part 'admin_dashboard_provider.g.dart';
+
+@riverpod
+Future<DashboardStatsModel> dashboardStats(DashboardStatsRef ref) async {
+  final repository = ref.watch(dashboardRepositoryProvider);
   return repository.getDashboardStats();
-});
+}

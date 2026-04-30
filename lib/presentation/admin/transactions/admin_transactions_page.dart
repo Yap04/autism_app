@@ -115,7 +115,7 @@ class AdminTransactionsPage extends ConsumerWidget {
               t.paymentChannel == PaymentChannel.stripe &&
               t.status == TransactionStatus.completed,
         )
-        .fold(0.0, (sum, t) => sum + t.amount.abs());
+        .fold<double>(0, (sum, t) => sum + t.amount.abs());
 
     final totalDeducted =
         txs
@@ -206,8 +206,9 @@ class AdminTransactionsPage extends ConsumerWidget {
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 onTap:
-                    () =>
-                        ref.read(transactionFilterProvider.notifier).state = f,
+                    () => ref
+                        .read(transactionFilterProvider.notifier)
+                        .setFilter(f),
                 child: Container(
                   margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.symmetric(

@@ -1,13 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/transaction_model.dart';
 import '../../domain/models/user_model.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
 
-class PaymentNotifier extends AsyncNotifier<void> {
+part 'payment_notifier.g.dart';
+
+@riverpod
+class PaymentNotifier extends _$PaymentNotifier {
   @override
   FutureOr<void> build() {}
 
@@ -68,16 +71,3 @@ class PaymentNotifier extends AsyncNotifier<void> {
     });
   }
 }
-
-final paymentNotifierProvider = AsyncNotifierProvider<PaymentNotifier, void>(
-  () {
-    return PaymentNotifier();
-  },
-);
-
-final userTransactionsStreamProvider =
-    StreamProvider.family<List<TransactionModel>, String>((ref, userId) {
-      return ref
-          .watch(transactionRepositoryProvider)
-          .getUserTransactions(userId);
-    });

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/appointment/appointment_notifier.dart';
-import '../../application/appointment/appointment_providers.dart';
+import '../../application/appointment/appointment_provider.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../domain/models/appointment_model.dart';
