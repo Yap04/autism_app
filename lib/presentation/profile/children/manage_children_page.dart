@@ -2,50 +2,21 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../application/child/child_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
+import '../../../domain/models/child_model.dart';
+import '../../shared/user_avatar.dart';
 
-// import '../../../domain/models/child_model.dart'; // 请确保导入你刚刚生成的 ChildModel
-
-// ==========================================
-// 🚀 1. 临时假数据 Provider (日后替换为真实的 Firestore 抓取)
-// ==========================================
-final mockChildrenProvider = FutureProvider<List<Map<String, dynamic>>>((
-  ref,
-) async {
-  await Future.delayed(const Duration(milliseconds: 800)); // 模拟网络延迟
-  return [
-    {
-      'id': 'c1',
-      'name': 'Leo',
-      'age': 8,
-      'gender': 'Male',
-      'specialNeeds': ['ASD Level 1', 'Non-verbal'],
-      'assignedTrainers': 1,
-    },
-    {
-      'id': 'c2',
-      'name': 'Mia',
-      'age': 6,
-      'gender': 'Female',
-      'specialNeeds': ['Sensory sensitive'],
-      'assignedTrainers': 0,
-    },
-  ];
-});
-
-// ==========================================
-// 🚀 2. Manage Children 主页面
-// ==========================================
 @RoutePage()
 class ManageChildrenPage extends ConsumerWidget {
   const ManageChildrenPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final childrenAsync = ref.watch(mockChildrenProvider); // 换成真实的 provider
+    final childrenAsync = ref.watch(userChildrenProvider);
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -92,33 +63,48 @@ class ManageChildrenPage extends ConsumerWidget {
           );
         },
       ),
-      // 🚀 悬浮添加按钮
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.pushRoute(const AddChildrenRoute());
-        },
-        backgroundColor: ThemeColor.darkBlue,
-        icon: const Icon(Icons.add, color: ThemeColor.white),
-        label: Text(
-          'Add Child',
-          style: AppWidget.bodyMedium().copyWith(
-            color: ThemeColor.white,
-            fontWeight: FontWeight.bold,
+      floatingActionButton: GestureDetector(
+        onTap: () => context.pushRoute(AddChildrenRoute()),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: ThemeColor.darkBlue,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: ThemeColor.darkBlue.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add, color: ThemeColor.white),
+              8.widthBox,
+              Text(
+                'Add Child',
+                style: AppWidget.bodyMedium().copyWith(
+                  color: ThemeColor.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildChildCard(BuildContext context, Map<String, dynamic> child) {
-    final name = child['name'] as String? ?? 'Unknown';
-    final age = child['age'] as int? ?? 0;
-    final gender = child['gender'] as String? ?? 'Unknown';
-    final assignedTrainers = child['assignedTrainers'] as int? ?? 0;
+  Widget _buildChildCard(BuildContext context, ChildModel child) {
+    final name = child.name;
+    final age = child.age;
+    final gender = child.gender;
+    final specialNeeds = child.specialNeeds;
 
-    final specialNeeds = List<String>.from(
-      child['specialNeeds'] as Iterable<dynamic>? ?? [],
-    );
+    final assignedTrainers = 0;
+    final avatarUrl = child.userAvatarUrl;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -139,19 +125,7 @@ class ManageChildrenPage extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 头像
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: ThemeColor.blue.withValues(alpha: 0.1),
-                child: Text(
-                  // 修复 1: 现在 name 已经是 String 类型了，可以使用 [0]
-                  // 加入 isNotEmpty 判断以防空字符串导致越界崩溃
-                  name.isNotEmpty ? name[0] : '?',
-                  style: AppWidget.h2TextFieldStyle().copyWith(
-                    color: ThemeColor.darkBlue,
-                  ),
-                ),
-              ),
+              UserAvatar(radius: 28, userAvatarUrl: avatarUrl, username: name),
               16.widthBox,
 
               // 基础信息
@@ -159,8 +133,12 @@ class ManageChildrenPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 修复 2: 传入确定为 String 类型的 name 变量
-                    Text(name, style: AppWidget.h3TextFieldStyle()),
+                    Text(
+                      name,
+                      style: AppWidget.h3TextFieldStyle(),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                     4.heightBox,
                     Text(
                       '$age years old • $gender',
@@ -190,10 +168,9 @@ class ManageChildrenPage extends ConsumerWidget {
                 ),
               ),
 
-              // 编辑按钮
               IconButton(
                 onPressed: () {
-                  // TODO: 跳转到 Edit Child 页面
+                  context.pushRoute(AddChildrenRoute(child: child));
                 },
                 icon: const Icon(
                   Icons.edit_outlined,
@@ -208,7 +185,6 @@ class ManageChildrenPage extends ConsumerWidget {
           const Divider(height: 1),
           12.heightBox,
 
-          // 标签区域 (Autism/Special Needs)
           Text(
             'Special Needs & Tags',
             style: AppWidget.bodyExtraSmall().copyWith(
@@ -258,9 +234,6 @@ class ManageChildrenPage extends ConsumerWidget {
     );
   }
 
-  // ==========================================
-  // 🚀 4. 空状态 UI (当家长还没添加任何孩子时)
-  // ==========================================
   Widget _buildEmptyState(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
