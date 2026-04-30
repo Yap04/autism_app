@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -9,13 +10,16 @@ import '../../../application/child/child_notifier.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
+import '../../../domain/models/child_model.dart';
 import '../../shared/app_text_field.dart';
 import '../../shared/bottom_action_button.dart';
 import '../../shared/snack_bar.dart';
 
 @RoutePage()
 class AddChildrenPage extends ConsumerStatefulWidget {
-  const AddChildrenPage({super.key});
+  const AddChildrenPage({this.child, super.key});
+
+  final ChildModel? child;
 
   @override
   ConsumerState<AddChildrenPage> createState() => _AddChildrenPageState();
@@ -30,7 +34,7 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
-  String _selectedGender = 'Male';
+  String? _selectedGender;
   final List<String> _genderOptions = ['Male', 'Female'];
 
   final List<String> _availableTags = [
@@ -44,8 +48,25 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
     'Loves visual schedules',
   ];
 
-  final List<String> _selectedTags = [];
-  final bool _isLoading = false;
+  List<String> _selectedTags = [];
+  String? _existingAvatarUrl;
+
+  bool get isEditMode => widget.child != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (isEditMode) {
+      final existingChild = widget.child!;
+      _nameController.text = existingChild.name;
+      _ageController.text = existingChild.age.toString();
+      _selectedGender = existingChild.gender.toString();
+      _selectedTags = List<String>.from(existingChild.specialNeeds);
+      _remarksController.text = existingChild.remarks ?? '';
+      _existingAvatarUrl = existingChild.userAvatarUrl;
+    }
+  }
 
   @override
   void dispose() {
@@ -69,20 +90,38 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
   }
 
   Future<void> _saveChildProfile() async {
+    final name = _nameController.text.trim();
+    final age = _ageController.text.trim();
+
+    if (name.isEmpty || age.isEmpty || _selectedGender == null) {
+      AppSnackBar.info(
+        context,
+        'Please fill in the name, age, and select a gender.',
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (ref.read(childNotifierProvider).isLoading) {
       return;
     }
 
     try {
       await ref
           .read(childNotifierProvider.notifier)
-          .addChild(
-            name: _nameController.text.trim(),
-            ageString: _ageController.text.trim(),
-            gender: _selectedGender,
+          .saveChild(
+            id: widget.child?.id,
+            name: name,
+            ageString: age,
+            gender: _selectedGender!,
             specialNeeds: _selectedTags,
             remarks: _remarksController.text.trim(),
             selectedImage: _selectedImage,
+            existingImageUrl: widget.child?.userAvatarUrl,
+            existingCreatedAt: widget.child?.createdAt,
           );
 
       final notifierState = ref.read(childNotifierProvider);
@@ -90,8 +129,12 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
         throw Exception(notifierState.error.toString());
       }
 
-      AppSnackBar.success(context, 'Child profile created successfully!');
-      context.pop();
+      if (mounted) {
+        final msg =
+            isEditMode ? 'Child profile updated!' : 'Child profile created!';
+        AppSnackBar.success(context, msg);
+        context.pop();
+      }
     } catch (e) {
       AppSnackBar.error(context, 'Error saving profile: $e');
     }
@@ -99,12 +142,18 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
 
   @override
   Widget build(BuildContext context) {
+    final childState = ref.watch(childNotifierProvider);
+    final isLoading = childState.isLoading;
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
-        title: Text('Add Child Profile', style: AppWidget.h2TextFieldStyle()),
+        title: Text(
+          isEditMode ? 'Edit Child Profile' : 'Add Child Profile',
+          style: AppWidget.h2TextFieldStyle(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -138,10 +187,18 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
                                     image: FileImage(_selectedImage!),
                                     fit: BoxFit.cover,
                                   )
+                                  : (_existingAvatarUrl != null &&
+                                      _existingAvatarUrl!.isNotEmpty)
+                                  ? DecorationImage(
+                                    image: NetworkImage(_existingAvatarUrl!),
+                                    fit: BoxFit.cover,
+                                  )
                                   : null,
                         ),
                         child:
-                            _selectedImage == null
+                            (_selectedImage == null &&
+                                    (_existingAvatarUrl == null ||
+                                        _existingAvatarUrl!.isEmpty))
                                 ? const Icon(
                                   Icons.add_a_photo_rounded,
                                   size: 32,
@@ -185,6 +242,10 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
                       label: 'Age',
                       hintText: 'e.g. 8',
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(2),
+                      ],
                     ),
                   ),
                   16.widthBox,
@@ -268,7 +329,7 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
 
               BottomActionButton(
                 label: 'Save Profile',
-                onPressed: _isLoading ? null : _saveChildProfile,
+                onPressed: isLoading ? null : _saveChildProfile,
               ),
               20.heightBox,
             ],
@@ -289,6 +350,10 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
         8.heightBox,
         DropdownButtonFormField<String>(
           initialValue: _selectedGender,
+          hint: Text(
+            'Select',
+            style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: ThemeColor.white,
