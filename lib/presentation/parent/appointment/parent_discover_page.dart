@@ -367,7 +367,9 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                       height: 140,
                       child: trainersAsync.maybeWhen(
                         data: (trainers) {
-                          if (trainers.isEmpty) return const SizedBox();
+                          if (trainers.isEmpty) {
+                            return const SizedBox();
+                          }
 
                           final sorted = List<UserModel>.from(trainers);
                           if (_userLocation != null) {
@@ -415,7 +417,72 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
               ),
             ),
 
-            24.heightBox,
+            if (!_hasLocationPermission || _userLocation == null) ...[
+              16.heightBox,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: ThemeColor.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ThemeColor.lightOrange.withValues(alpha: 0.5),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ThemeColor.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.location_off_outlined,
+                        color: ThemeColor.lightOrange,
+                      ),
+                      12.widthBox,
+                      Expanded(
+                        child: Text(
+                          'Turn on location services to find the closest trainers to you.',
+                          style: AppWidget.bodySmall().copyWith(
+                            color: ThemeColor.grey100,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _goToMyLocation,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.backgroundAquaBlue,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Enable',
+                            style: AppWidget.bodySmall().copyWith(
+                              color: ThemeColor.darkBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              8.heightBox,
+            ] else ...[
+              24.heightBox,
+            ],
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
