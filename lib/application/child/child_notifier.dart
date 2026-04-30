@@ -14,13 +14,16 @@ class ChildNotifier extends _$ChildNotifier {
   @override
   FutureOr<void> build() {}
 
-  Future<void> addChild({
+  Future<void> saveChild({
     required String name,
     required String ageString,
     required String gender,
     required List<String> specialNeeds,
     required String remarks,
+    String? id,
     File? selectedImage,
+    String? existingImageUrl,
+    DateTime? existingCreatedAt,
   }) async {
     state = const AsyncLoading();
 
@@ -29,27 +32,27 @@ class ChildNotifier extends _$ChildNotifier {
       if (currentUser == null) throw Exception('Current user not found.');
       final parentId = currentUser.id;
 
-      String? uploadedImageUrl;
+      var finalImageUrl = existingImageUrl;
       if (selectedImage != null) {
-        uploadedImageUrl = await ImageService.uploadToImgBB(selectedImage);
-        if (uploadedImageUrl == null) {
+        finalImageUrl = await ImageService.uploadToImgBB(selectedImage);
+        if (finalImageUrl == null) {
           throw Exception('Image upload failed, please try again.');
         }
       }
 
-      final newChild = ChildModel(
-        id: const Uuid().v4(),
+      final childToSave = ChildModel(
+        id: id ?? const Uuid().v4(),
         parentId: parentId,
         name: name,
         age: int.parse(ageString),
         gender: gender,
-        userAvatarUrl: uploadedImageUrl,
+        userAvatarUrl: finalImageUrl,
         specialNeeds: specialNeeds,
         remarks: remarks,
-        createdAt: DateTime.now(),
+        createdAt: existingCreatedAt ?? DateTime.now(),
       );
 
-      await ref.read(childRepositoryProvider).saveChild(newChild);
+      await ref.read(childRepositoryProvider).saveChild(childToSave);
     });
   }
 }
