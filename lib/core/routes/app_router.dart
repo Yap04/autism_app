@@ -21,6 +21,8 @@ import '../../presentation/parent/appointment/trainer_list_page.dart';
 import '../../presentation/parent/home/content/content_list_page.dart';
 import '../../presentation/parent/home/parent_progress_page.dart';
 import '../../presentation/parent/parent_bottom_nav_page.dart';
+import '../../presentation/profile/children/add_children_page.dart';
+import '../../presentation/profile/children/manage_children_page.dart';
 import '../../presentation/profile/dashboard/map_picker_page.dart';
 import '../../presentation/profile/dashboard/trainer_dashboard_page.dart';
 import '../../presentation/profile/edit_profile_page.dart';
@@ -46,6 +48,8 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: BookingDetailsRoute.page),
     AutoRoute(page: ParentProgressRoute.page),
     AutoRoute(page: EditProfileRoute.page),
+    AutoRoute(page: ManageChildrenRoute.page),
+    AutoRoute(page: AddChildrenRoute.page),
     AutoRoute(page: TrainerListRoute.page),
     AutoRoute(page: TrainerDashboardRoute.page),
     AutoRoute(page: MapPickerRoute.page),
