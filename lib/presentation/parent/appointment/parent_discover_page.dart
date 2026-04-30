@@ -13,12 +13,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
 import '../../shared/app_text_field.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/trainer_card.dart';
+import '../../shared/user_avatar.dart';
 
 class ParentDiscoverPage extends ConsumerStatefulWidget {
   const ParentDiscoverPage({super.key});
@@ -35,6 +37,8 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       Completer<GoogleMapController>();
 
   Set<Marker> _markers = {};
+
+  LatLng? _userLocation;
 
   static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(3.1390, 101.6869),
@@ -80,6 +84,12 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
 
     final position = await Geolocator.getCurrentPosition();
 
+    if (mounted) {
+      setState(() {
+        _userLocation = LatLng(position.latitude, position.longitude);
+      });
+    }
+
     final controller = await _mapController.future;
     await controller.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -120,6 +130,12 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
           accuracy: LocationAccuracy.high,
         ),
       );
+
+      if (mounted) {
+        setState(() {
+          _userLocation = LatLng(position.latitude, position.longitude);
+        });
+      }
 
       final controller = await _mapController.future;
       await controller.animateCamera(
@@ -259,6 +275,8 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       next.whenData(_generateMarkers);
     });
 
+    final trainersAsync = ref.watch(trainerListProvider);
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
@@ -319,7 +337,6 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                       mapToolbarEnabled: false,
                       myLocationEnabled: _hasLocationPermission,
                       markers: _markers,
-
                       gestureRecognizers: const {
                         Factory<OneSequenceGestureRecognizer>(
                           EagerGestureRecognizer.new,
@@ -348,20 +365,58 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                     right: 0,
                     child: SizedBox(
                       height: 140,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: 3,
-                        itemBuilder: (context, index) {
-                          return _buildHorizontalCoachCard();
+                      child: trainersAsync.maybeWhen(
+                        data: (trainers) {
+                          if (trainers.isEmpty) return const SizedBox();
+
+                          final sorted = List<UserModel>.from(trainers);
+                          if (_userLocation != null) {
+                            sorted.sort((a, b) {
+                              if (a.latitude == null || a.longitude == null) {
+                                return 1;
+                              }
+                              if (b.latitude == null || b.longitude == null) {
+                                return -1;
+                              }
+                              final dA = Geolocator.distanceBetween(
+                                _userLocation!.latitude,
+                                _userLocation!.longitude,
+                                a.latitude!,
+                                a.longitude!,
+                              );
+                              final dB = Geolocator.distanceBetween(
+                                _userLocation!.latitude,
+                                _userLocation!.longitude,
+                                b.latitude!,
+                                b.longitude!,
+                              );
+                              return dA.compareTo(dB);
+                            });
+                          }
+
+                          final displayTrainers = sorted.take(5).toList();
+
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: displayTrainers.length,
+                            itemBuilder: (context, index) {
+                              return _buildHorizontalCoachCard(
+                                displayTrainers[index],
+                              );
+                            },
+                          );
                         },
+                        orElse: () => const SizedBox(),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+
             24.heightBox,
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -393,39 +448,63 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                 ],
               ),
             ),
+
             12.heightBox,
-            ref
-                .watch(trainerListProvider)
-                .when(
-                  loading:
-                      () => const Center(child: CircularProgressIndicator()),
-                  error: (e, stack) => Text('Error: $e'),
-                  data: (trainers) {
-                    if (trainers.isEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'No trainers found.',
-                          style: AppWidget.bodyMedium().copyWith(
-                            color: ThemeColor.grey100,
-                          ),
-                        ),
-                      );
+
+            trainersAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Text('Error: $err'),
+              data: (trainers) {
+                if (trainers.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'No trainers found.',
+                      style: AppWidget.bodyMedium().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                    ),
+                  );
+                }
+
+                final sortedTrainers = List<UserModel>.from(trainers);
+                if (_userLocation != null) {
+                  sortedTrainers.sort((a, b) {
+                    if (a.latitude == null || a.longitude == null) {
+                      return 1;
                     }
-
-                    final topTrainers = trainers.take(3).toList();
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: topTrainers.length,
-                      itemBuilder: (context, index) {
-                        return TrainerCard(trainer: topTrainers[index]);
-                      },
+                    if (b.latitude == null || b.longitude == null) {
+                      return -1;
+                    }
+                    final dA = Geolocator.distanceBetween(
+                      _userLocation!.latitude,
+                      _userLocation!.longitude,
+                      a.latitude!,
+                      a.longitude!,
                     );
+                    final dB = Geolocator.distanceBetween(
+                      _userLocation!.latitude,
+                      _userLocation!.longitude,
+                      b.latitude!,
+                      b.longitude!,
+                    );
+                    return dA.compareTo(dB);
+                  });
+                }
+
+                final topTrainers = trainers.take(3).toList();
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: topTrainers.length,
+                  itemBuilder: (context, index) {
+                    return TrainerCard(trainer: topTrainers[index]);
                   },
-                ),
+                );
+              },
+            ),
             30.heightBox,
           ],
         ),
@@ -433,7 +512,30 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
     );
   }
 
-  Widget _buildHorizontalCoachCard() {
+  Widget _buildHorizontalCoachCard(UserModel trainer) {
+    var distanceText = 'Distance unknown';
+
+    if (_userLocation != null &&
+        trainer.latitude != null &&
+        trainer.longitude != null) {
+      final distanceInMeters = Geolocator.distanceBetween(
+        _userLocation!.latitude,
+        _userLocation!.longitude,
+        trainer.latitude!,
+        trainer.longitude!,
+      );
+
+      if (distanceInMeters < 1000) {
+        distanceText = '${distanceInMeters.toStringAsFixed(0)} m away';
+      } else {
+        distanceText =
+            '${(distanceInMeters / 1000).toStringAsFixed(1)} km away';
+      }
+    }
+
+    final coachName = trainer.name ?? trainer.nickname ?? 'Coach';
+    final displaySports = trainer.sports.take(3).toList();
+
     return Container(
       width: 260,
       margin: const EdgeInsets.only(right: 16, bottom: 8),
@@ -455,38 +557,68 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
+              UserAvatar(
                 radius: 24,
-                backgroundColor: ThemeColor.grey100,
-                child: Icon(Icons.person, color: ThemeColor.white),
+                userAvatarUrl: trainer.userAvatarUrl,
+                username: coachName,
               ),
               12.widthBox,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Coach Dave',
-                    style: AppWidget.bodyLarge().copyWith(
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      coachName,
+                      style: AppWidget.bodyLarge().copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    '1.2 km away',
-                    style: AppWidget.bodySmall().copyWith(
-                      color: ThemeColor.grey100,
+                    Text(
+                      distanceText,
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  4.heightBox,
-                  Row(
-                    children: [
-                      const Icon(Icons.pool, size: 16),
-                      4.widthBox,
-                      const Icon(Icons.sports_soccer, size: 16),
-                    ],
-                  ),
-                ],
+                    4.heightBox,
+                    Row(
+                      children:
+                          displaySports.isEmpty
+                              ? [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: Icon(
+                                    Icons.sports,
+                                    size: 16,
+                                    color: ThemeColor.grey100.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  'Not specified',
+                                  style: AppWidget.bodyExtraSmall().copyWith(
+                                    color: ThemeColor.grey100,
+                                  ),
+                                ),
+                              ]
+                              : displaySports.map((sport) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: Icon(
+                                    getSportIcon(sport),
+                                    size: 16,
+                                    color: ThemeColor.black,
+                                  ),
+                                );
+                              }).toList(),
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
               const Row(
                 children: [
                   Icon(Icons.star, color: Colors.amber, size: 16),
