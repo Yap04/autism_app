@@ -16,8 +16,6 @@ class ChildModel with _$ChildModel {
     String? userAvatarUrl,
     String? remarks,
     @Default([]) List<String> specialNeeds,
-    @Default([]) List<String> triggers,
-    @Default([]) List<String> calmingTips,
     @Default([]) List<String> assignedTrainerIds,
     @Default(true) bool isActive,
 

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../domain/models/child_model.dart';
 import '../../domain/models/ticket_model.dart';
 import '../../presentation/admin/appointment/admin_appointments_page.dart';
 import '../../presentation/admin/content/admin_content_editor_page.dart';
