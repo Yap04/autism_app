@@ -179,6 +179,17 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
                                   context.router.push(const EditProfileRoute()),
                         ),
 
+                        if (currentUser?.role == UserRole.parent) ...[
+                          _buildDivider(),
+                          _buildSettingItem(
+                            icon: Icons.child_care,
+                            title: 'Manage Children',
+                            onTap: () {
+                              context.router.push(const ManageChildrenRoute());
+                            },
+                          ),
+                        ],
+
                         if (currentUser?.role == UserRole.trainer) ...[
                           _buildDivider(),
                           _buildSettingItem(
