@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/repositories/appointment_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/chat_repository.dart';
+import '../../domain/repositories/child_repository.dart';
 import '../../domain/repositories/content_repository.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 import '../../domain/repositories/ticket_repository.dart';
@@ -13,6 +14,7 @@ import '../../domain/repositories/user_repository.dart';
 import '../../infrastructure/repositories/firebase_appointment_repository.dart';
 import '../../infrastructure/repositories/firebase_auth_repository.dart';
 import '../../infrastructure/repositories/firebase_chat_repository.dart';
+import '../../infrastructure/repositories/firebase_child_repository.dart';
 import '../../infrastructure/repositories/firebase_content_repository.dart';
 import '../../infrastructure/repositories/firebase_dashboard_repository.dart';
 import '../../infrastructure/repositories/firebase_ticket_repository.dart';
@@ -70,6 +72,11 @@ final contentRepositoryProvider = Provider<ContentRepository>((ref) {
 final ticketRepositoryProvider = Provider<TicketRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
   return FirebaseTicketRepository(firestore);
+});
+
+final childRepositoryProvider = Provider<ChildRepository>((ref) {
+  final firestore = ref.watch(firestoreProvider);
+  return FirebaseChildRepository(firestore);
 });
 
 // Service Providers
