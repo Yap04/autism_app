@@ -1,0 +1,75 @@
+import 'dart:io';
+
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../../domain/models/user_model.dart';
+import '../../infrastructure/services/image_service.dart';
+import '../auth/auth_notifier.dart';
+import '../providers/repository_providers.dart';
+
+part 'trainer_verification_provider.g.dart';
+
+@riverpod
+Stream<List<UserModel>> trainerApplications(
+  TrainerApplicationsRef ref,
+) {
+  final repo = ref.watch(trainerRepositoryProvider);
+  return repo.watchAllApplications();
+}
+
+@riverpod
+class TrainerVerificationNotifier extends _$TrainerVerificationNotifier {
+  @override
+  FutureOr<void> build() {}
+
+  Future<void> submitApplication({
+    required List<File> certificateImages,
+    required List<String> selectedSports,
+    required String bio,
+  }) async {
+    state = const AsyncLoading();
+
+    state = await AsyncValue.guard(() async {
+      final currentUser = ref.read(authNotifierProvider).value;
+      if (currentUser == null) {
+        throw Exception('Please login first.');
+      }
+
+      final uploadedUrls = <String>[];
+      for (final file in certificateImages) {
+        final url = await ImageService.uploadToImgBB(file);
+        if (url == null) {
+          throw Exception('Failed to upload image. Please try again.');
+        }
+        uploadedUrls.add(url);
+      }
+
+      await ref
+          .read(trainerRepositoryProvider)
+          .submitTrainerApplication(
+            userId: currentUser.id,
+            certificateUrls: uploadedUrls,
+            sports: selectedSports,
+            bio: bio,
+          );
+    });
+  }
+
+  Future<void> reviewApplication({
+    required String userId,
+    required bool isApproved,
+    String? reason,
+  }) async {
+    state = const AsyncLoading();
+
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(trainerRepositoryProvider)
+          .reviewApplication(
+            userId: userId,
+            isApproved: isApproved,
+            reason: reason,
+          );
+    });
+  }
+}

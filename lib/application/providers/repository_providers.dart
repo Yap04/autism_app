@@ -9,6 +9,7 @@ import '../../domain/repositories/child_repository.dart';
 import '../../domain/repositories/content_repository.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 import '../../domain/repositories/ticket_repository.dart';
+import '../../domain/repositories/trainer_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../infrastructure/repositories/firebase_appointment_repository.dart';
@@ -18,6 +19,7 @@ import '../../infrastructure/repositories/firebase_child_repository.dart';
 import '../../infrastructure/repositories/firebase_content_repository.dart';
 import '../../infrastructure/repositories/firebase_dashboard_repository.dart';
 import '../../infrastructure/repositories/firebase_ticket_repository.dart';
+import '../../infrastructure/repositories/firebase_trainer_repository.dart';
 import '../../infrastructure/repositories/firebase_transaction_repository.dart';
 import '../../infrastructure/repositories/firebase_user_repository.dart';
 import '../../infrastructure/services/gemini_service.dart';
@@ -77,6 +79,11 @@ final ticketRepositoryProvider = Provider<TicketRepository>((ref) {
 final childRepositoryProvider = Provider<ChildRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
   return FirebaseChildRepository(firestore);
+});
+
+final trainerRepositoryProvider = Provider<TrainerRepository>((ref) {
+  final firestore = ref.watch(firestoreProvider);
+  return FirebaseTrainerRepository(firestore);
 });
 
 // Service Providers
