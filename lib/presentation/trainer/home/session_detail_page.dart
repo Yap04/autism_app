@@ -1,0 +1,548 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
+import '../../../application/appointment/appointment_notifier.dart';
+import '../../../application/child/child_provider.dart';
+import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
+import '../../../core/extension/widget_ext.dart';
+import '../../../core/routes/app_router.dart';
+import '../../../domain/models/appointment_model.dart';
+import '../../../domain/models/child_model.dart';
+import '../../../domain/models/transaction_model.dart';
+import '../../shared/bottom_action_button.dart';
+import '../../shared/snack_bar.dart';
+import '../../shared/user_avatar.dart';
+
+@RoutePage()
+class SessionDetailPage extends ConsumerStatefulWidget {
+  const SessionDetailPage({required this.appointment, super.key});
+  final AppointmentModel appointment;
+
+  @override
+  ConsumerState<SessionDetailPage> createState() => _SessionDetailPageState();
+}
+
+class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final appt = widget.appointment;
+    final dateStr = DateFormat('EEEE, dd MMM yyyy').format(appt.dateTime);
+    final timeStr = DateFormat('hh:mm a').format(appt.dateTime);
+    final endTimeStr = DateFormat(
+      'hh:mm a',
+    ).format(appt.dateTime.add(Duration(minutes: appt.duration)));
+
+    final childAsync = ref.watch(childDetailsProvider(appt.childId));
+
+    return Scaffold(
+      backgroundColor: ThemeColor.cream,
+      appBar: AppBar(
+        backgroundColor: ThemeColor.cream,
+        elevation: 0,
+        centerTitle: true,
+        title: Text('Session Details', style: AppWidget.h3TextFieldStyle()),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStudentCard(appt, childAsync),
+            24.heightBox,
+
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoBox(
+                    title: 'Status',
+                    value: appt.status.name.toUpperCase(),
+                    valueColor: _getStatusColor(appt.status),
+                    icon: Icons.info_outline,
+                  ),
+                ),
+                16.widthBox,
+                Expanded(
+                  child: _buildInfoBox(
+                    title: 'Payment',
+                    value: appt.paymentStatus.name.toUpperCase(),
+                    valueColor: ThemeColor.green,
+                    icon: Icons.payment,
+                  ),
+                ),
+              ],
+            ),
+            24.heightBox,
+
+            Text('Schedule & Location', style: AppWidget.h3TextFieldStyle()),
+            12.heightBox,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: ThemeColor.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: ThemeColor.lightGrey.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Column(
+                children: [
+                  _buildDetailRow(Icons.calendar_today, 'Date', dateStr),
+                  const Divider(height: 24, color: ThemeColor.lightGrey),
+                  _buildDetailRow(
+                    Icons.access_time,
+                    'Time',
+                    '$timeStr - $endTimeStr (${appt.duration} mins)',
+                  ),
+                  const Divider(height: 24, color: ThemeColor.lightGrey),
+                  _buildDetailRow(
+                    getSportIcon(appt.sport),
+                    'Sport',
+                    appt.sport,
+                  ),
+                  const Divider(height: 24, color: ThemeColor.lightGrey),
+                  _buildDetailRow(Icons.location_on, 'Location', appt.location),
+                ],
+              ),
+            ),
+            24.heightBox,
+
+            Text('Special Needs & Notes', style: AppWidget.h3TextFieldStyle()),
+            12.heightBox,
+            _buildSpecialNeedsBox(childAsync),
+            60.heightBox,
+          ],
+        ),
+      ),
+
+      bottomNavigationBar: _buildBottomActionBar(context, ref, appt),
+    );
+  }
+
+  Widget _buildStudentCard(
+    AppointmentModel appt,
+    AsyncValue<ChildModel?> childAsync,
+  ) {
+    final childData = childAsync.valueOrNull;
+    var displayTitle = appt.childName;
+
+    if (childData != null) {
+      final genderText =
+          (childData.gender != null && childData.gender!.isNotEmpty)
+              ? ', ${childData.gender}'
+              : '';
+      displayTitle = '${appt.childName} (${childData.age}y$genderText)';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: ThemeColor.darkBlue,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.darkBlue.withValues(alpha: 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          UserAvatar(
+            radius: 32,
+            username: appt.childName,
+            userAvatarUrl: appt.childAvatarUrl,
+          ),
+          16.widthBox,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayTitle,
+                  style: AppWidget.h2TextFieldStyle().copyWith(
+                    color: ThemeColor.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                4.heightBox,
+                Text(
+                  'Parent: ${appt.parentName}',
+                  style: AppWidget.bodyMedium().copyWith(
+                    color: ThemeColor.white.withValues(alpha: 0.8),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap:
+                () => context.pushRoute(
+                  ChatRoute(
+                    trainerId: appt.parentId,
+                    trainerName: appt.parentName,
+                  ),
+                ),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ThemeColor.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline,
+                color: ThemeColor.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpecialNeedsBox(AsyncValue<ChildModel?> childAsync) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: ThemeColor.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColor.orange.withValues(alpha: 0.3)),
+      ),
+      child: childAsync.when(
+        loading:
+            () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(color: ThemeColor.orange),
+              ),
+            ),
+        error:
+            (err, _) => Text(
+              'Error loading details.',
+              style: AppWidget.bodySmall().copyWith(color: ThemeColor.orange),
+            ),
+        data: (child) {
+          if (child == null) {
+            return Text(
+              'Child data not found.',
+              style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
+            );
+          }
+
+          final hasSpecialNeeds = child.specialNeeds.isNotEmpty;
+          final hasRemarks =
+              child.remarks != null && child.remarks!.trim().isNotEmpty;
+
+          if (!hasSpecialNeeds && !hasRemarks) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      color: ThemeColor.orange,
+                      size: 20,
+                    ),
+                    8.widthBox,
+                    Text(
+                      'Notes',
+                      style: AppWidget.bodyMedium().copyWith(
+                        color: ThemeColor.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                8.heightBox,
+                Text(
+                  'No specific special needs or remarks provided by the parent.',
+                  style: AppWidget.bodyMedium().copyWith(
+                    color: ThemeColor.grey100,
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasSpecialNeeds) ...[
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: ThemeColor.orange,
+                      size: 20,
+                    ),
+                    8.widthBox,
+                    Text(
+                      'Special Needs',
+                      style: AppWidget.bodyMedium().copyWith(
+                        color: ThemeColor.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                12.heightBox,
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      child.specialNeeds
+                          .map(
+                            (need) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ThemeColor.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: ThemeColor.orange.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                need,
+                                style: AppWidget.bodySmall().copyWith(
+                                  color: ThemeColor.orange,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                ),
+                if (hasRemarks) 20.heightBox,
+              ],
+
+              if (hasRemarks) ...[
+                Row(
+                  children: [
+                    const Icon(Icons.notes, color: ThemeColor.orange, size: 20),
+                    8.widthBox,
+                    Text(
+                      'Parent Remarks',
+                      style: AppWidget.bodyMedium().copyWith(
+                        color: ThemeColor.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                8.heightBox,
+                Text(
+                  child.remarks!,
+                  style: AppWidget.bodyMedium().copyWith(
+                    color: ThemeColor.black,
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildInfoBox({
+    required String title,
+    required String value,
+    required Color valueColor,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColor.lightGrey.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: ThemeColor.grey100),
+              6.widthBox,
+              Text(
+                title,
+                style: AppWidget.bodySmall().copyWith(
+                  color: ThemeColor.grey100,
+                ),
+              ),
+            ],
+          ),
+          8.heightBox,
+          Text(
+            value,
+            style: AppWidget.bodyMedium().copyWith(
+              color: valueColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: ThemeColor.darkBlue),
+        16.widthBox,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppWidget.bodySmall().copyWith(
+                  color: ThemeColor.grey100,
+                ),
+              ),
+              4.heightBox,
+              Text(
+                value,
+                style: AppWidget.bodyMedium().copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getStatusColor(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.pending:
+        return ThemeColor.orange;
+      case AppointmentStatus.accepted:
+        return ThemeColor.darkBlue;
+      case AppointmentStatus.completed:
+        return ThemeColor.green;
+      case AppointmentStatus.rejected:
+      case AppointmentStatus.cancelled:
+        return ThemeColor.red;
+    }
+  }
+
+  Widget _buildBottomActionBar(
+    BuildContext context,
+    WidgetRef ref,
+    AppointmentModel appt,
+  ) {
+    final endTime = appt.dateTime.add(Duration(minutes: appt.duration));
+    final isPast = DateTime.now().isAfter(endTime);
+    final canComplete = appt.status == AppointmentStatus.accepted && isPast;
+
+    if (appt.status == AppointmentStatus.completed) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.check_circle, color: ThemeColor.green),
+              8.widthBox,
+              Text(
+                'Session Completed',
+                style: AppWidget.h3TextFieldStyle().copyWith(
+                  color: ThemeColor.green,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (appt.status == AppointmentStatus.accepted) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: BottomActionButton(
+            label:
+                canComplete ? 'Mark as Completed' : 'Waiting for Session Time',
+            isLoading: _isLoading,
+            backgroundColor: ThemeColor.green,
+            onPressed:
+                canComplete
+                    ? () => _handleMarkAsCompleted(context, ref, appt)
+                    : null,
+          ),
+        ),
+      );
+    }
+
+    return emptyBox;
+  }
+
+  Future<void> _handleMarkAsCompleted(
+    BuildContext context,
+    WidgetRef ref,
+    AppointmentModel appt,
+  ) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final paymentChannel =
+          appt.paymentMethod == PaymentMethod.credit
+              ? PaymentChannel.credit
+              : PaymentChannel.stripe;
+
+      await ref
+          .read(appointmentNotifierProvider.notifier)
+          .updateStatus(appt.id, AppointmentStatus.completed, paymentChannel);
+
+      final amountToEarn = (appt.duration / 60) * 80.0;
+      AppSnackBar.success(
+        context,
+        'Session completed! RM ${amountToEarn.toStringAsFixed(2)} has been added to your wallet.',
+      );
+      context.router.maybePop();
+    } catch (e) {
+      AppSnackBar.error(context, e.toString());
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+}

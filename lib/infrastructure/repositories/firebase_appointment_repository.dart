@@ -106,6 +106,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
 
         final isCreditUsed = appData['paymentMethod'] == 'credit';
         final parentId = appData['parentId'] as String;
+        final trainerId = appData['trainerId'] as String;
 
         final paymentChannel =
             isCreditUsed ? PaymentChannel.credit : PaymentChannel.stripe;
@@ -120,8 +121,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
                 .get();
 
         DocumentReference? originalTxRef;
-
-        // todo: change 80
+        // if pay by credit, refund 1 credit, or else RM80
         var refundAmount = isCreditUsed ? 1.0 : 80.0;
 
         if (transactionsQuery.docs.isNotEmpty) {
@@ -129,7 +129,6 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           final txData = transactionsQuery.docs.first.data();
 
           if (!isCreditUsed) {
-            final txData = transactionsQuery.docs.first.data();
             stripePaymentIntentIdToRefund =
                 txData['stripePaymentIntentId'] as String?;
           }
@@ -141,10 +140,37 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           }
         }
 
-        if (status == AppointmentStatus.accepted && originalTxRef != null) {
-          transaction.update(originalTxRef, {
-            'status': TransactionStatus.completed.name,
-          });
+        if (status == AppointmentStatus.completed) {
+          if (originalTxRef != null) {
+            transaction.update(originalTxRef, {
+              'status': TransactionStatus.completed.name,
+            });
+          }
+
+          // release money to trainer
+          final duration = (appData['duration'] as num?)?.toInt() ?? 60;
+          final amountToEarn = (duration / 60) * 80.0;
+
+          final earningTxRef =
+              _firestore
+                  .collection('users')
+                  .doc(trainerId)
+                  .collection('transactions')
+                  .doc();
+
+          final earningTx = TransactionModel(
+            id: earningTxRef.id,
+            parentId: trainerId,
+            type: TransactionType.earning,
+            paymentChannel: PaymentChannel.credit,
+            amount: amountToEarn,
+            description:
+                'Earnings for ${appData['sport']} session with ${appData['childName']}',
+            createdAt: DateTime.now(),
+            relatedAppointmentId: appointmentId,
+          );
+
+          transaction.set(earningTxRef, earningTx.toJson());
         }
 
         if (status == AppointmentStatus.rejected ||
