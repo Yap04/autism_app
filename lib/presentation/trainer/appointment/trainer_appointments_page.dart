@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,10 +10,13 @@ import '../../../application/auth/auth_notifier.dart';
 import '../../../application/providers/repository_providers.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
+import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/curved_header_background.dart';
 import '../../shared/snack_bar.dart';
+import '../../shared/user_avatar.dart';
 
 class TrainerAppointmentsPage extends ConsumerStatefulWidget {
   const TrainerAppointmentsPage({super.key});
@@ -563,14 +567,23 @@ class _TrainerAppointmentsPageState
                         } else if (appointment.status ==
                             AppointmentStatus.accepted) {
                           card = _buildBookedCard(appointment);
+                        } else if (appointment.status ==
+                            AppointmentStatus.completed) {
+                          card = _buildCompletedCard(appointment);
                         } else {
                           return emptyBox;
                         }
 
-                        return _buildTimelineItem(
-                          time: timeString,
-                          card: card,
-                          showLine: !isLast,
+                        return GestureDetector(
+                          onTap:
+                              () => context.pushRoute(
+                                SessionDetailRoute(appointment: appointment),
+                              ),
+                          child: _buildTimelineItem(
+                            time: timeString,
+                            card: card,
+                            showLine: !isLast,
+                          ),
                         );
                       }),
 
@@ -669,10 +682,10 @@ class _TrainerAppointmentsPageState
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          UserAvatar(
             radius: 20,
-            backgroundColor: ThemeColor.grey100,
-            child: Icon(Icons.person, color: ThemeColor.white, size: 24),
+            username: appointment.childName,
+            userAvatarUrl: appointment.childAvatarUrl,
           ),
           12.widthBox,
           Expanded(
@@ -682,10 +695,14 @@ class _TrainerAppointmentsPageState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      appointment.parentName,
-                      style: AppWidget.bodyMedium().copyWith(
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        appointment.childName,
+                        style: AppWidget.bodyMedium().copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     Container(
@@ -710,9 +727,9 @@ class _TrainerAppointmentsPageState
                 4.heightBox,
                 Row(
                   children: [
-                    const Icon(
-                      Icons.pool,
-                      size: 12,
+                    Icon(
+                      getSportIcon(appointment.sport),
+                      size: 16,
                       color: ThemeColor.darkBlue,
                     ),
                     4.widthBox,
@@ -720,6 +737,112 @@ class _TrainerAppointmentsPageState
                       appointment.sport,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.black,
+                      ),
+                    ),
+                  ],
+                ),
+                2.heightBox,
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      size: 12,
+                      color: ThemeColor.grey100,
+                    ),
+                    4.widthBox,
+                    Expanded(
+                      child: Text(
+                        appointment.location,
+                        style: AppWidget.bodySmall().copyWith(
+                          color: ThemeColor.grey100,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompletedCard(AppointmentModel appointment) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColor.lightGrey, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          UserAvatar(
+            radius: 20,
+            username: appointment.childName,
+            userAvatarUrl: appointment.childAvatarUrl,
+          ),
+          12.widthBox,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        appointment.childName,
+                        style: AppWidget.bodyMedium().copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: ThemeColor.grey100,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.lightGrey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Completed',
+                        style: AppWidget.bodyExtraSmall().copyWith(
+                          color: ThemeColor.grey100,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                4.heightBox,
+                Row(
+                  children: [
+                    Icon(
+                      getSportIcon(appointment.sport),
+                      size: 16,
+                      color: ThemeColor.grey100,
+                    ),
+                    4.widthBox,
+                    Text(
+                      appointment.sport,
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.grey100,
                       ),
                     ),
                   ],
@@ -797,9 +920,9 @@ class _TrainerAppointmentsPageState
                 4.heightBox,
                 Row(
                   children: [
-                    const Icon(
-                      Icons.pool,
-                      size: 12,
+                    Icon(
+                      getSportIcon(appointment.sport),
+                      size: 16,
                       color: ThemeColor.darkBlue,
                     ),
                     4.widthBox,
