@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
+import '../../../application/child/child_provider.dart';
 import '../../../application/providers/repository_providers.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
@@ -12,6 +13,7 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/appointment_model.dart';
+import '../../../domain/models/child_model.dart';
 import '../../shared/bottom_action_button.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/user_avatar.dart';
@@ -37,6 +39,7 @@ class BookingDetailsPage extends ConsumerStatefulWidget {
 class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay? _selectedTime;
+  ChildModel? _selectedChild;
   bool _isLoading = false;
 
   int _selectedWeeks = 1;
@@ -156,7 +159,26 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         );
       },
     );
+
     if (picked != null) {
+      final pickedMinutes = picked.hour * 60 + picked.minute;
+
+      final now = DateTime.now();
+      final isToday =
+          _selectedDate.year == now.year &&
+          _selectedDate.month == now.month &&
+          _selectedDate.day == now.day;
+
+      if (isToday) {
+        final nowMinutes = now.hour * 60 + now.minute;
+        if (pickedMinutes <= nowMinutes) {
+          if (mounted) {
+            AppSnackBar.error(context, 'Please select a future time.');
+          }
+          return;
+        }
+      }
+
       final trainer =
           ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
       final operatingHours = trainer?.operatingHours;
@@ -229,6 +251,15 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         _selectedTime!.minute,
       );
 
+      if (finalDateTime.isBefore(DateTime.now())) {
+        setState(() => _isLoading = false);
+        AppSnackBar.error(
+          context,
+          'Cannot book a session in the past. Please select a future time.',
+        );
+        return;
+      }
+
       final totalPrice = _hourlyPrice * _selectedWeeks;
       String? stripePaymentId;
 
@@ -249,6 +280,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       await ref
           .read(appointmentNotifierProvider.notifier)
           .createAppointment(
+            childId: _selectedChild!.id,
+            childName: _selectedChild!.name,
+            childAvatarUrl: _selectedChild?.userAvatarUrl,
             trainerId: widget.trainerId,
             trainerName: widget.trainerName,
             sport: _selectedSport ?? widget.sport,
@@ -307,6 +341,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     final trainerImageUrl = trainer?.userAvatarUrl;
     final operatingHours = trainer?.operatingHours;
 
+    final childrenAsync = ref.watch(userChildrenProvider);
+
     final availableSports =
         (trainer?.sports != null && trainer!.sports.isNotEmpty)
             ? trainer.sports
@@ -363,6 +399,133 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                     _buildTrainerCard(trainerImageUrl, displaySport),
 
                     24.heightBox,
+
+                    Text('Book for Child', style: AppWidget.h3TextFieldStyle()),
+                    8.heightBox,
+                    Text(
+                      'Select the child profile for this session.',
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                    ),
+                    16.heightBox,
+                    childrenAsync.when(
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
+                      error: (e, stack) => Text('Error loading children: $e'),
+                      data: (children) {
+                        // 极端情况：家长还没有添加任何孩子
+                        if (children.isEmpty) {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.lightOrange.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: ThemeColor.orange.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.info_outline,
+                                  color: ThemeColor.orange,
+                                ),
+                                12.widthBox,
+                                Expanded(
+                                  child: Text(
+                                    'Please add a child profile first in the "Manage Children" page before booking.',
+                                    style: AppWidget.bodySmall().copyWith(
+                                      color: ThemeColor.darkBlue,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        // 正常情况：展示下拉框
+                        return DropdownButtonFormField<ChildModel>(
+                          isExpanded: true,
+                          initialValue: _selectedChild,
+                          hint: Text(
+                            'Select your child',
+                            style: AppWidget.bodyMedium().copyWith(
+                              color: ThemeColor.grey100,
+                            ),
+                          ),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: ThemeColor.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: ThemeColor.lightGrey,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: ThemeColor.lightGrey,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: ThemeColor.darkBlue,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          items:
+                              children.map((ChildModel child) {
+                                return DropdownMenuItem<ChildModel>(
+                                  value: child,
+                                  child: Row(
+                                    children: [
+                                      // 下拉框里也能显示孩子的名字和年龄，体验更好
+                                      Expanded(
+                                        child: Text(
+                                          child.name,
+                                          style: AppWidget.bodyMedium()
+                                              .copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                          maxLines: 1, // 限制单行
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      8.widthBox,
+                                      Text(
+                                        '(${child.age}y)',
+                                        style: AppWidget.bodySmall().copyWith(
+                                          color: ThemeColor.grey100,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged: (ChildModel? newValue) {
+                            setState(() {
+                              _selectedChild = newValue;
+                            });
+                          },
+                        );
+                      },
+                    ),
+
+                    32.heightBox,
 
                     Text('Select Sport', style: AppWidget.h3TextFieldStyle()),
                     16.heightBox,

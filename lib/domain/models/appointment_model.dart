@@ -17,20 +17,22 @@ class AppointmentModel with _$AppointmentModel {
     required String id,
     required String parentId,
     required String parentName,
+    required String childId,
+    required String childName,
     required String trainerId,
     required String trainerName,
     required String sport,
     required String location,
     required int duration,
-
     @TimestampConverter() required DateTime dateTime,
     required AppointmentStatus status,
     @TimestampConverter() required DateTime createdAt,
-
     required PaymentMethod paymentMethod,
     required PaymentStatus paymentStatus,
     String? recurringGroupId,
     String? sequenceInfo,
+    String? childAvatarUrl,
+    String? parentAvatarUrl,
   }) = _AppointmentModel;
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) =>

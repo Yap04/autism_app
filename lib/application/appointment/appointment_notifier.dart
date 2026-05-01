@@ -29,6 +29,8 @@ class AppointmentNotifier extends _$AppointmentNotifier {
   }
 
   Future<void> createAppointment({
+    required String childId,
+    required String childName,
     required String trainerId,
     required String trainerName,
     required String sport,
@@ -38,6 +40,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     required int recurringWeeks,
     required int duration,
     String? stripePaymentIntentId,
+    String? childAvatarUrl,
   }) async {
     final user = await ref.read(authNotifierProvider.future);
     if (user == null) {
@@ -70,6 +73,10 @@ class AppointmentNotifier extends _$AppointmentNotifier {
             id: '',
             parentId: user.id,
             parentName: user.name ?? user.nickname ?? 'Unknown User',
+            parentAvatarUrl: user.userAvatarUrl,
+            childId: childId,
+            childName: childName,
+            childAvatarUrl: childAvatarUrl,
             trainerId: trainerId,
             trainerName: trainerName,
             sport: sport,
