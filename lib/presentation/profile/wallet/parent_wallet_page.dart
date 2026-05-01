@@ -17,14 +17,14 @@ import 'shared/empty_transaction_state.dart';
 import 'shared/transaction_card.dart';
 
 @RoutePage()
-class WalletPage extends ConsumerStatefulWidget {
-  const WalletPage({super.key});
+class ParentWalletPage extends ConsumerStatefulWidget {
+  const ParentWalletPage({super.key});
 
   @override
-  ConsumerState<WalletPage> createState() => _WalletPageState();
+  ConsumerState<ParentWalletPage> createState() => _ParentWalletPageState();
 }
 
-class _WalletPageState extends ConsumerState<WalletPage>
+class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -64,15 +64,20 @@ class _WalletPageState extends ConsumerState<WalletPage>
           child: Column(
             children: [
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  gradient: const LinearGradient(
+                    colors: [ThemeColor.darkBlue, Color(0xFF1E3A8A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: ThemeColor.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: ThemeColor.darkBlue.withValues(alpha: 0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -81,10 +86,17 @@ class _WalletPageState extends ConsumerState<WalletPage>
                   children: [
                     Text(
                       'Training Credits',
-                      style: AppWidget.h3TextFieldStyle(),
+                      style: AppWidget.h3TextFieldStyle().copyWith(
+                        color: ThemeColor.white,
+                      ),
                     ),
                     16.heightBox,
-                    Text('Available Sessions:', style: AppWidget.bodyMedium()),
+                    Text(
+                      'Available Sessions:',
+                      style: AppWidget.bodyMedium().copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
                     8.heightBox,
                     Row(
                       children: [
@@ -100,13 +112,15 @@ class _WalletPageState extends ConsumerState<WalletPage>
                         12.widthBox,
                         Text(
                           '$currentCredits',
-                          style: AppWidget.h1TextFieldStyle(),
+                          style: AppWidget.h1TextFieldStyle().copyWith(
+                            color: ThemeColor.white,
+                          ),
                         ),
                         8.widthBox,
                         Text(
                           currentCredits == 1 ? 'Credit' : 'Credits',
                           style: AppWidget.bodyLarge().copyWith(
-                            color: ThemeColor.grey100,
+                            color: Colors.white70,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -122,7 +136,7 @@ class _WalletPageState extends ConsumerState<WalletPage>
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: ThemeColor.darkBlue,
+                          color: ThemeColor.white,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
@@ -130,14 +144,14 @@ class _WalletPageState extends ConsumerState<WalletPage>
                           children: [
                             const Icon(
                               Icons.add_shopping_cart,
-                              color: ThemeColor.white,
+                              color: ThemeColor.darkBlue,
                             ),
                             16.widthBox,
                             Text(
                               'Buy Credit Packages',
                               style: AppWidget.bodyLarge().copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: ThemeColor.white,
+                                color: ThemeColor.darkBlue,
                               ),
                             ),
                           ],
