@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../domain/models/appointment_model.dart';
 import '../../domain/models/child_model.dart';
 import '../../domain/models/ticket_model.dart';
 import '../../presentation/admin/appointment/admin_appointments_page.dart';
@@ -31,8 +32,11 @@ import '../../presentation/profile/profile_page.dart';
 import '../../presentation/profile/support/create_ticket_page.dart';
 import '../../presentation/profile/support/support_page.dart';
 import '../../presentation/profile/support/ticket_chat_page.dart';
+import '../../presentation/profile/trainer_verification_page.dart';
 import '../../presentation/profile/wallet/all_transactions_page.dart';
-import '../../presentation/profile/wallet/wallet_page.dart';
+import '../../presentation/profile/wallet/parent_wallet_page.dart';
+import '../../presentation/profile/wallet/trainer_wallet_page.dart';
+import '../../presentation/trainer/home/session_detail_page.dart';
 import '../../presentation/trainer/trainer_bottom_nav_page.dart';
 
 part 'app_router.gr.dart';
@@ -53,14 +57,17 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: AddChildrenRoute.page),
     AutoRoute(page: TrainerListRoute.page),
     AutoRoute(page: TrainerDashboardRoute.page),
+    AutoRoute(page: SessionDetailRoute.page),
     AutoRoute(page: MapPickerRoute.page),
-    AutoRoute(page: WalletRoute.page),
+    AutoRoute(page: ParentWalletRoute.page),
+    AutoRoute(page: TrainerWalletRoute.page),
     AutoRoute(page: ChatRoute.page),
     AutoRoute(page: AllTransactionsRoute.page),
     AutoRoute(page: ContentListRoute.page),
     AutoRoute(page: SupportRoute.page),
     AutoRoute(page: CreateTicketRoute.page),
     AutoRoute(page: TicketChatRoute.page),
+    AutoRoute(page: TrainerVerificationRoute.page),
 
     // Admin Web Panel Routes
     AutoRoute(
