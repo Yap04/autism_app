@@ -7,7 +7,7 @@ part 'transaction_model.g.dart';
 
 enum PaymentChannel { stripe, credit }
 
-enum TransactionType { deduct, topUp, refund, payment }
+enum TransactionType { deduct, topUp, refund, payment, earning, withdrawal }
 
 enum TransactionStatus { pending, completed, refunded }
 
