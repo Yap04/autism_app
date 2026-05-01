@@ -1,220 +1,165 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../application/user/trainer_provider.dart';
+import '../../application/user/trainer_student_ui_model.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
+import '../../core/extension/sport_ext.dart';
 import '../../core/extension/widget_ext.dart';
 import '../shared/curved_header_background.dart';
+import '../shared/user_avatar.dart';
 import 'shared/stat_item.dart';
 
-// 临时假数据模型，方便你日后替换为真实的 Firestore Model
-class _TempStudentData {
-  final String name;
-  final int age;
-  final String parentName;
-  final String sport;
-  final IconData icon;
-  final String lastSession;
-  final String rating;
-  final double progressPercent;
-  final bool hasNotification;
-  final List<String> specialNeeds; // 新增：特殊需求标签
-  final String status; // active, pending, past
-
-  _TempStudentData({
-    required this.name,
-    required this.age,
-    required this.parentName,
-    required this.sport,
-    required this.icon,
-    required this.lastSession,
-    required this.rating,
-    required this.progressPercent,
-    required this.hasNotification,
-    required this.specialNeeds,
-    required this.status,
-  });
-}
-
-class TrainerMyStudentsPage extends StatefulWidget {
+class TrainerMyStudentsPage extends ConsumerStatefulWidget {
   const TrainerMyStudentsPage({super.key});
 
   @override
-  State<TrainerMyStudentsPage> createState() => _TrainerMyStudentsPageState();
+  ConsumerState<TrainerMyStudentsPage> createState() =>
+      _TrainerMyStudentsPageState();
 }
 
-class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
-  int _currentTabIndex = 0; // 0: Active, 1: Pending, 2: Past
-
-  // 模拟从数据库拉取的学生列表
-  final List<_TempStudentData> _allStudents = [
-    _TempStudentData(
-      name: 'Ahmad',
-      age: 8,
-      parentName: 'Mrs. Siti',
-      sport: 'Swimming',
-      icon: Icons.pool,
-      lastSession: '11 Mac',
-      rating: '4.9',
-      progressPercent: 0.6,
-      hasNotification: true,
-      specialNeeds: ['ASD Level 1', 'Non-verbal'],
-      status: 'active',
-    ),
-    _TempStudentData(
-      name: 'Maya',
-      age: 10,
-      parentName: 'Mr. John',
-      sport: 'Gymnastics',
-      icon: Icons.sports_gymnastics,
-      lastSession: '11 Mac',
-      rating: '4.8',
-      progressPercent: 0.4,
-      hasNotification: false,
-      specialNeeds: ['ADHD', 'Loves high-fives'],
-      status: 'active',
-    ),
-    _TempStudentData(
-      name: 'Leo',
-      age: 7,
-      parentName: 'Sarah Wong',
-      sport: 'Basketball',
-      icon: Icons.sports_basketball,
-      lastSession: '-',
-      rating: 'New',
-      progressPercent: 0.0,
-      hasNotification: true,
-      specialNeeds: ['Sensory sensitive'],
-      status: 'pending',
-    ),
-    _TempStudentData(
-      name: 'Adam',
-      age: 12,
-      parentName: 'Mr. Lee',
-      sport: 'Swimming',
-      icon: Icons.pool,
-      lastSession: '2 Feb',
-      rating: '5.0',
-      progressPercent: 1.0,
-      hasNotification: false,
-      specialNeeds: ['ASD Level 2'],
-      status: 'past',
-    ),
-  ];
+class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
+  int _currentTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    // 根据 Tab 过滤学生
-    final filteredStudents =
-        _allStudents.where((student) {
-          if (_currentTabIndex == 0) return student.status == 'active';
-          if (_currentTabIndex == 1) return student.status == 'pending';
-          return student.status == 'past';
-        }).toList();
+    final studentsAsync = ref.watch(trainerStudentsProvider);
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            CurvedHeaderBackground(
-              customHeight: MediaQuery.of(context).padding.top + 150,
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('My Students', style: AppWidget.h1TextFieldStyle()),
-                    24.heightBox,
+      // 🚀 2. 处理异步数据的不同状态
+      body: studentsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+        data: (allStudents) {
+          // 🚀 3. 动态计算 Summary 卡片的数据
+          final activeStudents =
+              allStudents.where((s) => s.status == 'active').toList();
+          final pendingStudents =
+              allStudents.where((s) => s.status == 'pending').toList();
+          final pastStudents =
+              allStudents.where((s) => s.status == 'past').toList();
 
-                    // 保留的 Summary 卡片
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: ThemeColor.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: ThemeColor.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Summary', style: AppWidget.h3TextFieldStyle()),
-                          16.heightBox,
-                          const Row(
-                            children: [
-                              Expanded(
-                                child: StatItem(
-                                  label: 'Total\nStudents',
-                                  value: '12',
-                                ),
-                              ),
-                              Expanded(
-                                child: StatItem(
-                                  label: 'Active\nSessions',
-                                  value: '8',
-                                ),
-                              ),
-                              Expanded(
-                                child: StatItem(
-                                  label: 'Pending\nRequests',
-                                  value: '2',
-                                ),
+          // 🚀 4. 根据当前选中的 Tab 获取要在列表里渲染的学生
+          final List<TrainerStudentUIModel> filteredStudents;
+          if (_currentTabIndex == 0) {
+            filteredStudents = activeStudents.cast<TrainerStudentUIModel>();
+          } else if (_currentTabIndex == 1) {
+            filteredStudents = pendingStudents.cast<TrainerStudentUIModel>();
+          } else {
+            filteredStudents = pastStudents.cast<TrainerStudentUIModel>();
+          }
+
+          return SingleChildScrollView(
+            child: Stack(
+              children: [
+                CurvedHeaderBackground(
+                  customHeight: MediaQuery.of(context).padding.top + 150,
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'My Students',
+                          style: AppWidget.h1TextFieldStyle(),
+                        ),
+                        24.heightBox,
+
+                        // 🚀 5. 使用真实数据渲染 Summary 卡片
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: ThemeColor.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    32.heightBox,
-
-                    // 🚀 新增：自定义 Tab 切换栏
-                    _buildCustomTabBar(),
-                    24.heightBox,
-
-                    // 动态渲染学生列表
-                    if (filteredStudents.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(40.0),
-                          child: Text(
-                            'No students found.',
-                            style: AppWidget.bodyMedium().copyWith(
-                              color: ThemeColor.grey100,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Summary',
+                                style: AppWidget.h3TextFieldStyle(),
+                              ),
+                              16.heightBox,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: StatItem(
+                                      label: 'Total\nStudents',
+                                      value: allStudents.length.toString(),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: StatItem(
+                                      label: 'Active\nSessions',
+                                      value: activeStudents.length.toString(),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: StatItem(
+                                      label: 'Pending\nRequests',
+                                      value: pendingStudents.length.toString(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      )
-                    else
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: filteredStudents.length,
-                        separatorBuilder: (context, index) => 16.heightBox,
-                        itemBuilder: (context, index) {
-                          final student = filteredStudents[index];
-                          return _buildStudentCard(student);
-                        },
-                      ),
+                        32.heightBox,
 
-                    40.heightBox,
-                  ],
+                        // 自定义 Tab 切换栏
+                        _buildCustomTabBar(),
+                        24.heightBox,
+
+                        // 动态渲染学生列表
+                        if (filteredStudents.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(40.0),
+                              child: Text(
+                                'No students found.',
+                                style: AppWidget.bodyMedium().copyWith(
+                                  color: ThemeColor.grey100,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: filteredStudents.length,
+                            separatorBuilder: (context, index) => 16.heightBox,
+                            itemBuilder: (context, index) {
+                              final studentData = filteredStudents[index];
+                              return _buildStudentCard(studentData);
+                            },
+                          ),
+
+                        40.heightBox,
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  // 构建自定义 TabBar
   Widget _buildCustomTabBar() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -272,7 +217,39 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
   }
 
   // 升级后的学生卡片
-  Widget _buildStudentCard(_TempStudentData student) {
+  Widget _buildStudentCard(TrainerStudentUIModel data) {
+    final child = data.child;
+    final name = child.name;
+    final age = child.age;
+    final specialNeeds = child.specialNeeds;
+    final avatarUrl = child.userAvatarUrl;
+
+    // 从 booking 对象里取订单资料
+    final booking = data.latestBooking;
+    final parentName = booking.parentName;
+    final sport = booking.sport;
+
+    // 你算好的 Tab 状态
+    final status = data.status;
+
+    final hasPendingBooking = data.hasPendingBooking;
+
+    final rating = 'New';
+    final lastSession = '-'; // 你可以之后从 booking.dateTime 转换格式
+    final progressPercent = 0.5; // TODO: 你的进度条逻辑
+    final hasNotification = hasPendingBooking;
+    final sportIcon = getSportIcon(sport);
+
+    String primaryButtonText;
+    if (status == 'pending') {
+      primaryButtonText = 'Accept Request';
+    } else if (status == 'active') {
+      primaryButtonText =
+          hasPendingBooking ? 'Review New Request' : 'Log Progress';
+    } else {
+      primaryButtonText = 'View History';
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -292,27 +269,26 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 26,
-                backgroundColor: ThemeColor.grey100,
-                child: Icon(Icons.person, color: ThemeColor.white, size: 32),
-              ),
+              UserAvatar(radius: 26, userAvatarUrl: avatarUrl, username: name),
               12.widthBox,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 学生名字与评分
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '${student.name} (${student.age}y)',
-                          style: AppWidget.bodyLarge().copyWith(
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            '$name (${age}y)',
+                            style: AppWidget.bodyLarge().copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
-                        if (student.status == 'active')
+                        if (status == 'active')
                           Row(
                             children: [
                               const Icon(
@@ -322,7 +298,7 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
                               ),
                               4.widthBox,
                               Text(
-                                student.rating,
+                                rating,
                                 style: AppWidget.bodyMedium().copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -332,38 +308,36 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
                       ],
                     ),
                     2.heightBox,
-                    // 家长标签
                     Text(
-                      'Parent: ${student.parentName}',
+                      'Parent: $parentName',
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.darkBlue,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     6.heightBox,
-                    // 运动与最新进度
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
                             Icon(
-                              student.icon,
+                              sportIcon,
                               size: 14,
                               color: ThemeColor.grey100,
                             ),
                             4.widthBox,
                             Text(
-                              student.sport,
+                              sport,
                               style: AppWidget.bodySmall().copyWith(
                                 color: ThemeColor.grey100,
                               ),
                             ),
                           ],
                         ),
-                        if (student.status == 'active')
+                        if (status == 'active')
                           Text(
-                            'Last: ${student.lastSession}',
+                            'Last: $lastSession',
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.grey100,
                             ),
@@ -377,35 +351,34 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
           ),
 
           12.heightBox,
-          // 🚀 核心新增：特殊需求标签栏 (Autism-specific feature)
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children:
-                student.specialNeeds.map((tag) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ThemeColor.lightOrange.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      tag,
-                      style: AppWidget.bodyExtraSmall().copyWith(
-                        color: ThemeColor.orange,
-                        fontWeight: FontWeight.w600,
+          if (specialNeeds.isNotEmpty)
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children:
+                  specialNeeds.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                    ),
-                  );
-                }).toList(),
-          ),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.lightOrange.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: AppWidget.bodyExtraSmall().copyWith(
+                          color: ThemeColor.orange,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+            ),
 
-          if (student.status == 'active') ...[
+          if (status == 'active') ...[
             16.heightBox,
-            // 进度条
             Stack(
               children: [
                 Container(
@@ -417,7 +390,7 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
                   ),
                 ),
                 FractionallySizedBox(
-                  widthFactor: student.progressPercent,
+                  widthFactor: progressPercent,
                   child: Container(
                     height: 6,
                     decoration: BoxDecoration(
@@ -430,8 +403,9 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
             ),
           ],
 
+          //TODO: 有新的request时，active student 的sport会变成最新的
+
           20.heightBox,
-          // 底部操作按钮群
           Row(
             children: [
               Expanded(
@@ -449,9 +423,7 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
                       ),
                     ),
                     child: Text(
-                      student.status == 'pending'
-                          ? 'Message Parent'
-                          : 'View Profile',
+                      status == 'pending' ? 'Message Parent' : 'View Profile',
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -471,15 +443,14 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color:
-                              student.status == 'pending'
+                              (status == 'pending' ||
+                                      (status == 'active' && hasPendingBooking))
                                   ? ThemeColor.green
                                   : ThemeColor.darkBlue,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          student.status == 'pending'
-                              ? 'Accept Request'
-                              : 'Log Progress',
+                          primaryButtonText,
                           style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.white,
                             fontWeight: FontWeight.bold,
@@ -487,7 +458,7 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
                         ),
                       ),
                     ),
-                    if (student.hasNotification)
+                    if (hasNotification)
                       Positioned(
                         top: -2,
                         right: -2,
@@ -514,3 +485,5 @@ class _TrainerMyStudentsPageState extends State<TrainerMyStudentsPage> {
     );
   }
 }
+
+// 构建自定义 TabBar
