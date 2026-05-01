@@ -2,18 +2,19 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../application/appointment/appointment_notifier.dart';
-import '../../application/auth/auth_notifier.dart';
-import '../../core/constant/color_constant.dart';
-import '../../core/constant/textstyle_constant.dart';
-import '../../core/extension/widget_ext.dart';
-import '../../core/routes/app_router.dart';
-import '../../domain/models/appointment_model.dart';
-import '../../domain/models/transaction_model.dart';
-import '../shared/curved_header_background.dart';
-import '../shared/snack_bar.dart';
-import '../shared/user_avatar.dart';
-import 'shared/stat_item.dart';
+import '../../../application/appointment/appointment_notifier.dart';
+import '../../../application/auth/auth_notifier.dart';
+import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
+import '../../../core/extension/widget_ext.dart';
+import '../../../core/routes/app_router.dart';
+import '../../../domain/models/appointment_model.dart';
+import '../../../domain/models/transaction_model.dart';
+import '../../shared/curved_header_background.dart';
+import '../../shared/snack_bar.dart';
+import '../../shared/user_avatar.dart';
+import '../shared/stat_item.dart';
 
 class TrainerHomePage extends ConsumerStatefulWidget {
   const TrainerHomePage({super.key});
@@ -180,7 +181,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     ),
                     12.heightBox,
                     SizedBox(
-                      height: 180,
+                      height: 190,
                       child: appointmentsAsync.when(
                         loading:
                             () => const Center(
@@ -292,11 +293,14 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
 
                               return _buildTimelineItem(
                                 timeString,
+                                session.childName,
                                 session.parentName,
+                                session.childAvatarUrl,
                                 session.sport,
                                 session.location,
                                 !isLast,
                                 session.parentId,
+                                session,
                               );
                             }),
                           );
@@ -346,14 +350,14 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
             children: [
               Column(
                 children: [
-                  const CircleAvatar(
+                  UserAvatar(
                     radius: 22,
-                    backgroundColor: ThemeColor.grey100,
-                    child: Icon(Icons.person, color: ThemeColor.white),
+                    username: appointment.childName,
+                    userAvatarUrl: appointment.childAvatarUrl,
                   ),
                   4.heightBox,
                   Text(
-                    'Parent',
+                    'Student',
                     style: AppWidget.bodyExtraSmall().copyWith(
                       color: ThemeColor.grey100,
                     ),
@@ -368,9 +372,13 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          appointment.parentName,
-                          style: AppWidget.bodyLarge(),
+                        Expanded(
+                          child: Text(
+                            appointment.childName,
+                            style: AppWidget.bodyLarge(),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -403,7 +411,17 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                         ),
                       ],
                     ),
-                    4.heightBox,
+                    2.heightBox,
+                    Text(
+                      'Parent: ${appointment.parentName}',
+                      style: AppWidget.bodyExtraSmall().copyWith(
+                        color: ThemeColor.darkBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    6.heightBox,
                     Row(
                       children: [
                         const Icon(
@@ -528,11 +546,14 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
 
   Widget _buildTimelineItem(
     String time,
-    String name,
+    String childName,
+    String parentName,
+    String? childAvatarUrl,
     String sport,
     String location,
     bool showLine,
     String parentId,
+    AppointmentModel appointment,
   ) {
     return IntrinsicHeight(
       child: Row(
@@ -559,115 +580,120 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
           ),
 
           Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: ThemeColor.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: ThemeColor.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+            child: GestureDetector(
+              onTap:
+                  () => context.pushRoute(
+                    SessionDetailRoute(appointment: appointment),
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: ThemeColor.grey100,
-                    child: Icon(
-                      Icons.person,
-                      color: ThemeColor.white,
-                      size: 24,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ThemeColor.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeColor.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                  12.widthBox,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          name,
-                          style: AppWidget.bodyLarge().copyWith(
-                            fontWeight: FontWeight.bold,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    UserAvatar(
+                      radius: 20,
+                      username: childName,
+                      userAvatarUrl: childAvatarUrl,
+                    ),
+                    12.widthBox,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            childName,
+                            style: AppWidget.bodyLarge().copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                        4.heightBox,
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.pool,
-                              size: 12,
-                              color: ThemeColor.darkBlue,
-                            ),
-                            4.widthBox,
-                            Text(
-                              sport,
-                              style: AppWidget.bodySmall(),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ],
-                        ),
-                        4.heightBox,
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on,
-                              size: 12,
-                              color: ThemeColor.grey100,
-                            ),
-                            4.widthBox,
-                            Expanded(
-                              child: Text(
-                                location,
-                                style: AppWidget.bodySmall().copyWith(
-                                  color: ThemeColor.grey100,
-                                ),
+                          4.heightBox,
+                          Row(
+                            children: [
+                              Icon(
+                                getSportIcon(sport),
+                                size: 16,
+                                color: ThemeColor.darkBlue,
+                              ),
+                              4.widthBox,
+                              Text(
+                                sport,
+                                style: AppWidget.bodySmall(),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
+                            ],
+                          ),
+                          4.heightBox,
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 12,
+                                color: ThemeColor.grey100,
+                              ),
+                              4.widthBox,
+                              Expanded(
+                                child: Text(
+                                  location,
+                                  style: AppWidget.bodySmall().copyWith(
+                                    color: ThemeColor.grey100,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap:
+                              () => context.pushRoute(
+                                ChatRoute(
+                                  trainerId: parentId,
+                                  trainerName: parentName,
+                                ),
+                              ),
+                          child: const CircleAvatar(
+                            radius: 18,
+                            backgroundColor: ThemeColor.darkBlue,
+                            child: Icon(
+                              Icons.chat_bubble,
+                              color: ThemeColor.white,
+                              size: 16,
                             ),
-                          ],
+                          ),
+                        ),
+                        4.heightBox,
+                        Text(
+                          'Chat',
+                          style: AppWidget.bodyExtraSmall().copyWith(
+                            color: ThemeColor.darkBlue,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap:
-                            () => context.pushRoute(
-                              ChatRoute(trainerId: parentId, trainerName: name),
-                            ),
-                        child: const CircleAvatar(
-                          radius: 18,
-                          backgroundColor: ThemeColor.darkBlue,
-                          child: Icon(
-                            Icons.chat_bubble,
-                            color: ThemeColor.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      4.heightBox,
-                      Text(
-                        'Chat',
-                        style: AppWidget.bodyExtraSmall().copyWith(
-                          color: ThemeColor.darkBlue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
