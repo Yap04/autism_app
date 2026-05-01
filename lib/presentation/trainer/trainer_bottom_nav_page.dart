@@ -5,7 +5,7 @@ import '../../core/constant/color_constant.dart';
 import '../chat/chat_list_page.dart';
 import '../profile/profile_page.dart';
 import 'appointment/trainer_appointments_page.dart';
-import 'trainer_home_page.dart';
+import 'home/trainer_home_page.dart';
 import 'trainer_my_students_page.dart';
 
 @RoutePage()
