@@ -224,8 +224,53 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
                         _buildSettingItem(
                           icon: Icons.wallet_outlined,
                           title: 'Wallet',
-                          onTap: () => context.router.push(const WalletRoute()),
+                          onTap: () {
+                            if (currentUser?.role == UserRole.parent) {
+                              context.router.push(const ParentWalletRoute());
+                            } else {
+                              context.router.push(const TrainerWalletRoute());
+                            }
+                          },
                         ),
+
+                        if (currentUser?.role != UserRole.trainer) ...[
+                          _buildDivider(),
+                          _buildSettingItem(
+                            icon:
+                                currentUser?.verificationStatus ==
+                                        VerificationStatus.rejected
+                                    ? Icons.error_outline
+                                    : Icons.verified_user_outlined,
+                            title:
+                                currentUser?.verificationStatus ==
+                                        VerificationStatus.pending
+                                    ? 'Trainer Application (Pending)'
+                                    : currentUser?.verificationStatus ==
+                                        VerificationStatus.rejected
+                                    ? 'Application Rejected (Re-apply)'
+                                    : 'Become a Trainer',
+                            trailingText:
+                                currentUser?.verificationStatus ==
+                                        VerificationStatus.pending
+                                    ? 'Reviewing'
+                                    : null,
+                            onTap: () {
+                              if (currentUser?.verificationStatus ==
+                                  VerificationStatus.pending) {
+                                AppSnackBar.info(
+                                  context,
+                                  'Your application is currently under review.',
+                                );
+                                return;
+                              }
+
+                              context.router.push(
+                                const TrainerVerificationRoute(),
+                              );
+                            },
+                          ),
+                        ],
+
                         _buildDivider(),
                         _buildSettingItem(
                           icon: Icons.chat_bubble_outline,
@@ -329,3 +374,5 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 }
+
+//TODO: 被approve后应该user自己点击该选项才被redirect到trainer route
