@@ -10,6 +10,7 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/user_model.dart';
 import '../../shared/snack_bar.dart';
+import '../../shared/user_avatar.dart';
 
 @RoutePage()
 class AdminUsersPage extends ConsumerWidget {
@@ -274,14 +275,10 @@ class AdminUsersPage extends ConsumerWidget {
             flex: 3,
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: ThemeColor.lightGrey,
-                  child: Text(
-                    displayName.isNotEmpty
-                        ? displayName.substring(0, 1).toUpperCase()
-                        : 'U',
-                    style: const TextStyle(color: ThemeColor.darkBlue),
-                  ),
+                UserAvatar(
+                  radius: 20,
+                  userAvatarUrl: user.userAvatarUrl,
+                  username: user.name,
                 ),
                 16.widthBox,
                 Expanded(
