@@ -103,6 +103,7 @@ class ManageChildrenPage extends ConsumerWidget {
     final gender = child.gender;
     final specialNeeds = child.specialNeeds;
 
+    // TODO: implement assignedTrainers
     final assignedTrainers = 0;
     final avatarUrl = child.userAvatarUrl;
 
