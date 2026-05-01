@@ -7,6 +7,8 @@ part 'user_model.g.dart';
 
 enum UserRole { parent, trainer, admin }
 
+enum VerificationStatus { none, pending, approved, rejected }
+
 enum Gender { female, male, preferNotToSay }
 
 enum UserStatus { active, suspended }
@@ -27,6 +29,9 @@ class UserModel with _$UserModel {
     String? location,
     double? latitude,
     double? longitude,
+    @Default(VerificationStatus.none) VerificationStatus verificationStatus,
+    List<String>? certificateUrls,
+    String? rejectReason,
     @Default([]) List<String> sports,
     @Default(0) int sessionCredits,
     @Default(UserStatus.active) UserStatus status,
