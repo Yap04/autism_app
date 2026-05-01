@@ -6,6 +6,15 @@ import '../providers/repository_providers.dart';
 part 'child_provider.g.dart';
 
 @riverpod
+Future<ChildModel?> childDetails(ChildDetailsRef ref, String childId) async {
+  try {
+    return await ref.watch(childRepositoryProvider).getChildById(childId);
+  } catch (e) {
+    return null;
+  }
+}
+
+@riverpod
 Stream<List<ChildModel>> userChildren(UserChildrenRef ref) {
   final currentUser = ref.watch(authNotifierProvider).value;
 

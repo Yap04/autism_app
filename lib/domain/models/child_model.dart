@@ -21,7 +21,10 @@ class ChildModel with _$ChildModel {
 
     @TimestampConverter() DateTime? createdAt,
   }) = _ChildModel;
+  const ChildModel._();
 
   factory ChildModel.fromJson(Map<String, dynamic> json) =>
       _$ChildModelFromJson(json);
+
+  dynamic get status => null;
 }

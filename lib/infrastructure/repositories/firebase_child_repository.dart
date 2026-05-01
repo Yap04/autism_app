@@ -34,4 +34,30 @@ class FirebaseChildRepository implements ChildRepository {
           }).toList();
         });
   }
+
+  @override
+  Stream<List<ChildModel>> watchStudentsByTrainerId(String trainerId) {
+    return _childRef
+        .where('assignedTrainerIds', arrayContains: trainerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return ChildModel.fromJson(doc.data());
+          }).toList();
+        });
+  }
+
+  @override
+  Future<ChildModel?> getChildById(String childId) async {
+    try {
+      final doc = await _childRef.doc(childId).get();
+      if (doc.exists && doc.data() != null) {
+        return ChildModel.fromJson(doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to fetch child by ID: $e');
+    }
+  }
 }
