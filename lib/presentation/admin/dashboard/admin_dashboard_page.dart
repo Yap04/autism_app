@@ -25,6 +25,7 @@ class AdminDashboardPage extends ConsumerWidget {
           data: (stats) {
             final totalParents = stats.totalParents;
             final totalTrainers = stats.activeTrainers;
+            final totalAdmins = stats.totalAdmins;
 
             return Column(
               children: [
@@ -61,7 +62,11 @@ class AdminDashboardPage extends ConsumerWidget {
                     Expanded(
                       child: _buildChartContainer(
                         title: 'User Distribution',
-                        child: _buildUserPieChart(totalParents, totalTrainers),
+                        child: _buildUserPieChart(
+                          totalParents,
+                          totalTrainers,
+                          totalAdmins,
+                        ),
                       ),
                     ),
 
@@ -181,14 +186,15 @@ class AdminDashboardPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildUserPieChart(int parents, int trainers) {
-    final total = parents + trainers;
+  Widget _buildUserPieChart(int parents, int trainers, int admins) {
+    final total = parents + trainers + admins;
     if (total == 0) {
       return const Center(child: Text('No user data'));
     }
 
     final parentPct = (parents / total * 100).toStringAsFixed(1);
     final trainerPct = (trainers / total * 100).toStringAsFixed(1);
+    final adminPct = (admins / total * 100).toStringAsFixed(1);
 
     return Row(
       children: [
@@ -213,10 +219,19 @@ class AdminDashboardPage extends ConsumerWidget {
                   value: trainers.toDouble(),
                   title: '$trainerPct%',
                   radius: 50,
-                  titleStyle: const TextStyle(
-                    fontSize: 12,
+                  titleStyle: AppWidget.bodySmall().copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: ThemeColor.white,
+                  ),
+                ),
+                PieChartSectionData(
+                  color: ThemeColor.green,
+                  value: admins.toDouble(),
+                  title: '$adminPct%',
+                  radius: 50,
+                  titleStyle: AppWidget.bodySmall().copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColor.white,
                   ),
                 ),
               ],
@@ -230,6 +245,8 @@ class AdminDashboardPage extends ConsumerWidget {
             _buildLegend(ThemeColor.blue, 'Parents ($parents)'),
             12.heightBox,
             _buildLegend(ThemeColor.orange, 'Trainers ($trainers)'),
+            12.heightBox,
+            _buildLegend(ThemeColor.green, 'Admins ($admins)'),
           ],
         ),
       ],

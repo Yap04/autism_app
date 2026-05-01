@@ -9,6 +9,7 @@ class DashboardStatsModel with _$DashboardStatsModel {
     required int totalUsers,
     required int activeTrainers,
     required int totalParents,
+    required int totalAdmins,
     required double totalRevenue,
   }) = _DashboardStatsModel;
 

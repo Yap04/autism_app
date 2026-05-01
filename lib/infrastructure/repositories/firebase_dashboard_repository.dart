@@ -26,8 +26,16 @@ class FirebaseDashboardRepository implements DashboardRepository {
               .count()
               .get();
 
+      final adminsQuery =
+          await _firestore
+              .collection('users')
+              .where('role', isEqualTo: 'admin')
+              .count()
+              .get();
+
       final totalTrainers = trainersQuery.count ?? 0;
       final totalParents = parentsQuery.count ?? 0;
+      final totalAdmins = adminsQuery.count ?? 0;
 
       final revenueQuery =
           await _firestore
@@ -52,6 +60,7 @@ class FirebaseDashboardRepository implements DashboardRepository {
         activeTrainers: totalTrainers,
         totalRevenue: totalRevenue,
         totalParents: totalParents,
+        totalAdmins: totalAdmins,
       );
     } catch (e) {
       throw Exception('Failed to fetch dashboard stats: $e');
