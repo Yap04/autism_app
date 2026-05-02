@@ -98,10 +98,12 @@ class AdminUsersPage extends ConsumerWidget {
                   ),
                 ),
             error:
-                (err, stack) => Center(
+                (err, _) => Center(
                   child: Text(
                     'Failed to load users: $err',
-                    style: AppWidget.bodyMedium().copyWith(color: Colors.red),
+                    style: AppWidget.bodyMedium().copyWith(
+                      color: ThemeColor.red,
+                    ),
                   ),
                 ),
           ),
@@ -138,7 +140,7 @@ class AdminUsersPage extends ConsumerWidget {
           'Suspended Accounts',
           '$suspendedCount',
           Icons.gavel_rounded,
-          Colors.red,
+          ThemeColor.red,
         ),
       ],
     );
@@ -193,7 +195,7 @@ class AdminUsersPage extends ConsumerWidget {
   }
 
   Widget _buildFilterTabs(WidgetRef ref, String activeFilter) {
-    final filters = ['All', 'parent', 'trainer'];
+    final filters = ['All', 'parent', 'trainer', 'admin'];
     return Row(
       children:
           filters.map((f) {
@@ -320,6 +322,8 @@ class AdminUsersPage extends ConsumerWidget {
                   color:
                       user.role == UserRole.trainer
                           ? ThemeColor.orange.withValues(alpha: 0.1)
+                          : user.role == UserRole.admin
+                          ? ThemeColor.green.withValues(alpha: 0.1)
                           : Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
@@ -331,6 +335,8 @@ class AdminUsersPage extends ConsumerWidget {
                     color:
                         user.role == UserRole.trainer
                             ? ThemeColor.orange
+                            : user.role == UserRole.admin
+                            ? ThemeColor.green
                             : Colors.blue,
                   ),
                 ),
