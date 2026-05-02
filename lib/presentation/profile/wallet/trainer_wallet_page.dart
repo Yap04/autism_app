@@ -5,11 +5,16 @@ import 'package:intl/intl.dart';
 
 import '../../../application/auth/auth_notifier.dart';
 import '../../../application/payment/payment_provider.dart';
+import '../../../application/providers/repository_providers.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/transaction_model.dart';
+import '../../../domain/models/user_model.dart';
+import '../../shared/loading_components.dart';
 import '../../shared/snack_bar.dart';
+import 'bank_details_bottom_sheet.dart';
+import 'withdraw_bottom_sheet.dart';
 
 @RoutePage()
 class TrainerWalletPage extends ConsumerWidget {
@@ -22,6 +27,8 @@ class TrainerWalletPage extends ConsumerWidget {
     if (currentUser == null) {
       return const Scaffold(body: Center(child: Text('Please login first')));
     }
+
+    final totalBalance = currentUser.walletBalance ?? 0.0;
 
     final transactionsAsync = ref.watch(
       userTransactionsProvider(currentUser.id),
@@ -41,25 +48,15 @@ class TrainerWalletPage extends ConsumerWidget {
             ),
         error: (err, _) => Center(child: Text('Error: $err')),
         data: (transactions) {
-          var totalBalance = 0.0;
-          for (final tx in transactions) {
-            if (tx.status == TransactionStatus.completed) {
-              if (tx.type == TransactionType.topUp ||
-                  tx.type == TransactionType.payment ||
-                  tx.type == TransactionType.earning) {
-                totalBalance += tx.amount;
-              } else if (tx.type == TransactionType.deduct ||
-                  tx.type == TransactionType.refund ||
-                  tx.type == TransactionType.withdrawal) {
-                totalBalance -= tx.amount;
-              }
-            }
-          }
+          final sortedList = List<TransactionModel>.from(transactions)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           return RefreshIndicator(
             color: ThemeColor.darkBlue,
             onRefresh: () async {
-              ref.invalidate(userTransactionsProvider(currentUser.id));
+              ref
+                ..invalidate(authNotifierProvider)
+                ..invalidate(userTransactionsProvider(currentUser.id));
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -67,7 +64,7 @@ class TrainerWalletPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildBalanceCard(context, totalBalance),
+                  _buildBalanceCard(context, ref, currentUser, totalBalance),
 
                   32.heightBox,
 
@@ -110,9 +107,6 @@ class TrainerWalletPage extends ConsumerWidget {
                       itemCount: transactions.length,
                       separatorBuilder: (context, index) => 12.heightBox,
                       itemBuilder: (context, index) {
-                        final sortedList = List<TransactionModel>.from(
-                          transactions,
-                        )..sort((a, b) => b.createdAt.compareTo(a.createdAt));
                         final tx = sortedList[index];
                         return _buildTransactionItem(tx);
                       },
@@ -126,7 +120,12 @@ class TrainerWalletPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildBalanceCard(BuildContext context, double balance) {
+  Widget _buildBalanceCard(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel currentUser,
+    double balance,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -173,10 +172,7 @@ class TrainerWalletPage extends ConsumerWidget {
           ),
           24.heightBox,
           GestureDetector(
-            onTap: () {
-              // TODO: 提现逻辑 (未来可以在这里弹出表单让教练输入提现金额)
-              AppSnackBar.info(context, 'Withdrawal feature coming soon!');
-            },
+            onTap: () => _handleWithdraw(context, ref, currentUser, balance),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -198,6 +194,123 @@ class TrainerWalletPage extends ConsumerWidget {
       ),
     );
   }
+
+  Future<void> _handleWithdraw(
+    BuildContext context,
+    WidgetRef ref,
+    UserModel currentUser,
+    double currentBalance,
+  ) async {
+    if (currentBalance <= 0) {
+      AppSnackBar.error(context, 'You have no balance to withdraw.');
+      return;
+    }
+
+    final hasBankDetails =
+        currentUser.bankName != null &&
+        currentUser.bankName!.trim().isNotEmpty &&
+        currentUser.bankAccountNumber != null &&
+        currentUser.bankAccountNumber!.trim().isNotEmpty;
+
+    var userToProcess = currentUser;
+
+    if (!hasBankDetails) {
+      final bankInfo = await showModalBottomSheet<Map<String, String>>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const BankDetailsBottomSheet(),
+      );
+
+      if (bankInfo == null) {
+        return;
+      }
+
+      try {
+        userToProcess = currentUser.copyWith(
+          bankName: bankInfo['bankName'],
+          bankAccountNumber: bankInfo['accountNumber'],
+          accountHolderName: bankInfo['holderName'],
+        );
+        await ref.read(userRepositoryProvider).updateUser(userToProcess);
+
+        ref.invalidate(authNotifierProvider);
+
+        closeLoading();
+
+        if (context.mounted) {
+          AppSnackBar.success(
+            context,
+            'Bank details saved! You can now proceed to withdraw funds.',
+          );
+        }
+        return;
+      } catch (e) {
+        closeLoading();
+        if (context.mounted) {
+          AppSnackBar.error(context, 'Failed to save bank details: $e');
+        }
+        return;
+      }
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+
+    final withdrawAmount = await showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => WithdrawBottomSheet(maxBalance: currentBalance),
+    );
+
+    if (withdrawAmount == null || withdrawAmount <= 0) {
+      return;
+    }
+
+    showLoading();
+
+    try {
+      final now = DateTime.now();
+
+      final withdrawTx = TransactionModel(
+        id: 'tx_wd_${now.millisecondsSinceEpoch}',
+        parentId: userToProcess.id,
+        type: TransactionType.withdrawal,
+        paymentChannel: PaymentChannel.credit,
+        amount: withdrawAmount,
+        description: 'Withdrawal to Bank Account',
+        status: TransactionStatus.pending,
+        createdAt: now,
+      );
+
+      await ref.read(transactionRepositoryProvider).addTransaction(withdrawTx);
+
+      final finalUser = currentUser.copyWith(
+        walletBalance: (currentUser.walletBalance ?? 0) - withdrawAmount,
+      );
+      await ref.read(userRepositoryProvider).updateUser(finalUser);
+
+      ref.invalidate(authNotifierProvider);
+
+      closeLoading();
+
+      if (context.mounted) {
+        AppSnackBar.success(
+          context,
+          'Withdrawal request for RM ${withdrawAmount.toStringAsFixed(2)} submitted! Pending admin approval.',
+        );
+      }
+    } catch (e) {
+      closeLoading();
+      if (context.mounted) {
+        AppSnackBar.error(context, e.toString());
+      }
+    }
+  }
+
+  //TODO: replace with common widget
 
   Widget _buildTransactionItem(TransactionModel tx) {
     final isIncome =
