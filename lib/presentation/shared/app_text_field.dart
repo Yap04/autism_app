@@ -28,6 +28,10 @@ class AppTextField extends StatelessWidget {
     this.minLines,
     this.focusNode,
     this.inputFormatters,
+    this.style,
+    this.borderRadius = 10.0,
+    this.prefixText,
+    this.prefixStyle,
   });
 
   final TextEditingController controller;
@@ -50,6 +54,11 @@ class AppTextField extends StatelessWidget {
   final FocusNode? focusNode;
   final List<dynamic>? inputFormatters;
 
+  final TextStyle? style;
+  final String? prefixText;
+  final TextStyle? prefixStyle;
+  final double borderRadius;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,11 +70,13 @@ class AppTextField extends StatelessWidget {
         ],
         TextField(
           controller: controller,
+          style: style,
           onChanged: onChanged,
           keyboardType: keyboardType,
           obscureText: obscureText,
           maxLines: maxLines,
           minLines: minLines,
+          focusNode: focusNode,
           inputFormatters: inputFormatters?.cast(),
           decoration: InputDecoration(
             fillColor: fillColor,
@@ -73,6 +84,8 @@ class AppTextField extends StatelessWidget {
             contentPadding: contentPadding,
             hintText: hintText,
             hintStyle: AppWidget.bodyMedium().copyWith(color: textColor),
+            prefixText: prefixText,
+            prefixStyle: prefixStyle,
             prefixIcon:
                 prefixIcon != null
                     ? IconTheme(
@@ -85,7 +98,7 @@ class AppTextField extends StatelessWidget {
                     ? GestureDetector(onTap: onSuffixIconTap, child: suffixIcon)
                     : null,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(borderRadius),
               borderSide: BorderSide.none,
             ),
           ),
