@@ -424,9 +424,9 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     6.heightBox,
                     Row(
                       children: [
-                        const Icon(
-                          Icons.pool,
-                          size: 14,
+                        Icon(
+                          getSportIcon(appointment.sport),
+                          size: 16,
                           color: ThemeColor.darkBlue,
                         ),
                         4.widthBox,
