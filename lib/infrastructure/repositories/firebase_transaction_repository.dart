@@ -18,6 +18,16 @@ class FirebaseTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    await _firestore
+        .collection('users')
+        .doc(transaction.parentId)
+        .collection('transactions')
+        .doc(transaction.id)
+        .update(transaction.toJson());
+  }
+
+  @override
   Stream<List<TransactionModel>> getUserTransactions(String userId) {
     return _firestore
         .collection('users')
