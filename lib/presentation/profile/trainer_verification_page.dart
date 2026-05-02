@@ -230,7 +230,10 @@ class _TrainerVerificationPageState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Certificates', style: AppWidget.h3TextFieldStyle()),
+                  Text(
+                    'IC & Certificates',
+                    style: AppWidget.h3TextFieldStyle(),
+                  ),
                   TextButton.icon(
                     onPressed: _pickImages,
                     icon: const Icon(
@@ -249,7 +252,7 @@ class _TrainerVerificationPageState
               ),
               8.heightBox,
               Text(
-                'Upload photos of your coaching certifications or special needs training qualifications.',
+                'Upload photos of your IC and coaching certifications or special needs training qualifications.',
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -274,7 +277,7 @@ class _TrainerVerificationPageState
                       ),
                       8.heightBox,
                       Text(
-                        'No certificates uploaded yet',
+                        'No photos uploaded yet',
                         style: AppWidget.bodySmall().copyWith(
                           color: ThemeColor.grey100,
                         ),
