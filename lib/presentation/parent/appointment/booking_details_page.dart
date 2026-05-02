@@ -108,6 +108,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     return true;
   }
 
+  //TODO: _AssertionError ('package:flutter/src/material/date_picker.dart': Failed assertion: line 243 pos 5: 'selectableDayPredicate == null || initialDate == null || selectableDayPredicate(initialDate)': Provided initialDate 2026-05-04 00:00:00.000 must satisfy provided selectableDayPredicate.)
+  //TODO: if not select chid, prompt user
   Future<void> _pickDate() async {
     final trainer =
         ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
