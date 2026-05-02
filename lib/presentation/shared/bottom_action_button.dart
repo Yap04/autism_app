@@ -9,6 +9,8 @@ class BottomActionButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.backgroundColor = ThemeColor.darkBlue,
+    this.borderRadius = 30.0,
+    this.textStyle,
     super.key,
   });
 
@@ -16,6 +18,8 @@ class BottomActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final Color backgroundColor;
+  final double borderRadius;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +33,7 @@ class BottomActionButton extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           color: effectiveColor,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(borderRadius),
         ),
         child:
             isLoading
@@ -49,10 +53,12 @@ class BottomActionButton extends StatelessWidget {
                 : Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: AppWidget.bodyMedium().copyWith(
-                    color: ThemeColor.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style:
+                      textStyle ??
+                      AppWidget.bodyMedium().copyWith(
+                        color: ThemeColor.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
       ),
     );
