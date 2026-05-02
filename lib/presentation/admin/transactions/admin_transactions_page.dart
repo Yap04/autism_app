@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../application/admin/transaction/admin_transaction_provider.dart';
+import '../../../application/providers/repository_providers.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/transaction_model.dart';
+import '../../../domain/models/user_model.dart';
+import '../../shared/snack_bar.dart';
 
 @RoutePage()
 class AdminTransactionsPage extends ConsumerWidget {
@@ -74,8 +77,11 @@ class AdminTransactionsPage extends ConsumerWidget {
                             separatorBuilder:
                                 (context, index) => const Divider(height: 1),
                             itemBuilder:
-                                (context, index) =>
-                                    _buildTransactionRow(filteredList[index]),
+                                (context, index) => _buildTransactionRow(
+                                  context,
+                                  ref,
+                                  filteredList[index],
+                                ),
                           ),
                       ],
                     ),
@@ -93,7 +99,7 @@ class AdminTransactionsPage extends ConsumerWidget {
                   ),
                 ),
             error:
-                (err, stack) => Center(
+                (err, _) => Center(
                   child: Text(
                     'Failed to load transactions: $err',
                     style: AppWidget.bodyMedium().copyWith(
@@ -197,7 +203,15 @@ class AdminTransactionsPage extends ConsumerWidget {
   }
 
   Widget _buildFilterTabs(WidgetRef ref, String activeFilter) {
-    final filters = ['All', 'topUp', 'payment', 'deduct', 'refund'];
+    final filters = [
+      'All',
+      'topUp',
+      'payment',
+      'deduct',
+      'refund',
+      'earning',
+      'withdrawal',
+    ];
     return Row(
       children:
           filters.map((f) {
@@ -260,12 +274,26 @@ class AdminTransactionsPage extends ConsumerWidget {
     color: ThemeColor.grey100,
   );
 
-  Widget _buildTransactionRow(TransactionModel tx) {
+  Widget _buildTransactionRow(
+    BuildContext context,
+    WidgetRef ref,
+    TransactionModel tx,
+  ) {
     final absoluteAmount = tx.amount.abs();
-    final unit = tx.paymentChannel == PaymentChannel.stripe ? 'RM' : 'Credits';
+
+    final isEarning = tx.type.name.toLowerCase() == 'earning';
+    final isWithdraw = tx.type.name.toLowerCase() == 'withdrawal';
+
+    final unit =
+        (tx.paymentChannel == PaymentChannel.stripe || isEarning || isWithdraw)
+            ? 'RM'
+            : 'Credits';
 
     final isPositive =
-        tx.type == TransactionType.topUp || tx.type == TransactionType.refund;
+        tx.type == TransactionType.topUp ||
+        tx.type == TransactionType.refund ||
+        isEarning;
+
     final isOldRefundedLedger = tx.status == TransactionStatus.refunded;
 
     final sign = isPositive ? '+' : '-';
@@ -327,14 +355,19 @@ class AdminTransactionsPage extends ConsumerWidget {
           ),
           Expanded(
             child: Text(
-              '$sign ${absoluteAmount.toStringAsFixed(tx.paymentChannel == PaymentChannel.stripe ? 2 : 0)} $unit',
+              '$sign ${absoluteAmount.toStringAsFixed(unit == 'RM' ? 2 : 0)} $unit',
               style: AppWidget.bodyMedium().copyWith(
                 color: amountColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Expanded(child: _buildStatusTag(tx.status)),
+          Expanded(
+            child:
+                (isWithdraw && tx.status == TransactionStatus.pending)
+                    ? _buildApproveButton(context, ref, tx)
+                    : _buildStatusTag(tx.status),
+          ),
         ],
       ),
     );
@@ -362,6 +395,199 @@ class AdminTransactionsPage extends ConsumerWidget {
         ),
         textAlign: TextAlign.center,
       ),
+    );
+  }
+
+  Widget _buildApproveButton(
+    BuildContext context,
+    WidgetRef ref,
+    TransactionModel tx,
+  ) {
+    return GestureDetector(
+      onTap: () => _handleApproveWithdrawal(context, ref, tx),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: ThemeColor.darkBlue,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.darkBlue.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              color: ThemeColor.white,
+              size: 16,
+            ),
+            6.widthBox,
+            const Text(
+              'APPROVE',
+              style: TextStyle(
+                color: ThemeColor.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleApproveWithdrawal(
+    BuildContext context,
+    WidgetRef ref,
+    TransactionModel tx,
+  ) async {
+    final userRepo = ref.read(userRepositoryProvider);
+
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    UserModel? trainer;
+    try {
+      trainer = await userRepo.getUserById(tx.parentId);
+    } catch (e) {
+      debugPrint('Failed to fetch trainer info: $e');
+    } finally {
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+    }
+
+    if (trainer == null) {
+      if (context.mounted) {
+        AppSnackBar.error(
+          context,
+          "Could not find the trainer's profile for this transaction.",
+        );
+      }
+      return;
+    }
+
+    final accountHolderName = trainer.accountHolderName ?? 'Not Provided';
+    final bankName = trainer.bankName ?? 'Not Provided';
+    final accNumber = trainer.bankAccountNumber ?? 'Not Provided';
+
+    if (!context.mounted) {
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Confirm Transfer'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Please transfer RM ${tx.amount.abs().toStringAsFixed(2)} to the following account:',
+                  style: AppWidget.bodyMedium(),
+                ),
+                16.heightBox,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ThemeColor.cream,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ThemeColor.lightGrey.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBankInfoRow('Trainer Name', accountHolderName),
+                      8.heightBox,
+                      _buildBankInfoRow('Bank', bankName),
+                      8.heightBox,
+                      _buildBankInfoRow('Account No.', accNumber),
+                    ],
+                  ),
+                ),
+                16.heightBox,
+                Text(
+                  'Have you manually transferred the funds?',
+                  style: AppWidget.bodySmall().copyWith(
+                    color: ThemeColor.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ThemeColor.darkBlue,
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text(
+                  'Yes, Approved',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm != true) {
+      return;
+    }
+
+    try {
+      final updatedTx = tx.copyWith(status: TransactionStatus.completed);
+      await ref
+          .read(transactionRepositoryProvider)
+          .updateTransaction(updatedTx);
+
+      if (context.mounted) {
+        AppSnackBar.success(context, 'Withdrawal approved successfully!');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackBar.error(context, 'Error: $e');
+      }
+    }
+  }
+
+  Widget _buildBankInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(
+            label,
+            style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
+          ),
+        ),
+        16.widthBox,
+        Expanded(
+          child: SelectableText(
+            value,
+            style: AppWidget.bodyMedium().copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }
