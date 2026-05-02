@@ -171,6 +171,12 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           );
 
           transaction.set(earningTxRef, earningTx.toJson());
+
+          final trainerRef = _firestore.collection('users').doc(trainerId);
+
+          transaction.update(trainerRef, {
+            'walletBalance': FieldValue.increment(amountToEarn),
+          });
         }
 
         if (status == AppointmentStatus.rejected ||
