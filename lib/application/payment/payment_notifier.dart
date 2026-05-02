@@ -22,7 +22,7 @@ class PaymentNotifier extends _$PaymentNotifier {
   }) async {
     state = const AsyncValue.loading();
 
-    state = await AsyncValue.guard(() async {
+    try {
       final cleanPrice = priceString.replaceAll('RM ', '').trim();
       final amount = double.parse(cleanPrice);
 
@@ -68,6 +68,9 @@ class PaymentNotifier extends _$PaymentNotifier {
       await transactionRepo.addTransaction(creditTransaction);
 
       ref.invalidate(authNotifierProvider);
-    });
+    } catch (err, stack) {
+      state = AsyncError(err, stack);
+      rethrow;
+    }
   }
 }

@@ -464,10 +464,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
             packageTitle: title,
           );
 
-      final paymentState = ref.read(paymentNotifierProvider);
-      if (paymentState.hasError) {
-        throw Exception(paymentState.error);
-      }
+      closeLoading();
 
       if (context.mounted) {
         AppSnackBar.success(
@@ -476,12 +473,18 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
         );
       }
     } catch (e) {
+      closeLoading();
       if (context.mounted) {
+        final errorString = e.toString().toLowerCase();
+
+        if (errorString.contains('cancelled') ||
+            errorString.contains('future already completed')) {
+          return;
+        }
+
         final errorMsg = e.toString().replaceAll('Exception: ', '');
         AppSnackBar.error(context, errorMsg);
       }
-    } finally {
-      closeLoading();
     }
   }
 }
