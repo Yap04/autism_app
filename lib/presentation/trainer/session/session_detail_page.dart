@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../application/appointment/appointment_notifier.dart';
+import '../../../application/auth/auth_notifier.dart';
 import '../../../application/child/child_provider.dart';
+import '../../../application/providers/repository_providers.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/sport_ext.dart';
@@ -12,10 +14,12 @@ import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../../domain/models/child_model.dart';
+import '../../../domain/models/feedback_model.dart';
 import '../../../domain/models/transaction_model.dart';
 import '../../shared/bottom_action_button.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/user_avatar.dart';
+import 'feedback_bottom_sheet.dart';
 
 @RoutePage()
 class SessionDetailPage extends ConsumerStatefulWidget {
@@ -40,6 +44,9 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
 
     final childAsync = ref.watch(childDetailsProvider(appt.childId));
 
+    final currentUser = ref.watch(authNotifierProvider).value;
+    final isParent = currentUser?.id == appt.parentId;
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
@@ -53,7 +60,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStudentCard(appt, childAsync),
+            _buildStudentCard(appt, childAsync, isParent: isParent),
             24.heightBox,
 
             Row(
@@ -115,19 +122,33 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             Text('Special Needs & Notes', style: AppWidget.h3TextFieldStyle()),
             12.heightBox,
             _buildSpecialNeedsBox(childAsync),
-            60.heightBox,
+            24.heightBox,
+
+            if (appt.status == AppointmentStatus.completed) ...[
+              Text('Session Feedback', style: AppWidget.h3TextFieldStyle()),
+              12.heightBox,
+              _buildFeedbackBox(context, ref, appt.id),
+            ],
+
+            40.heightBox,
           ],
         ),
       ),
 
-      bottomNavigationBar: _buildBottomActionBar(context, ref, appt),
+      bottomNavigationBar: _buildBottomActionBar(
+        context,
+        ref,
+        appt,
+        isParent: isParent,
+      ),
     );
   }
 
   Widget _buildStudentCard(
     AppointmentModel appt,
-    AsyncValue<ChildModel?> childAsync,
-  ) {
+    AsyncValue<ChildModel?> childAsync, {
+    required bool isParent,
+  }) {
     final childData = childAsync.valueOrNull;
     var displayTitle = appt.childName;
 
@@ -184,28 +205,166 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
               ],
             ),
           ),
-          GestureDetector(
-            onTap:
-                () => context.pushRoute(
-                  ChatRoute(
-                    trainerId: appt.parentId,
-                    trainerName: appt.parentName,
+          if (!isParent)
+            GestureDetector(
+              onTap:
+                  () => context.pushRoute(
+                    ChatRoute(
+                      trainerId: appt.parentId,
+                      trainerName: appt.parentName,
+                    ),
                   ),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ThemeColor.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
                 ),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: ThemeColor.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.chat_bubble_outline,
-                color: ThemeColor.white,
+                child: const Icon(
+                  Icons.chat_bubble_outline,
+                  color: ThemeColor.white,
+                ),
               ),
             ),
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFeedbackBox(
+    BuildContext context,
+    WidgetRef ref,
+    String appointmentId,
+  ) {
+    return FutureBuilder<FeedbackModel?>(
+      future: ref
+          .read(feedbackRepositoryProvider)
+          .getFeedbackByAppointmentId(appointmentId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(color: ThemeColor.darkBlue),
+            ),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: ThemeColor.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: ThemeColor.lightGrey.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Text(
+              'No feedback provided yet.',
+              style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
+            ),
+          );
+        }
+
+        final feedback = snapshot.data!;
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: ThemeColor.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ThemeColor.lightGrey.withValues(alpha: 0.5),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Focus Level
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Focus & Attention',
+                    style: AppWidget.bodyMedium().copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${feedback.focusLevel}/5',
+                    style: AppWidget.bodyMedium().copyWith(
+                      color: ThemeColor.darkBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              8.heightBox,
+              LinearProgressIndicator(
+                value: feedback.focusLevel / 5,
+                backgroundColor: ThemeColor.lightGrey.withValues(alpha: 0.3),
+                color: ThemeColor.darkBlue,
+                borderRadius: BorderRadius.circular(4),
+              ),
+
+              24.heightBox,
+
+              // Energy Level
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Energy Level',
+                    style: AppWidget.bodyMedium().copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${feedback.energyLevel}/5',
+                    style: AppWidget.bodyMedium().copyWith(
+                      color: ThemeColor.darkBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              8.heightBox,
+              LinearProgressIndicator(
+                value: feedback.energyLevel / 5,
+                backgroundColor: ThemeColor.lightGrey.withValues(alpha: 0.3),
+                color: ThemeColor.darkBlue,
+                borderRadius: BorderRadius.circular(4),
+              ),
+
+              24.heightBox,
+
+              // Remarks
+              Text(
+                'Trainer Remarks',
+                style: AppWidget.bodyMedium().copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              8.heightBox,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: ThemeColor.cream,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  feedback.remarks,
+                  style: AppWidget.bodyMedium().copyWith(
+                    color: ThemeColor.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -448,8 +607,9 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
   Widget _buildBottomActionBar(
     BuildContext context,
     WidgetRef ref,
-    AppointmentModel appt,
-  ) {
+    AppointmentModel appt, {
+    required bool isParent,
+  }) {
     final endTime = appt.dateTime.add(Duration(minutes: appt.duration));
     final isPast = DateTime.now().isAfter(endTime);
     final canComplete = appt.status == AppointmentStatus.accepted && isPast;
@@ -485,7 +645,11 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       );
     }
 
-    if (appt.status == AppointmentStatus.accepted) {
+    if (appt.status == AppointmentStatus.accepted && isParent) {
+      return emptyBox;
+    }
+
+    if (appt.status == AppointmentStatus.accepted && !isParent) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -521,9 +685,39 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     WidgetRef ref,
     AppointmentModel appt,
   ) async {
+    final feedbackData = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const FeedbackBottomSheet(),
+    );
+
+    if (feedbackData == null) {
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
+      final currentUser = ref.read(authNotifierProvider).value;
+      if (currentUser == null) {
+        throw Exception('Please login first');
+      }
+
+      final feedbackId = 'fb_${DateTime.now().millisecondsSinceEpoch}';
+      final newFeedback = FeedbackModel(
+        id: feedbackId,
+        appointmentId: appt.id,
+        childId: appt.childId,
+        trainerId: currentUser.id,
+        focusLevel: feedbackData['focus'] as int,
+        energyLevel: feedbackData['energy'] as int,
+        remarks: feedbackData['remarks'].toString(),
+        createdAt: DateTime.now(),
+      );
+
+      await ref.read(feedbackRepositoryProvider).saveFeedback(newFeedback);
+
       final paymentChannel =
           appt.paymentMethod == PaymentMethod.credit
               ? PaymentChannel.credit
@@ -532,6 +726,8 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       await ref
           .read(appointmentNotifierProvider.notifier)
           .updateStatus(appt.id, AppointmentStatus.completed, paymentChannel);
+
+      ref.invalidate(authNotifierProvider);
 
       final amountToEarn = (appt.duration / 60) * 80.0;
       AppSnackBar.success(
