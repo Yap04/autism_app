@@ -38,7 +38,7 @@ class StripeService {
     String currency,
   ) async {
     try {
-      final amountInCents = (amount * 100).toInt();
+      final amountInCents = (amount * 100).round();
 
       final body = <String, dynamic>{
         'amount': amountInCents.toString(),
