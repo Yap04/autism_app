@@ -18,6 +18,7 @@ import '../../presentation/auth/signup_page.dart';
 import '../../presentation/auth/splash_page.dart';
 import '../../presentation/chat/chat_list_page.dart';
 import '../../presentation/chat/chat_page.dart';
+import '../../presentation/feedback/student_progress_page.dart';
 import '../../presentation/parent/appointment/booking_details_page.dart';
 import '../../presentation/parent/appointment/trainer_list_page.dart';
 import '../../presentation/parent/home/content/content_list_page.dart';
@@ -36,7 +37,7 @@ import '../../presentation/profile/trainer_verification_page.dart';
 import '../../presentation/profile/wallet/all_transactions_page.dart';
 import '../../presentation/profile/wallet/parent_wallet_page.dart';
 import '../../presentation/profile/wallet/trainer_wallet_page.dart';
-import '../../presentation/trainer/home/session_detail_page.dart';
+import '../../presentation/trainer/session/session_detail_page.dart';
 import '../../presentation/trainer/trainer_bottom_nav_page.dart';
 
 part 'app_router.gr.dart';
@@ -58,6 +59,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: TrainerListRoute.page),
     AutoRoute(page: TrainerDashboardRoute.page),
     AutoRoute(page: SessionDetailRoute.page),
+    AutoRoute(page: StudentProgressRoute.page),
     AutoRoute(page: MapPickerRoute.page),
     AutoRoute(page: ParentWalletRoute.page),
     AutoRoute(page: TrainerWalletRoute.page),
