@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/sport_ext.dart';
 import '../../core/extension/widget_ext.dart';
+import '../../core/routes/app_router.dart';
 import '../shared/curved_header_background.dart';
 import '../shared/user_avatar.dart';
 import 'shared/stat_item.dart';
@@ -404,13 +406,14 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
           ],
 
           //TODO: 有新的request时，active student 的sport会变成最新的
-
           20.heightBox,
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    context.pushRoute(StudentProgressRoute(student: child));
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
@@ -423,7 +426,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                       ),
                     ),
                     child: Text(
-                      status == 'pending' ? 'Message Parent' : 'View Profile',
+                      status == 'pending' ? 'Message Parent' : 'View Progress',
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -485,5 +488,3 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
     );
   }
 }
-
-// 构建自定义 TabBar

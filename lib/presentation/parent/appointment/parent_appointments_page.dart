@@ -481,32 +481,11 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                         return Column(
                           children:
                               filteredAppointments.map((app) {
-                                final startStr = DateFormat(
-                                  'hh:mm a',
-                                ).format(app.dateTime);
-
-                                final endStr = DateFormat('hh:mm a').format(
-                                  app.dateTime.add(
-                                    Duration(minutes: app.duration),
-                                  ),
-                                );
-
-                                final statusStr =
-                                    app.status.name[0].toUpperCase() +
-                                    app.status.name.substring(1);
-
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
                                   child: _buildAppointmentCard(
-                                    appointmentId: app.id,
-                                    dateTime: app.dateTime,
-                                    time: '$startStr - $endStr',
-                                    status: statusStr,
-                                    coachName: app.trainerName,
-                                    sport: app.sport,
-                                    title: '${app.sport} Session',
-                                    location: app.location,
-                                    trainerId: app.trainerId,
+                                    context,
+                                    appointment: app,
                                   ),
                                 );
                               }).toList(),
@@ -524,19 +503,26 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     );
   }
 
-  Widget _buildAppointmentCard({
-    required String appointmentId,
-    required DateTime dateTime,
-    required String time,
-    required String status,
-    required String coachName,
-    required String sport,
-    required String title,
-    required String location,
-    required String trainerId,
+  Widget _buildAppointmentCard(
+    BuildContext context, {
+    required AppointmentModel appointment,
   }) {
+    final startTimeStr = DateFormat('hh:mm a').format(appointment.dateTime);
+    final endTimeStr = DateFormat(
+      'hh:mm a',
+    ).format(appointment.dateTime.add(Duration(minutes: appointment.duration)));
+
+    final timeRangeDisplay = '$startTimeStr - $endTimeStr';
+
+    final status = appointment.status;
+    final statusText = status.name[0].toUpperCase() + status.name.substring(1);
+
     final isRescheduleDisabled =
-        status == 'Completed' || status == 'Cancelled' || status == 'Rejected';
+        status == AppointmentStatus.cancelled ||
+        status == AppointmentStatus.rejected;
+
+    final coachName = appointment.trainerName;
+    final sport = appointment.sport;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -563,18 +549,20 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  time,
+                  timeRangeDisplay,
                   style: AppWidget.bodyMedium().copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  status,
+                  statusText,
                   style: AppWidget.bodySmall().copyWith(
                     color:
-                        status == 'Accepted'
+                        status == AppointmentStatus.completed
+                            ? ThemeColor.darkBlue
+                            : status == AppointmentStatus.accepted
                             ? ThemeColor.green
-                            : status == 'Pending'
+                            : status == AppointmentStatus.pending
                             ? ThemeColor.orange
                             : ThemeColor.negative,
                   ),
@@ -591,7 +579,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                   Consumer(
                     builder: (context, ref, child) {
                       final trainerAsync = ref.watch(
-                        fetchTrainerProvider(trainerId),
+                        fetchTrainerProvider(appointment.trainerId),
                       );
 
                       return trainerAsync.when(
@@ -653,7 +641,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
                     8.heightBox,
                     Text(
-                      title,
+                      '$sport Session',
                       style: AppWidget.bodyLarge().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -670,7 +658,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                         4.widthBox,
                         Expanded(
                           child: Text(
-                            location,
+                            appointment.location,
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.grey100,
                             ),
@@ -692,7 +680,10 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                 child: GestureDetector(
                   onTap:
                       () => context.pushRoute(
-                        ChatRoute(trainerId: trainerId, trainerName: coachName),
+                        ChatRoute(
+                          trainerId: appointment.trainerId,
+                          trainerName: coachName,
+                        ),
                       ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -713,39 +704,61 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
               ),
               12.widthBox,
               Expanded(
-                child: GestureDetector(
-                  onTap:
-                      isRescheduleDisabled
-                          ? null
-                          : () {
-                            _showRescheduleModal(
-                              context,
-                              appointmentId,
-                              trainerId,
-                              dateTime,
-                            );
-                          },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: ThemeColor.lightGrey),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Reschedule',
-                      style: AppWidget.bodySmall().copyWith(
-                        fontWeight: FontWeight.bold,
-                        color:
-                            (status == 'Completed' ||
-                                    status == 'Cancelled' ||
-                                    status == 'Rejected')
-                                ? ThemeColor.grey100
-                                : ThemeColor.black,
-                      ),
-                    ),
-                  ),
-                ),
+                child:
+                    status == AppointmentStatus.completed
+                        ? GestureDetector(
+                          onTap:
+                              () => context.pushRoute(
+                                SessionDetailRoute(appointment: appointment),
+                              ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: ThemeColor.darkBlue),
+                              borderRadius: BorderRadius.circular(20),
+                              color: ThemeColor.aquaBlue.withValues(alpha: 0.1),
+                            ),
+                            child: Text(
+                              'View Details',
+                              style: AppWidget.bodySmall().copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.darkBlue,
+                              ),
+                            ),
+                          ),
+                        )
+                        : GestureDetector(
+                          onTap:
+                              isRescheduleDisabled
+                                  ? null
+                                  : () {
+                                    _showRescheduleModal(
+                                      context,
+                                      appointment.id,
+                                      appointment.trainerId,
+                                      appointment.dateTime,
+                                    );
+                                  },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: ThemeColor.lightGrey),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'Reschedule',
+                              style: AppWidget.bodySmall().copyWith(
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    isRescheduleDisabled
+                                        ? ThemeColor.grey100
+                                        : ThemeColor.black,
+                              ),
+                            ),
+                          ),
+                        ),
               ),
             ],
           ),
