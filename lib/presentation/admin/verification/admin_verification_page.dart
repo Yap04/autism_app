@@ -155,7 +155,7 @@ class AdminVerificationPage extends ConsumerWidget {
       child: Row(
         children: [
           UserAvatar(
-            radius: 28,
+            radius: 24,
             userAvatarUrl: applicant.userAvatarUrl,
             username: applicant.name,
           ),
