@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../application/auth/auth_notifier.dart';
 import '../../application/providers/repository_providers.dart';
@@ -9,8 +13,11 @@ import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/user_model.dart';
+import '../../infrastructure/services/image_service.dart';
+import '../shared/bottom_action_button.dart';
 import '../shared/snack_bar.dart';
-import 'widgets/gender_dropdown_field.dart';
+import '../shared/user_avatar.dart';
+import 'widgets/gender_selector_field.dart';
 import 'widgets/profile_input_field.dart';
 
 @RoutePage()
@@ -29,6 +36,46 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _emailController = TextEditingController();
 
   Gender? _selectedGender;
+
+  bool _isUploadingAvatar = false;
+
+  Future<void> _pickAndUploadAvatar() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (picked == null) return;
+
+    setState(() => _isUploadingAvatar = true);
+
+    try {
+      final file = File(picked.path);
+      final url = await ImageService.uploadToImgBB(file);
+
+      if (url == null) {
+        AppSnackBar.error(context, 'Failed to upload image');
+        return;
+      }
+
+      final currentUser = ref.read(authNotifierProvider).value;
+      if (currentUser == null) {
+        return;
+      }
+
+      await ref
+          .read(userRepositoryProvider)
+          .updateUser(currentUser.copyWith(userAvatarUrl: url));
+
+      ref.invalidate(authNotifierProvider);
+      AppSnackBar.success(context, 'Profile picture updated!');
+    } catch (e) {
+      AppSnackBar.error(context, 'Error: $e');
+    } finally {
+      setState(() => _isUploadingAvatar = false);
+    }
+  }
 
   @override
   void initState() {
@@ -95,9 +142,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     return PopScope(
       canPop: canPop,
       child: Scaffold(
-        backgroundColor: ThemeColor.white,
+        backgroundColor: ThemeColor.cream,
         appBar: AppBar(
-          backgroundColor: ThemeColor.white,
+          backgroundColor: ThemeColor.cream,
           leading:
               canPop
                   ? IconButton(
@@ -107,96 +154,109 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   : null,
           title: Text('Edit profile', style: AppWidget.h2TextFieldStyle()),
           centerTitle: true,
-
-          actions: [
-            if (!canPop)
-              TextButton(
-                onPressed: () {
-                  final currentUser = ref.read(authNotifierProvider).value;
-
-                  if (currentUser?.role == UserRole.trainer) {
-                    context.router.replace(const TrainerBottomNavRoute());
-                    return;
-                  } else {
-                    context.router.replace(const ParentBottomNavRoute());
-                  }
-                },
-                child: Text(
-                  'Skip',
-                  style: AppWidget.bodyMedium().copyWith(
-                    color: ThemeColor.darkBlue,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             children: [
-              ProfileInputField(
-                label: 'Full name',
-                controller: _nameController,
-              ),
-              16.heightBox,
+              _buildAvatarSection(),
+              24.heightBox,
 
-              ProfileInputField(
-                label: 'Nick name',
-                controller: _nicknameController,
-              ),
-              16.heightBox,
-
-              ProfileInputField(
-                label: 'Email Address',
-                controller: _emailController,
-                readOnly: true,
-              ),
-              16.heightBox,
-
-              ProfileInputField(
-                label: 'Phone number',
-                controller: _phoneController,
-                prefixWidget: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Row(
-                    children: [
-                      const Text('🇲🇾', style: TextStyle(fontSize: 20)),
-                      8.widthBox,
-                      Text(
-                        '+60',
-                        style: AppWidget.bodyLarge().copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      8.widthBox,
-                      Container(
-                        width: 1,
-                        height: 20,
-                        color: ThemeColor.grey100.withValues(alpha: 0.5),
-                      ),
-                    ],
+              _buildSectionCard(
+                title: 'PERSONAL INFO',
+                children: [
+                  ProfileInputField(
+                    label: 'Full name',
+                    controller: _nameController,
                   ),
-                ),
+                  16.heightBox,
+                  ProfileInputField(
+                    label: 'Nickname',
+                    controller: _nicknameController,
+                  ),
+                  16.heightBox,
+                  GenderSelectorField(
+                    value: _selectedGender,
+                    onChanged:
+                        (Gender? v) => setState(() => _selectedGender = v),
+                  ),
+                ],
               ),
               16.heightBox,
 
-              GenderDropdownField(
-                value: _selectedGender,
-                onChanged: (Gender? newValue) {
-                  setState(() => _selectedGender = newValue);
-                },
+              _buildSectionCard(
+                title: 'CONTACT',
+                children: [
+                  ProfileInputField(
+                    label: 'Email address',
+                    controller: _emailController,
+                    readOnly: true,
+                  ),
+                  16.heightBox,
+                  ProfileInputField(
+                    label: 'Phone number',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    prefixWidget: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Row(
+                        children: [
+                          const Text('🇲🇾', style: TextStyle(fontSize: 20)),
+                          8.widthBox,
+                          Text(
+                            '+60',
+                            style: AppWidget.bodyLarge().copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          8.widthBox,
+                          Container(
+                            width: 1,
+                            height: 20,
+                            color: ThemeColor.grey100.withValues(alpha: 0.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
               16.heightBox,
 
-              ProfileInputField(
-                label: 'Address',
-                controller: _addressController,
+              _buildSectionCard(
+                title: 'ADDRESS',
+                children: [
+                  ProfileInputField(
+                    label: 'Address',
+                    controller: _addressController,
+                    // maxLines: 3,
+                  ),
+                ],
               ),
-              40.heightBox,
+              32.heightBox,
 
-              GestureDetector(
-                onTap: () async {
+              BottomActionButton(
+                label: 'Save changes',
+                onPressed: () async {
+                  if (_nameController.text.trim().isEmpty) {
+                    AppSnackBar.error(context, 'Full name is required');
+                    return;
+                  }
+
+                  if (_phoneController.text.trim().isEmpty) {
+                    AppSnackBar.error(context, 'Phone number is required');
+                    return;
+                  }
+                  if (_selectedGender == null) {
+                    AppSnackBar.error(context, 'Please select a gender');
+                    return;
+                  }
+                  if (_addressController.text.trim().isEmpty) {
+                    AppSnackBar.error(context, 'Address is required');
+                    return;
+                  }
+
                   final currentUser = ref.read(authNotifierProvider).value;
                   if (currentUser == null) {
                     return;
@@ -226,9 +286,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     await ref
                         .read(userRepositoryProvider)
                         .updateUser(updatedUser);
-
                     ref.invalidate(authNotifierProvider);
-
                     AppSnackBar.success(
                       context,
                       'Profile updated successfully!',
@@ -247,35 +305,111 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     AppSnackBar.error(context, 'Failed to update profile: $e');
                   }
                 },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: ThemeColor.orange,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ThemeColor.orange.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    'SUBMIT',
-                    style: AppWidget.bodyMedium().copyWith(
-                      color: ThemeColor.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
+                backgroundColor: ThemeColor.orange,
               ),
               40.heightBox,
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarSection() {
+    final currentUser = ref.watch(authNotifierProvider).value;
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+          child: Stack(
+            children: [
+              UserAvatar(
+                radius: 44,
+                username:
+                    currentUser?.name?.trim().isNotEmpty ?? false
+                        ? currentUser!.name
+                        : 'New User',
+                userAvatarUrl: currentUser?.userAvatarUrl,
+                fontSize: 36,
+              ),
+
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: const BoxDecoration(
+                    color: ThemeColor.orange,
+                    shape: BoxShape.circle,
+                  ),
+                  child:
+                      _isUploadingAvatar
+                          ? const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: CircularProgressIndicator(
+                              color: ThemeColor.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Icon(
+                            Icons.edit,
+                            size: 14,
+                            color: ThemeColor.white,
+                          ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        8.heightBox,
+        Text(
+          currentUser?.name?.trim().isNotEmpty ?? false
+              ? currentUser!.name!
+              : 'New User',
+          style: AppWidget.bodyLarge().copyWith(fontWeight: FontWeight.bold),
+        ),
+        4.heightBox,
+        Text(
+          currentUser?.role.name ?? '',
+          style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppWidget.bodyExtraSmall().copyWith(
+              color: ThemeColor.grey100,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+          12.heightBox,
+          ...children,
+        ],
       ),
     );
   }

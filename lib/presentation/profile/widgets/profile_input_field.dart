@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
@@ -13,6 +14,8 @@ class ProfileInputField extends StatelessWidget {
     this.onChanged,
     this.prefixWidget,
     this.suffixWidget,
+    this.keyboardType,
+    this.inputFormatters,
     this.readOnly = false,
   });
 
@@ -22,6 +25,8 @@ class ProfileInputField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final Widget? prefixWidget;
   final Widget? suffixWidget;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final bool readOnly;
 
   @override
@@ -50,6 +55,8 @@ class ProfileInputField extends StatelessWidget {
                 ),
                 2.heightBox,
                 TextFormField(
+                  keyboardType: keyboardType,
+                  inputFormatters: inputFormatters,
                   controller: controller,
                   initialValue: initialValue,
                   onChanged: onChanged,
