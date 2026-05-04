@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/user_model.dart';
@@ -10,9 +11,7 @@ import '../providers/repository_providers.dart';
 part 'trainer_verification_provider.g.dart';
 
 @riverpod
-Stream<List<UserModel>> trainerApplications(
-  TrainerApplicationsRef ref,
-) {
+Stream<List<UserModel>> trainerApplications(TrainerApplicationsRef ref) {
   final repo = ref.watch(trainerRepositoryProvider);
   return repo.watchAllApplications();
 }
@@ -31,9 +30,13 @@ class TrainerVerificationNotifier extends _$TrainerVerificationNotifier {
 
     state = await AsyncValue.guard(() async {
       final currentUser = ref.read(authNotifierProvider).value;
-      if (currentUser == null) {
+      final firebaseAuthUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null && firebaseAuthUser == null) {
         throw Exception('Please login first.');
       }
+
+      final userId = currentUser?.id ?? firebaseAuthUser!.uid;
 
       final uploadedUrls = <String>[];
       for (final file in certificateImages) {
@@ -47,7 +50,7 @@ class TrainerVerificationNotifier extends _$TrainerVerificationNotifier {
       await ref
           .read(trainerRepositoryProvider)
           .submitTrainerApplication(
-            userId: currentUser.id,
+            userId: userId,
             certificateUrls: uploadedUrls,
             sports: selectedSports,
             bio: bio,
