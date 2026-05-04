@@ -17,6 +17,8 @@ class AdminContentEditorNotifier extends _$AdminContentEditorNotifier {
     required ContentTarget target,
     required ContentType type,
     required bool isPublished,
+    required int cpdPoints,
+    required bool isAdvanced,
   }) async {
     state = const AsyncLoading();
 
@@ -30,6 +32,8 @@ class AdminContentEditorNotifier extends _$AdminContentEditorNotifier {
         type: type,
         isPublished: isPublished,
         publishedAt: DateTime.now(),
+        cpdPoints: cpdPoints,
+        isAdvanced: isAdvanced,
       );
 
       await ref.read(contentRepositoryProvider).createContent(newContent);

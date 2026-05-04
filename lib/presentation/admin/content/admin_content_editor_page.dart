@@ -25,16 +25,19 @@ class _AdminContentEditorPageState
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   final _urlController = TextEditingController();
+  final _cpdPointsController = TextEditingController();
 
   ContentTarget _selectedTarget = ContentTarget.parent;
   ContentType _selectedType = ContentType.article;
   bool _isPublished = false;
+  bool _isAdvanced = true;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
     _urlController.dispose();
+    _cpdPointsController.dispose();
     super.dispose();
   }
 
@@ -45,6 +48,15 @@ class _AdminContentEditorPageState
 
     final notifier = ref.read(adminContentEditorNotifierProvider.notifier);
 
+    final cpdPoints =
+        (_selectedTarget == ContentTarget.trainer &&
+                _selectedType == ContentType.quiz)
+            ? (int.tryParse(_cpdPointsController.text.trim()) ?? 0)
+            : 0;
+
+    final finalIsAdvanced =
+        _selectedTarget == ContentTarget.trainer && _isAdvanced;
+
     final success = await notifier.createContent(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
@@ -52,6 +64,8 @@ class _AdminContentEditorPageState
       target: _selectedTarget,
       type: _selectedType,
       isPublished: _isPublished,
+      cpdPoints: cpdPoints,
+      isAdvanced: finalIsAdvanced,
     );
 
     if (success && mounted) {
@@ -192,16 +206,143 @@ class _AdminContentEditorPageState
                                           child: Text(type.name.toUpperCase()),
                                         );
                                       }).toList(),
-                                  onChanged:
-                                      (v) => setState(() => _selectedType = v!),
+                                  onChanged: (v) {
+                                    setState(() {
+                                      _selectedType = v!;
+                                      if (v != ContentType.quiz) {
+                                        _cpdPointsController.text = '0';
+                                      }
+                                    });
+                                  },
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      32.heightBox,
+                      24.heightBox,
 
+                      if (_selectedTarget == ContentTarget.trainer) ...[
+                        if (_selectedType == ContentType.quiz) ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.orange.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: ThemeColor.orange.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.stars_rounded,
+                                      color: ThemeColor.orange,
+                                      size: 18,
+                                    ),
+                                    8.widthBox,
+                                    Text(
+                                      'CPD Points *',
+                                      style: AppWidget.bodyMedium().copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ThemeColor.orange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                4.heightBox,
+                                Text(
+                                  'Points awarded to trainers upon completing this content.',
+                                  style: AppWidget.bodySmall().copyWith(
+                                    color: ThemeColor.grey100,
+                                  ),
+                                ),
+                                12.heightBox,
+                                TextFormField(
+                                  controller: _cpdPointsController,
+                                  keyboardType: TextInputType.number,
+                                  decoration: _inputDecoration(
+                                    'e.g. 10',
+                                  ).copyWith(
+                                    suffixText: 'pts',
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                        color: ThemeColor.orange,
+                                      ),
+                                    ),
+                                  ),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return 'CPD points is required for trainer content';
+                                    }
+                                    final pts = int.tryParse(v);
+                                    if (pts == null || pts < 0) {
+                                      return 'Enter a valid number (0 or more)';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          16.heightBox,
+                        ],
+
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: ThemeColor.lightGrey),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Is Advanced Course?',
+                                    style: AppWidget.bodyMedium().copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    _isAdvanced
+                                        ? 'For approved trainers (earns points)'
+                                        : 'For new trainer onboarding (no points)',
+                                    style: AppWidget.bodySmall().copyWith(
+                                      color:
+                                          _isAdvanced
+                                              ? ThemeColor.blue
+                                              : ThemeColor.grey100,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Switch(
+                                value: _isAdvanced,
+                                activeThumbColor: ThemeColor.blue,
+                                onChanged: (v) {
+                                  setState(() {
+                                    _isAdvanced = v;
+                                    if (!v) {
+                                      _cpdPointsController.text = '0';
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        24.heightBox,
+                      ],
+
+                      // 32.heightBox,
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
