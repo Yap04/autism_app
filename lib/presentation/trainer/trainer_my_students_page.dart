@@ -120,23 +120,27 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                         ),
                         32.heightBox,
 
-                        // 自定义 Tab 切换栏
                         _buildCustomTabBar(),
                         24.heightBox,
 
-                        // 动态渲染学生列表
                         if (filteredStudents.isEmpty)
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(40.0),
-                              child: Text(
-                                'No students found.',
-                                style: AppWidget.bodyMedium().copyWith(
-                                  color: ThemeColor.grey100,
-                                ),
-                              ),
-                            ),
-                          )
+                          _currentTabIndex == 0
+                              ? _buildEmptyState(
+                                'No Active Students',
+                                'You currently have no active students. When you accept requests, they will appear here.',
+                                Icons.people_outline_rounded,
+                              )
+                              : _currentTabIndex == 1
+                              ? _buildEmptyState(
+                                'No Pending Requests',
+                                'You are all caught up! There are no pending student requests right now.',
+                                Icons.inbox_rounded,
+                              )
+                              : _buildEmptyState(
+                                'No Past Students',
+                                'You do not have any past student records yet.',
+                                Icons.history_rounded,
+                              )
                         else
                           ListView.separated(
                             shrinkWrap: true,
@@ -179,7 +183,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
     );
   }
 
-  // 构建单个 Tab 按钮
   Widget _buildTabItem(String title, int index) {
     final isSelected = _currentTabIndex == index;
     return Expanded(
@@ -218,7 +221,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
     );
   }
 
-  // 升级后的学生卡片
   Widget _buildStudentCard(TrainerStudentUIModel data) {
     final child = data.child;
     final name = child.name;
@@ -226,12 +228,10 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
     final specialNeeds = child.specialNeeds;
     final avatarUrl = child.userAvatarUrl;
 
-    // 从 booking 对象里取订单资料
     final booking = data.latestBooking;
     final parentName = booking.parentName;
     final sport = booking.sport;
 
-    // 你算好的 Tab 状态
     final status = data.status;
 
     final hasPendingBooking = data.hasPendingBooking;
@@ -426,7 +426,9 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                       ),
                     ),
                     child: Text(
-                      status == 'pending' ? 'Message Parent' : 'View Progress',
+                      status == 'pending'
+                          ? 'Message Parent'
+                          : 'View Performance',
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -482,6 +484,52 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String title, String subtitle, IconData icon) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: ThemeColor.grey100.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeColor.aquaBlue.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 36, color: ThemeColor.darkBlue),
+          ),
+          16.heightBox,
+          Text(
+            title,
+            style: AppWidget.bodyLarge().copyWith(
+              fontWeight: FontWeight.bold,
+              color: ThemeColor.darkBlue,
+            ),
+          ),
+          8.heightBox,
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
           ),
         ],
       ),

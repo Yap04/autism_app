@@ -466,17 +466,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                               );
 
                         if (filteredAppointments.isEmpty) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 40),
-                            child: Center(
-                              child: Text(
-                                'No ${_selectedTab.toLowerCase()} appointments for this date.',
-                                style: AppWidget.bodyMedium().copyWith(
-                                  color: ThemeColor.grey100,
-                                ),
-                              ),
-                            ),
-                          );
+                          return _buildEmptyState();
                         }
                         return Column(
                           children:
@@ -763,6 +753,68 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                Container(
+                  width: 88,
+                  height: 88,
+                  decoration: BoxDecoration(
+                    color: ThemeColor.aquaBlue.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.event_note_rounded,
+                    size: 44,
+                    color: ThemeColor.darkBlue,
+                  ),
+                ),
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: ThemeColor.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: ThemeColor.aquaBlue, width: 1.5),
+                  ),
+                  child: const Icon(
+                    Icons.question_mark_rounded,
+                    size: 16,
+                    color: ThemeColor.darkBlue,
+                  ),
+                ),
+              ],
+            ),
+            20.heightBox,
+            Text(
+              'No ${_selectedTab.toLowerCase()} appointments',
+              style: AppWidget.bodyLarge().copyWith(
+                fontWeight: FontWeight.bold,
+                color: ThemeColor.black,
+              ),
+            ),
+            8.heightBox,
+            Text(
+              'Tap a date on the calendar to check\nor book a new session',
+              textAlign: TextAlign.center,
+              style: AppWidget.bodySmall().copyWith(
+                color: ThemeColor.grey100,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
