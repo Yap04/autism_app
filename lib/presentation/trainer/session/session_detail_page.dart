@@ -150,14 +150,14 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     required bool isParent,
   }) {
     final childData = childAsync.valueOrNull;
-    var displayTitle = appt.childName;
+    var subtitle = appt.childName;
 
     if (childData != null) {
       final genderText =
           (childData.gender != null && childData.gender!.isNotEmpty)
               ? ', ${childData.gender}'
               : '';
-      displayTitle = '${appt.childName} (${childData.age}y$genderText)';
+      subtitle = '(${childData.age}y$genderText)';
     }
 
     return Container(
@@ -186,14 +186,24 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  displayTitle,
-                  style: AppWidget.h2TextFieldStyle().copyWith(
+                  appt.childName,
+                  style: AppWidget.h3TextFieldStyle().copyWith(
                     color: ThemeColor.white,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
                 4.heightBox,
+                Text(
+                  subtitle,
+                  style: AppWidget.bodyMedium().copyWith(
+                    color: ThemeColor.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                4.heightBox,
+
                 Text(
                   'Parent: ${appt.parentName}',
                   style: AppWidget.bodyMedium().copyWith(
