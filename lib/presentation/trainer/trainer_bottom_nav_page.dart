@@ -1,27 +1,32 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
-import '../chat/chat_list_page.dart';
+import '../../domain/models/user_model.dart';
 import '../profile/profile_page.dart';
+import '../profile/trainer_verification_page.dart';
 import 'appointment/trainer_appointments_page.dart';
 import 'home/trainer_home_page.dart';
+import 'trainer_academy_page.dart';
 import 'trainer_my_students_page.dart';
 
 @RoutePage()
-class TrainerBottomNavPage extends StatefulWidget {
+class TrainerBottomNavPage extends ConsumerStatefulWidget {
   const TrainerBottomNavPage({super.key});
 
   @override
-  State<TrainerBottomNavPage> createState() => _TrainerBottomNavPageState();
+  ConsumerState<TrainerBottomNavPage> createState() =>
+      _TrainerBottomNavPageState();
 }
 
-class _TrainerBottomNavPageState extends State<TrainerBottomNavPage> {
+class _TrainerBottomNavPageState extends ConsumerState<TrainerBottomNavPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
     TrainerHomePage(),
-    ChatListPage(),
+    TrainerAcademyPage(),
     TrainerMyStudentsPage(),
     TrainerAppointmentsPage(),
     ProfilePage(),
@@ -35,6 +40,27 @@ class _TrainerBottomNavPageState extends State<TrainerBottomNavPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(authNotifierProvider).value;
+
+    if (currentUser == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final isPendingTrainer =
+        currentUser.verificationStatus == VerificationStatus.pending;
+
+    if (isPendingTrainer) {
+      final hasSubmittedDocs =
+          currentUser.certificateUrls != null &&
+          currentUser.certificateUrls!.isNotEmpty;
+
+      if (!hasSubmittedDocs) {
+        return const Scaffold(body: TrainerVerificationPage());
+      } else {
+        return const Scaffold(body: TrainerAcademyPage());
+      }
+    }
+
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -50,8 +76,8 @@ class _TrainerBottomNavPageState extends State<TrainerBottomNavPage> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Chat',
+            icon: Icon(Icons.school_outlined),
+            label: 'Academy',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.supervisor_account_outlined),
@@ -59,7 +85,7 @@ class _TrainerBottomNavPageState extends State<TrainerBottomNavPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
-            label: 'Appointments',
+            label: 'Schedule',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

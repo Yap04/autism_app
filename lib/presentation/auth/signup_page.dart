@@ -26,6 +26,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   bool isObscure = true;
   bool rememberMe = false;
 
+  UserRole _selectedRole = UserRole.parent;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -49,7 +51,80 @@ class _SignupPageState extends ConsumerState<SignupPage> {
           child: Column(
             children: [
               Text('Create your Account', style: AppWidget.h1TextFieldStyle()),
-              48.heightBox,
+              32.heightBox,
+
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap:
+                          () => setState(() => _selectedRole = UserRole.parent),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color:
+                              _selectedRole == UserRole.parent
+                                  ? ThemeColor.darkBlue
+                                  : ThemeColor.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: ThemeColor.darkBlue,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'I am a Parent',
+                            style: AppWidget.bodySmall().copyWith(
+                              color:
+                                  _selectedRole == UserRole.parent
+                                      ? ThemeColor.white
+                                      : ThemeColor.darkBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  16.widthBox,
+                  Expanded(
+                    child: GestureDetector(
+                      onTap:
+                          () =>
+                              setState(() => _selectedRole = UserRole.trainer),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color:
+                              _selectedRole == UserRole.trainer
+                                  ? ThemeColor.darkBlue
+                                  : ThemeColor.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: ThemeColor.darkBlue,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'I am a Coach',
+                            style: AppWidget.bodySmall().copyWith(
+                              color:
+                                  _selectedRole == UserRole.trainer
+                                      ? ThemeColor.white
+                                      : ThemeColor.darkBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              32.heightBox,
 
               TextField(
                 controller: _emailController,
@@ -156,7 +231,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       .register(
                         email: email,
                         password: password,
-                        role: UserRole.parent,
+                        role: _selectedRole,
                       );
 
                   final authState = ref.read(authNotifierProvider);
@@ -172,10 +247,14 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
                     final user = authState.value!;
 
-                    if (user.name?.isEmpty ?? true) {
+                    if (user.role == UserRole.trainer) {
                       context.replaceRoute(const EditProfileRoute());
                     } else {
-                      context.replaceRoute(const ParentBottomNavRoute());
+                      if (user.name?.isEmpty ?? true) {
+                        context.replaceRoute(const EditProfileRoute());
+                      } else {
+                        context.replaceRoute(const ParentBottomNavRoute());
+                      }
                     }
                   }
                 },

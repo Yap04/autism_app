@@ -7,7 +7,6 @@ import '../../application/appointment/appointment_provider.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../domain/models/appointment_model.dart';
-import '../chat/chat_list_page.dart';
 import '../profile/profile_page.dart';
 import 'appointment/parent_appointments_page.dart';
 import 'appointment/parent_discover_page.dart';
@@ -27,7 +26,6 @@ class _ParentBottomNavPageState extends ConsumerState<ParentBottomNavPage> {
 
   final List<Widget> _pages = const [
     ParentHomePage(),
-    ChatListPage(),
     ParentDiscoverPage(),
     ParentAppointmentsPage(),
     ProfilePage(),
@@ -82,10 +80,6 @@ class _ParentBottomNavPageState extends ConsumerState<ParentBottomNavPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.explore_outlined),
