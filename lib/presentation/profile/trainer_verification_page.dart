@@ -10,7 +10,7 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../application/user/trainer_verification_provider.dart';
-import '../../domain/models/user_model.dart';
+import '../../core/routes/app_router.dart';
 import '../shared/app_text_field.dart';
 import '../shared/bottom_action_button.dart';
 import '../shared/snack_bar.dart';
@@ -107,7 +107,7 @@ class _TrainerVerificationPageState
       final currentUser = ref.read(authNotifierProvider).value;
       if (currentUser != null) {
         final updatedUser = currentUser.copyWith(
-          verificationStatus: VerificationStatus.pending,
+          certificateUrls: ['submitted'],
         );
         ref.read(authNotifierProvider.notifier).updateLocalUser(updatedUser);
       }
@@ -117,7 +117,7 @@ class _TrainerVerificationPageState
           context,
           'Application submitted successfully! Please wait for admin approval.',
         );
-        context.router.maybePop();
+        context.replaceRoute(const TrainerBottomNavRoute());
       }
     } catch (e) {
       if (mounted) {
