@@ -78,4 +78,22 @@ class FirebaseUserRepository implements UserRepository {
           }).toList();
         });
   }
+
+  @override
+  Future<List<UserModel>> getPendingTrainers() async {
+    try {
+      final snapshot =
+          await _firestore
+              .collection('users')
+              .where('role', isEqualTo: 'trainer')
+              .where('verificationStatus', isEqualTo: 'pending')
+              .get();
+
+      return snapshot.docs
+          .map((doc) => UserModel.fromJson(doc.data()))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch pending trainers: $e');
+    }
+  }
 }
