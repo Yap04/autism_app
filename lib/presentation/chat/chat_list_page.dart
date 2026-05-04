@@ -60,133 +60,123 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
-      body: Stack(
-        children: [
-          CurvedHeaderBackground(
-            customHeight: MediaQuery.of(context).padding.top + 124,
+      appBar: AppBar(
+        flexibleSpace: const CurvedHeaderBackground(),
+        backgroundColor: Colors.transparent,
+        centerTitle: true,
+        title: Text('Chats', style: AppWidget.h2TextFieldStyle()),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: AppTextField(
+              controller: _searchController,
+              hintText: 'Search chats...',
+              prefixIcon: const Icon(
+                Icons.search_outlined,
+                color: ThemeColor.grey100,
+              ),
+            ),
           ),
-
-          SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Text('Chats', style: AppWidget.h2TextFieldStyle()),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: AppTextField(
-                    controller: _searchController,
-                    hintText: 'Search chats...',
-                    prefixIcon: const Icon(
-                      Icons.search_outlined,
-                      color: ThemeColor.grey100,
+        ),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: chatRoomsAsync.when(
+                loading:
+                    () => const Center(
+                      child: CircularProgressIndicator(
+                        color: ThemeColor.darkBlue,
+                      ),
                     ),
-                  ),
-                ),
+                error: (e, _) => Center(child: Text('Error: $e')),
+                data: (rooms) {
+                  final filteredRooms =
+                      rooms.where((room) {
+                        return !room.participants.contains('chatbot_ai');
+                      }).toList();
 
-                8.heightBox,
-                Expanded(
-                  child: chatRoomsAsync.when(
-                    loading:
-                        () => const Center(
-                          child: CircularProgressIndicator(
-                            color: ThemeColor.darkBlue,
-                          ),
-                        ),
-                    error: (e, _) => Center(child: Text('Error: $e')),
-                    data: (rooms) {
-                      final filteredRooms =
-                          rooms.where((room) {
-                            return !room.participants.contains('chatbot_ai');
-                          }).toList();
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(top: 8, bottom: 20),
+                    itemCount: filteredRooms.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        if (_searchQuery.isNotEmpty &&
+                            !'ai chatbot'.contains(_searchQuery)) {
+                          return const SizedBox.shrink();
+                        }
 
-                      return ListView.builder(
-                        padding: const EdgeInsets.only(top: 8, bottom: 20),
-                        itemCount: filteredRooms.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            if (_searchQuery.isNotEmpty &&
-                                !'ai chatbot'.contains(_searchQuery)) {
-                              return const SizedBox.shrink();
-                            }
-
-                            return Column(
-                              children: [
-                                ChatListItem(
-                                  username: 'AI Assistant',
-                                  lastMessage:
-                                      'Ask me anything about autism sports training',
-                                  time: '',
-                                  isOnline: true,
-                                  imageUrl: 'asset/image/chatbot.png',
-                                  onTap:
-                                      () => context.pushRoute(
-                                        ChatRoute(
-                                          trainerId: 'chatbot_ai',
-                                          trainerName: 'AI Assistant',
-                                        ),
-                                      ),
-                                ),
-                                if (filteredRooms.isEmpty &&
-                                    _searchQuery.isEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 60),
-                                    child: _buildEmptyState(),
-                                  ),
-                              ],
-                            );
-                          }
-
-                          final room = filteredRooms[index - 1];
-                          final otherUserId = room.participants.firstWhere(
-                            (id) => id != currentUser?.id,
-                            orElse: () => '',
-                          );
-
-                          final otherUserAsync = ref.watch(
-                            chatUserInfoProvider(otherUserId),
-                          );
-
-                          return otherUserAsync.when(
-                            loading:
-                                () => const ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: ThemeColor.lightGrey,
-                                  ),
-                                  title: SizedBox(
-                                    width: 100,
-                                    height: 16,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: ThemeColor.lightGrey,
-                                      ),
+                        return Column(
+                          children: [
+                            ChatListItem(
+                              username: 'AI Assistant',
+                              lastMessage:
+                                  'Ask me anything about autism sports training',
+                              time: '',
+                              isOnline: true,
+                              imageUrl: 'asset/image/chatbot.png',
+                              onTap:
+                                  () => context.pushRoute(
+                                    ChatRoute(
+                                      trainerId: 'chatbot_ai',
+                                      trainerName: 'AI Assistant',
                                     ),
                                   ),
+                            ),
+                            if (filteredRooms.isEmpty && _searchQuery.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 60),
+                                child: _buildEmptyState(),
+                              ),
+                          ],
+                        );
+                      }
+
+                      final room = filteredRooms[index - 1];
+                      final otherUserId = room.participants.firstWhere(
+                        (id) => id != currentUser?.id,
+                        orElse: () => '',
+                      );
+
+                      final otherUserAsync = ref.watch(
+                        chatUserInfoProvider(otherUserId),
+                      );
+
+                      return otherUserAsync.when(
+                        loading:
+                            () => const ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: ThemeColor.lightGrey,
+                              ),
+                              title: SizedBox(
+                                width: 100,
+                                height: 16,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: ThemeColor.lightGrey,
+                                  ),
                                 ),
-                            error: (e, _) => const SizedBox.shrink(),
-                            data: (otherUser) {
-                              final name = otherUser?.name ?? 'Unknown User';
+                              ),
+                            ),
+                        error: (e, _) => const SizedBox.shrink(),
+                        data: (otherUser) {
+                          final name = otherUser?.name ?? 'Unknown User';
+                          final avatarUrl = otherUser?.userAvatarUrl;
+                          final isSuspended =
+                              otherUser?.status == UserStatus.suspended;
 
-                              final avatarUrl = otherUser?.userAvatarUrl;
+                          if (_searchQuery.isNotEmpty &&
+                              !name.toLowerCase().contains(_searchQuery)) {
+                            return emptyBox;
+                          }
 
-                              if (_searchQuery.isNotEmpty &&
-                                  !name.toLowerCase().contains(_searchQuery)) {
-                                return emptyBox;
-                              }
-
-                              return ChatListItem(
-                                username: name,
-                                lastMessage:
+                          return ChatListItem(
+                            username: name,
+                            lastMessage:
                                 (room.lastMessage != null &&
                                         (Uri.tryParse(
                                               room.lastMessage!,
@@ -195,28 +185,28 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                                         room.lastMessage!.startsWith('http'))
                                     ? '📷 Sent an image'
                                     : room.lastMessage ??
-                                    'Started a conversation',
-                                time: _formatTimestamp(room.lastUpdatedAt),
-                                imageUrl: avatarUrl,
+                                        'Started a conversation',
+                            time: _formatTimestamp(room.lastUpdatedAt),
+                            imageUrl: avatarUrl,
                             isSuspended: isSuspended,
                             unreadCount: room.unreadCount,
-                                onTap:
-                                    () => context.pushRoute(
-                                      ChatRoute(
-                                        trainerId: otherUserId,
-                                        trainerName: name,
-                                      ),
-                                    ),
-                              );
-                            },
+                            onTap:
+                                () => context.pushRoute(
+                                  ChatRoute(
+                                    trainerId: otherUserId,
+                                    trainerName: name,
+                                  ),
+                                ),
                           );
                         },
                       );
                     },
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
+          ],
+        ),
       ),
     );
   }

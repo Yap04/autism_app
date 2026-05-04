@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constant/color_constant.dart';
+import '../../../core/extension/widget_ext.dart';
 import '../../shared/user_avatar.dart';
 import 'ai_avatar.dart';
 
@@ -11,6 +12,8 @@ class ChatListItem extends StatelessWidget {
     this.imageUrl,
     this.onTap,
     this.isOnline = false,
+    this.isSuspended = false,
+    this.unreadCount = 0,
     super.key,
   });
 
@@ -50,6 +53,26 @@ class ChatListItem extends StatelessWidget {
                   color: Colors.green,
                   shape: BoxShape.circle,
                   border: Border.all(color: ThemeColor.cream, width: 2),
+                ),
+              ),
+            ),
+
+          if (isSuspended)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: ThemeColor.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: ThemeColor.cream, width: 2),
+                ),
+                child: const Icon(
+                  Icons.block,
+                  size: 10,
+                  color: ThemeColor.white,
                 ),
               ),
             ),

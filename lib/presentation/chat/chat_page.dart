@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../../application/auth/auth_notifier.dart';
@@ -10,6 +13,9 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/message_model.dart';
 import '../../application/chat/chat_user_provider.dart';
+import '../../domain/models/user_model.dart';
+import '../../infrastructure/services/image_service.dart';
+import '../shared/cached_image.dart';
 import '../shared/snack_bar.dart';
 import '../shared/user_avatar.dart';
 import 'widgets/ai_avatar.dart';
@@ -183,6 +189,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         widget.trainerId == 'chatbot_ai' ||
         widget.trainerName == 'AI Assistant';
 
+    final otherUser = ref.watch(userByIdProvider(widget.trainerId)).valueOrNull;
+    final isSuspended =
+        !isAiAssistant && otherUser?.status == UserStatus.suspended;
+
     return Scaffold(
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
@@ -197,10 +207,36 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     .watch(userByIdProvider(widget.trainerId))
                     .when(
                       data:
-                          (user) => UserAvatar(
-                            radius: 18,
-                            username: widget.trainerName,
-                            userAvatarUrl: user?.userAvatarUrl,
+                          (user) => Stack(
+                            children: [
+                              UserAvatar(
+                                radius: 18,
+                                username: widget.trainerName,
+                                userAvatarUrl: user?.userAvatarUrl,
+                              ),
+                              if (isSuspended)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: ThemeColor.red,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: ThemeColor.cream,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.block,
+                                      size: 8,
+                                      color: ThemeColor.white,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                       loading:
                           () => const CircleAvatar(
@@ -255,9 +291,31 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   ),
             ),
 
-            _buildBottomInputArea(),
+            isSuspended ? _buildSuspendedBanner() : _buildBottomInputArea(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSuspendedBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: const BoxDecoration(
+        color: ThemeColor.white,
+        border: Border(top: BorderSide(color: ThemeColor.lightGrey)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.block, color: ThemeColor.red, size: 20),
+          12.widthBox,
+          Expanded(
+            child: Text(
+              'This account has been suspended. You can no longer send messages.',
+              style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -330,12 +388,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                       ),
                     )
                   else
-                  Text(
-                    message.text,
-                    style: AppWidget.bodyLarge().copyWith(
-                      color: isMe ? ThemeColor.white : ThemeColor.black,
+                    Text(
+                      message.text,
+                      style: AppWidget.bodyLarge().copyWith(
+                        color: isMe ? ThemeColor.white : ThemeColor.black,
+                      ),
                     ),
-                  ),
                   4.heightBox,
                   Text(
                     timeString,
@@ -377,9 +435,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                 ),
               )
               : IconButton(
-            icon: const Icon(Icons.attach_file, color: ThemeColor.grey100),
+                icon: const Icon(Icons.attach_file, color: ThemeColor.grey100),
                 onPressed: _showImageSourceSheet,
-          ),
+              ),
 
           Expanded(
             child: TextField(

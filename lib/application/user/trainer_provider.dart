@@ -17,6 +17,7 @@ Future<List<UserModel>> trainerList(TrainerListRef ref) async {
         await FirebaseFirestore.instance
             .collection('users')
             .where('role', isEqualTo: UserRole.trainer.name)
+            .where('status', isEqualTo: UserStatus.active.name)
             .get();
 
     return snapshot.docs.map((doc) {
@@ -106,12 +107,15 @@ Future<List<TrainerStudentUIModel>> trainerStudents(
   return uiModels;
 }
 
-final fetchTrainerProvider = FutureProvider.family<UserModel?, String>((
-  ref,
-  trainerId,
-) async {
+@riverpod
+Future<UserModel?> fetchTrainer(FetchTrainerRef ref, String trainerId) async {
   if (trainerId.isEmpty) {
     return null;
   }
   return ref.watch(userRepositoryProvider).getUserById(trainerId);
-});
+}
+
+@riverpod
+Future<List<UserModel>> pendingTrainers(PendingTrainersRef ref) async {
+  return ref.watch(userRepositoryProvider).getPendingTrainers();
+}
