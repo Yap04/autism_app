@@ -14,4 +14,8 @@ abstract class UserRepository {
   Future<void> updateUserStatus(String userId, UserStatus status);
 
   Future<List<UserModel>> getPendingTrainers();
+
+  Future<String?> getUserFcmToken(String uid);
+
+  Future<void> updateUserFcmToken(String uid, String token);
 }

@@ -96,4 +96,28 @@ class FirebaseUserRepository implements UserRepository {
       throw Exception('Failed to fetch pending trainers: $e');
     }
   }
+
+  @override
+  Future<String?> getUserFcmToken(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+
+        return doc.data()?['fcmToken'] as String?;
+      }
+      return null;
+    } catch (e) {
+      print('⚠️ Failed to get FCM token for user $uid: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<void> updateUserFcmToken(String uid, String token) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({'fcmToken': token});
+    } catch (e) {
+      print('⚠️ Failed to update FCM token: $e');
+    }
+  }
 }
