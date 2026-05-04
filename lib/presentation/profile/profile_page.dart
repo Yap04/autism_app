@@ -204,13 +204,6 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
 
                         _buildDivider(),
                         _buildSettingItem(
-                          icon: Icons.notifications_none_outlined,
-                          title: 'Notifications',
-                          trailingText: 'ON',
-                          onTap: () {},
-                        ),
-                        _buildDivider(),
-                        _buildSettingItem(
                           icon: Icons.translate,
                           title: 'Language',
                           trailingText: 'English',
@@ -232,44 +225,6 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
                             }
                           },
                         ),
-
-                        if (currentUser?.role != UserRole.trainer) ...[
-                          _buildDivider(),
-                          _buildSettingItem(
-                            icon:
-                                currentUser?.verificationStatus ==
-                                        VerificationStatus.rejected
-                                    ? Icons.error_outline
-                                    : Icons.verified_user_outlined,
-                            title:
-                                currentUser?.verificationStatus ==
-                                        VerificationStatus.pending
-                                    ? 'Trainer Application (Pending)'
-                                    : currentUser?.verificationStatus ==
-                                        VerificationStatus.rejected
-                                    ? 'Application Rejected (Re-apply)'
-                                    : 'Become a Trainer',
-                            trailingText:
-                                currentUser?.verificationStatus ==
-                                        VerificationStatus.pending
-                                    ? 'Reviewing'
-                                    : null,
-                            onTap: () {
-                              if (currentUser?.verificationStatus ==
-                                  VerificationStatus.pending) {
-                                AppSnackBar.info(
-                                  context,
-                                  'Your application is currently under review.',
-                                );
-                                return;
-                              }
-
-                              context.router.push(
-                                const TrainerVerificationRoute(),
-                              );
-                            },
-                          ),
-                        ],
 
                         _buildDivider(),
                         _buildSettingItem(
