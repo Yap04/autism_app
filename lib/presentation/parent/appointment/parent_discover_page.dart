@@ -17,7 +17,6 @@ import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
-import '../../shared/app_text_field.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/trainer_card.dart';
 import '../../shared/user_avatar.dart';
@@ -207,7 +206,11 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
 
     final image = await pictureRecorder.endRecording().toImage(size, size);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+    return BitmapDescriptor.bytes(
+      byteData!.buffer.asUint8List(),
+      width: 48,
+      height: 48,
+    );
   }
 
   bool _isGeneratingMarkers = false;
@@ -286,36 +289,6 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
         title: Text(
           'Find Coaches Near You',
           style: AppWidget.h2TextFieldStyle(),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: AppTextField(
-                    controller: _searchController,
-                    hintText: 'Search by name, sport or location...',
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: ThemeColor.grey100,
-                    ),
-                  ),
-                ),
-                12.widthBox,
-                Container(
-                  height: 50,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: ThemeColor.white.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.tune, color: ThemeColor.black),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -449,12 +422,13 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                       12.widthBox,
                       Expanded(
                         child: Text(
-                          'Turn on location services to find the closest trainers to you.',
+                          'Turn on location services to find the closest trainers.',
                           style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.grey100,
                           ),
                         ),
                       ),
+                      4.widthBox,
                       GestureDetector(
                         onTap: _goToMyLocation,
                         child: Container(
