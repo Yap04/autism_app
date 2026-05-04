@@ -9,7 +9,7 @@ enum UserRole { parent, trainer, admin }
 
 enum VerificationStatus { none, pending, approved, rejected }
 
-enum Gender { female, male, preferNotToSay }
+enum Gender { male, female, other }
 
 enum UserStatus { active, suspended }
 
@@ -40,6 +40,8 @@ class UserModel with _$UserModel {
     @Default(0) int sessionCredits,
     @Default(UserStatus.active) UserStatus status,
     @Default(true) bool isAcceptingRequests,
+    @Default([]) List<String> badges,
+    @Default(0) int totalCpdPoints,
     DateTime? resumeAt,
     List<dynamic>? operatingHours,
     @TimestampConverter() DateTime? createdAt,
