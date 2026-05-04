@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../../application/content/parent_content_provider.dart';
+import '../../../../../application/content/content_provider.dart';
 import '../../../../../core/constant/color_constant.dart';
 import '../../../../../core/constant/textstyle_constant.dart';
 import '../../../../../core/extension/widget_ext.dart';
@@ -87,30 +87,29 @@ Widget buildContentCard(
           ),
           12.heightBox,
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  content.title,
-                  style: AppWidget.bodyMedium().copyWith(
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                content.title,
+                style: AppWidget.bodyMedium().copyWith(
+                  fontWeight: FontWeight.bold,
+                  height: 1.3,
                 ),
-                Text(
-                  content.description,
-                  style: AppWidget.bodySmall().copyWith(
-                    color: ThemeColor.grey100,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                content.description,
+                style: AppWidget.bodySmall().copyWith(
+                  color: ThemeColor.grey100,
                 ),
-              ],
-            ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
+          const Spacer(),
 
           Text(
             DateFormat('MMM dd, yyyy').format(content.publishedAt),
