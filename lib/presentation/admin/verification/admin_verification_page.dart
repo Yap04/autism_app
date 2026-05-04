@@ -168,7 +168,7 @@ class AdminVerificationPage extends ConsumerWidget {
                   applicant.name.toString(),
                   style: AppWidget.h3TextFieldStyle(),
                 ),
-                const SizedBox(height: 4),
+                4.heightBox,
                 Text(
                   applicant.email,
                   style: AppWidget.bodyMedium().copyWith(
@@ -313,6 +313,53 @@ class AdminVerificationPage extends ConsumerWidget {
                             applicant.rejectReason!,
                             style: AppWidget.bodyMedium().copyWith(
                               color: ThemeColor.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    24.heightBox,
+                  ],
+
+                  if (isPending) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.orange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: ThemeColor.orange.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.assignment_turned_in,
+                            color: ThemeColor.orange,
+                            size: 24,
+                          ),
+                          12.widthBox,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Academy Assessment Check',
+                                  style: AppWidget.bodyMedium().copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: ThemeColor.orange,
+                                  ),
+                                ),
+                                4.heightBox,
+                                Text(
+                                  'Please verify that this applicant has passed the required Training Quiz in the Google Forms dashboard before approving.',
+                                  style: AppWidget.bodySmall().copyWith(
+                                    color: ThemeColor.orange,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
