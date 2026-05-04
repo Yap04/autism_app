@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/appointment_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../../domain/models/user_model.dart';
+import '../../infrastructure/services/remote_notification_service.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
 
@@ -104,6 +106,26 @@ class AppointmentNotifier extends _$AppointmentNotifier {
                     : PaymentChannel.stripe,
             stripePaymentIntentId: stripePaymentIntentId,
           );
+
+      try {
+        final trainerToken = await ref
+            .read(userRepositoryProvider)
+            .getUserFcmToken(trainerId);
+
+        if (trainerToken != null && trainerToken.isNotEmpty) {
+          await RemoteNotificationService.notifyOtherUser(
+            targetFcmToken: trainerToken,
+            title: 'New Booking Reminder 📅',
+            body: '${user.name ?? 'A parent'} has booked a new $sport session for $childName!',
+          );
+        }
+      } catch (e) {
+        print('Failed to send remote notification to trainer, but appointment was saved: $e');
+      }
+
+      for (final appt in appointmentsToCreate) {
+        await scheduleRemindersForAppointment(appt);
+      }
     } catch (e) {
       throw Exception('Failed to create appointment: $e');
     }
@@ -126,6 +148,11 @@ class AppointmentNotifier extends _$AppointmentNotifier {
   Future<void> scheduleRemindersForAppointment(
     AppointmentModel appointment,
   ) async {
+    if (kIsWeb) {
+      print('Web Environment: Skipping local alarm setup, triggering remote notification only.');
+      return;
+    }
+
     final notificationService = ref.read(notificationServiceProvider);
     final notificationId = appointment.dateTime.millisecondsSinceEpoch
         .remainder(100000);
