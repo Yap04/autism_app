@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/user_model.dart';
 import '../providers/repository_providers.dart';
@@ -6,6 +7,17 @@ part 'auth_notifier.g.dart';
 
 @riverpod
 class AuthNotifier extends _$AuthNotifier {
+  Future<void> _updateDeviceToken(String uid) async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await ref.read(userRepositoryProvider).updateUserFcmToken(uid, token);
+      }
+    } catch (e) {
+      print('⚠️ Failed to update FCM token: $e');
+    }
+  }
+
   @override
   FutureOr<UserModel?> build() async {
     final authRepo = ref.watch(authRepositoryProvider);
@@ -18,6 +30,9 @@ class AuthNotifier extends _$AuthNotifier {
         await authRepo.signOut();
         return null;
       }
+
+      _updateDeviceToken(uid);
+
       return user;
     }
     return null;
@@ -49,6 +64,8 @@ class AuthNotifier extends _$AuthNotifier {
       );
       await userRepo.saveUser(newUser);
 
+      _updateDeviceToken(uid);
+
       return newUser;
     });
   }
@@ -77,6 +94,8 @@ class AuthNotifier extends _$AuthNotifier {
         );
       }
 
+      _updateDeviceToken(uid);
+
       return user;
     });
   }
@@ -84,6 +103,12 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> signOut() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
+      final currentUser = state.value;
+      if (currentUser != null) {
+        await ref
+            .read(userRepositoryProvider)
+            .updateUserFcmToken(currentUser.id, '');
+      }
       await ref.read(authRepositoryProvider).signOut();
       return null;
     });
