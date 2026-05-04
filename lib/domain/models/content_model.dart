@@ -20,6 +20,8 @@ class ContentModel with _$ContentModel {
     String? contentUrl,
     @Default(0) int viewsOrTakes,
     @Default(false) bool isPublished,
+    @Default(0) int cpdPoints,
+    @Default(false) bool isAdvanced,
   }) = _ContentModel;
 
   factory ContentModel.fromJson(Map<String, dynamic> json) =>
