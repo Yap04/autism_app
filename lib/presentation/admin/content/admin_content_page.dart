@@ -41,7 +41,7 @@ class AdminContentPage extends ConsumerWidget {
                   ),
                 ],
               ),
-              _buildAddContentBtn(context),
+              _buildHeaderButtons(context),
             ],
           ),
 
@@ -158,6 +158,50 @@ class AdminContentPage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildGrantCpdBtn(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => context.pushRoute(const AdminGrantCpdRoute()),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          decoration: BoxDecoration(
+            color: ThemeColor.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: ThemeColor.orange),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.workspace_premium_outlined,
+                color: ThemeColor.orange,
+                size: 20,
+              ),
+              8.widthBox,
+              Text(
+                'Grant CPD',
+                style: AppWidget.bodyMedium().copyWith(
+                  color: ThemeColor.orange,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderButtons(BuildContext context) {
+    return Row(
+      children: [
+        _buildGrantCpdBtn(context),
+        12.widthBox,
+        _buildAddContentBtn(context),
+      ],
     );
   }
 
