@@ -20,6 +20,8 @@ class ChatListItem extends StatelessWidget {
   final String? imageUrl;
   final VoidCallback? onTap;
   final bool isOnline;
+  final bool isSuspended;
+  final int unreadCount;
 
   @override
   Widget build(BuildContext context) {
@@ -65,9 +67,32 @@ class ChatListItem extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(color: Colors.grey),
       ),
-      trailing: Text(
-        time,
-        style: const TextStyle(color: Colors.grey, fontSize: 12),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(time, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          if (unreadCount > 0) ...[
+            4.heightBox,
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: ThemeColor.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              child: Text(
+                unreadCount > 99 ? '99+' : '$unreadCount',
+                style: const TextStyle(
+                  color: ThemeColor.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ],
       ),
       onTap: onTap,
     );

@@ -10,10 +10,9 @@ class ChatRoomModel with _$ChatRoomModel {
   const factory ChatRoomModel({
     required String id,
     required List<String> participants,
-    @TimestampConverter()
-    required DateTime
-    lastUpdatedAt,
+    @TimestampConverter() required DateTime lastUpdatedAt,
     String? lastMessage,
+    @Default(0) int unreadCount,
   }) = _ChatRoomModel;
 
   factory ChatRoomModel.fromJson(Map<String, dynamic> json) =>

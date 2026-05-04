@@ -24,6 +24,16 @@ Stream<List<MessageModel>> chatMessages(ChatMessagesRef ref, String roomId) {
 }
 
 @riverpod
+int totalUnreadCount(TotalUnreadCountRef ref) {
+  final user = ref.watch(authNotifierProvider).value;
+  final rooms = ref.watch(userChatRoomsProvider).valueOrNull ?? [];
+  if (user == null) return 0;
+  return rooms
+      .where((r) => !r.participants.contains('chatbot_ai'))
+      .fold(0, (sum, r) => sum + r.unreadCount);
+}
+
+@riverpod
 class ChatNotifier extends _$ChatNotifier {
   @override
   FutureOr<void> build() {}

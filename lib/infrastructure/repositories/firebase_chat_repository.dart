@@ -68,6 +68,7 @@ class FirebaseChatRepository implements ChatRepository {
           ]),
           'lastMessage': message.text,
           'lastUpdatedAt': FieldValue.serverTimestamp(),
+          'unreadCount': FieldValue.increment(1),
         }, SetOptions(merge: true));
 
       await batch.commit();
@@ -96,6 +97,9 @@ class FirebaseChatRepository implements ChatRepository {
       for (final doc in unreadSnapshot.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
+
+      batch.update(_chatRoomsRef.doc(roomId), {'unreadCount': 0});
+
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to mark messages as read: $e');

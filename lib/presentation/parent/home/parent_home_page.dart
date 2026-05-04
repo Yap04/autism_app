@@ -45,24 +45,9 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Good Morning, \n${currentUser?.name ?? 'User'}!',
-                          style: AppWidget.h2TextFieldStyle(),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => context.pushRoute(const ProfileRoute()),
-                          child: UserAvatar(
-                            radius: 20,
-                            username:
-                                currentUser?.name ?? currentUser?.nickname,
-                            userAvatarUrl: currentUser?.userAvatarUrl,
-                          ),
-                        ),
-                      ],
+                    HomeHeaderRow(
+                      userName: currentUser?.name,
+                      fallbackName: 'parent',
                     ),
                     16.heightBox,
                     appointmentsAsync.when(

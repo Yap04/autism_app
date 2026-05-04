@@ -191,6 +191,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                                     'Started a conversation',
                                 time: _formatTimestamp(room.lastUpdatedAt),
                                 imageUrl: avatarUrl,
+                            isSuspended: isSuspended,
+                            unreadCount: room.unreadCount,
                                 onTap:
                                     () => context.pushRoute(
                                       ChatRoute(

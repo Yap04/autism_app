@@ -12,6 +12,7 @@ import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../../domain/models/transaction_model.dart';
 import '../../shared/curved_header_background.dart';
+import '../../shared/home_header_row.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/user_avatar.dart';
 import '../shared/stat_item.dart';
@@ -74,21 +75,9 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Good Morning,\n${currentUser?.name ?? 'Trainer'}!',
-                            style: AppWidget.h2TextFieldStyle(),
-                          ),
-                          UserAvatar(
-                            radius: 24,
-                            username:
-                                currentUser?.name ?? currentUser?.nickname,
-                            userAvatarUrl: currentUser?.userAvatarUrl,
-                          ),
-                        ],
+                      child: HomeHeaderRow(
+                        userName: currentUser?.name,
+                        fallbackName: 'trainer',
                       ),
                     ),
                     24.heightBox,
@@ -181,7 +170,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     ),
                     12.heightBox,
                     SizedBox(
-                      height: 190,
+                      height: 210,
                       child: appointmentsAsync.when(
                         loading:
                             () => const Center(
@@ -200,12 +189,14 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                   .toList();
 
                           if (pendingRequests.isEmpty) {
-                            return Center(
-                              child: Text(
-                                'No pending appointments',
-                                style: AppWidget.bodyMedium().copyWith(
-                                  color: ThemeColor.grey100,
-                                ),
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: _buildEmptyState(
+                                'All Caught Up!',
+                                'You have no pending requests at the moment.',
+                                Icons.inbox_rounded,
                               ),
                             );
                           }
@@ -258,15 +249,10 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                 );
 
                           if (todaySessions.isEmpty) {
-                            return Container(
-                              padding: const EdgeInsets.all(24),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'No sessions today.',
-                                style: AppWidget.bodyMedium().copyWith(
-                                  color: ThemeColor.grey100,
-                                ),
-                              ),
+                            return _buildEmptyState(
+                              'Free Schedule',
+                              'You have no sessions scheduled for today. Enjoy your day!',
+                              Icons.event_available_rounded,
                             );
                           }
 
@@ -729,5 +715,51 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
         AppSnackBar.error(context, e.toString());
       }
     }
+  }
+
+  Widget _buildEmptyState(String title, String subtitle, IconData icon) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: ThemeColor.grey100.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeColor.aquaBlue.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 36, color: ThemeColor.darkBlue),
+          ),
+          16.heightBox,
+          Text(
+            title,
+            style: AppWidget.bodyLarge().copyWith(
+              fontWeight: FontWeight.bold,
+              color: ThemeColor.darkBlue,
+            ),
+          ),
+          8.heightBox,
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
+          ),
+        ],
+      ),
+    );
   }
 }
