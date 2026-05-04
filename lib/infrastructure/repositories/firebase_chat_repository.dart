@@ -83,6 +83,8 @@ class FirebaseChatRepository implements ChatRepository {
     required String userId,
   }) async {
     try {
+      await _chatRoomsRef.doc(roomId).update({'unreadCount': 0});
+
       final unreadSnapshot =
           await _chatRoomsRef
               .doc(roomId)
@@ -91,15 +93,14 @@ class FirebaseChatRepository implements ChatRepository {
               .where('isRead', isEqualTo: false)
               .get();
 
-      if (unreadSnapshot.docs.isEmpty) return;
+      if (unreadSnapshot.docs.isEmpty) {
+        return;
+      }
 
       final batch = _firestore.batch();
       for (final doc in unreadSnapshot.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
-
-      batch.update(_chatRoomsRef.doc(roomId), {'unreadCount': 0});
-
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to mark messages as read: $e');
