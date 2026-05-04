@@ -41,6 +41,10 @@ class AuthNotifier extends _$AuthNotifier {
         id: uid,
         email: email,
         role: role,
+        verificationStatus:
+            role == UserRole.trainer
+                ? VerificationStatus.pending
+                : VerificationStatus.none,
         createdAt: DateTime.now(),
       );
       await userRepo.saveUser(newUser);
