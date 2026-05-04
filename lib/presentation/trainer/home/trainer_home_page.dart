@@ -48,7 +48,6 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
             )
             .length;
 
-    // TODO: need the change the max slots
     const maxSlotsPerDay = 10;
     final availableSlots = (maxSlotsPerDay - todaySessionsCount).clamp(
       0,
@@ -313,219 +312,223 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
     final timeString =
         '${date.day}/${date.month}/${date.year}, ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
 
-    return Container(
-      width: 300,
-      margin: const EdgeInsets.only(right: 16, bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColor.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  UserAvatar(
-                    radius: 22,
-                    username: appointment.childName,
-                    userAvatarUrl: appointment.childAvatarUrl,
-                  ),
-                  4.heightBox,
-                  Text(
-                    'Student',
-                    style: AppWidget.bodyExtraSmall().copyWith(
-                      color: ThemeColor.grey100,
-                    ),
-                  ),
-                ],
-              ),
-              12.widthBox,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap:
+          () => context.pushRoute(SessionDetailRoute(appointment: appointment)),
+      child: Container(
+        width: 300,
+        margin: const EdgeInsets.only(right: 16, bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            appointment.childName,
-                            style: AppWidget.bodyLarge(),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ThemeColor.aquaBlue.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: ThemeColor.orange,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              4.widthBox,
-                              Text(
-                                'New',
-                                style: AppWidget.bodyExtraSmall().copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    2.heightBox,
-                    Text(
-                      'Parent: ${appointment.parentName}',
-                      style: AppWidget.bodyExtraSmall().copyWith(
-                        color: ThemeColor.darkBlue,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    6.heightBox,
-                    Row(
-                      children: [
-                        Icon(
-                          getSportIcon(appointment.sport),
-                          size: 16,
-                          color: ThemeColor.darkBlue,
-                        ),
-                        4.widthBox,
-                        Text(
-                          appointment.sport,
-                          style: AppWidget.bodySmall().copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    UserAvatar(
+                      radius: 22,
+                      username: appointment.childName,
+                      userAvatarUrl: appointment.childAvatarUrl,
                     ),
                     4.heightBox,
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 12,
-                          color: ThemeColor.grey100,
+                    Text(
+                      'Student',
+                      style: AppWidget.bodyExtraSmall().copyWith(
+                        color: ThemeColor.grey100,
+                      ),
+                    ),
+                  ],
+                ),
+                12.widthBox,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              appointment.childName,
+                              style: AppWidget.bodyLarge(),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.aquaBlue.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: ThemeColor.orange,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                4.widthBox,
+                                Text(
+                                  'New',
+                                  style: AppWidget.bodyExtraSmall().copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      2.heightBox,
+                      Text(
+                        'Parent: ${appointment.parentName}',
+                        style: AppWidget.bodyExtraSmall().copyWith(
+                          color: ThemeColor.darkBlue,
+                          fontWeight: FontWeight.w600,
                         ),
-                        4.widthBox,
-                        Text(
-                          timeString,
-                          style: AppWidget.bodySmall().copyWith(
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      6.heightBox,
+                      Row(
+                        children: [
+                          Icon(
+                            getSportIcon(appointment.sport),
+                            size: 16,
+                            color: ThemeColor.darkBlue,
+                          ),
+                          4.widthBox,
+                          Text(
+                            appointment.sport,
+                            style: AppWidget.bodySmall().copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      4.heightBox,
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 12,
                             color: ThemeColor.grey100,
                           ),
-                        ),
-                      ],
-                    ),
-                    2.heightBox,
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 12,
-                          color: ThemeColor.grey100,
-                        ),
-                        4.widthBox,
-                        Expanded(
-                          child: Text(
-                            appointment.location,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                          4.widthBox,
+                          Text(
+                            timeString,
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.grey100,
                             ),
                           ),
+                        ],
+                      ),
+                      2.heightBox,
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: ThemeColor.grey100,
+                          ),
+                          4.widthBox,
+                          Expanded(
+                            child: Text(
+                              appointment.location,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: AppWidget.bodySmall().copyWith(
+                                color: ThemeColor.grey100,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap:
+                        () => _handleStatusUpdate(
+                          context,
+                          ref,
+                          appointment,
+                          AppointmentStatus.accepted,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap:
-                      () => _handleStatusUpdate(
-                        context,
-                        ref,
-                        appointment,
-                        AppointmentStatus.accepted,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: ThemeColor.darkBlue,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.darkBlue,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Accept',
-                      style: AppWidget.bodySmall().copyWith(
-                        color: ThemeColor.white,
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        'Accept',
+                        style: AppWidget.bodySmall().copyWith(
+                          color: ThemeColor.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              12.widthBox,
-              Expanded(
-                child: GestureDetector(
-                  onTap:
-                      () => _handleStatusUpdate(
-                        context,
-                        ref,
-                        appointment,
-                        AppointmentStatus.rejected,
+                12.widthBox,
+                Expanded(
+                  child: GestureDetector(
+                    onTap:
+                        () => _handleStatusUpdate(
+                          context,
+                          ref,
+                          appointment,
+                          AppointmentStatus.rejected,
+                        ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: ThemeColor.lightGrey),
                       ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: ThemeColor.lightGrey),
-                    ),
-                    child: Text(
-                      'Reject',
-                      style: AppWidget.bodySmall().copyWith(
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        'Reject',
+                        style: AppWidget.bodySmall().copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
