@@ -130,100 +130,125 @@ class TrainerCard extends StatelessWidget {
             style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
           ),
           8.heightBox,
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children:
+                sportsList.map((sport) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ThemeColor.lightGrey.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      sport,
+                      style: AppWidget.bodyExtraSmall().copyWith(
+                        color: ThemeColor.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }).toList(),
+          ),
+          12.heightBox,
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children:
-                      sportsList.map((sport) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ThemeColor.lightGrey.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            sport,
-                            style: AppWidget.bodyExtraSmall().copyWith(
-                              color: ThemeColor.black,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                ),
-              ),
-              16.widthBox,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap:
-                        isAvailable
-                            ? () {
-                              context.pushRoute(
-                                BookingDetailsRoute(
-                                  trainerId: trainer.id,
-                                  trainerName: trainer.name ?? 'unknown',
-                                  sport:
-                                      trainer.sports.isNotEmpty
-                                          ? trainer.sports.first
-                                          : 'Sports',
-                                  location: trainer.location ?? 'Kuala Lumpur',
-                                ),
-                              );
-                            }
-                            : null,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            isAvailable
-                                ? ThemeColor.blue
-                                : ThemeColor.lightGrey,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        isAvailable ? 'Book Now' : 'Unavailable',
-                        style: AppWidget.bodyMedium().copyWith(
-                          color:
-                              isAvailable
-                                  ? ThemeColor.white
-                                  : ThemeColor.grey100,
-                          fontWeight:
-                              isAvailable ? FontWeight.normal : FontWeight.bold,
+                child: GestureDetector(
+                  onTap:
+                      () => context.pushRoute(
+                        ChatRoute(
+                          trainerId: trainer.id,
+                          trainerName: trainer.name ?? 'Unknown Trainer',
                         ),
+                      ),
+
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: ThemeColor.blue,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: ThemeColor.aquaBlue),
+                    ),
+                    child: Text(
+                      'Chat with Coach',
+                      style: AppWidget.bodySmall().copyWith(
+                        color: ThemeColor.white,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
+                ),
+              ),
+              12.widthBox,
+              Expanded(
+                child: GestureDetector(
+                  onTap:
+                      isAvailable
+                          ? () {
+                            context.pushRoute(
+                              BookingDetailsRoute(
+                                trainerId: trainer.id,
+                                trainerName: trainer.name ?? 'unknown',
+                                sport:
+                                    trainer.sports.isNotEmpty
+                                        ? trainer.sports.first
+                                        : 'Sports',
+                                location: trainer.location ?? 'Kuala Lumpur',
+                              ),
+                            );
+                          }
+                          : null,
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color:
+                          isAvailable ? ThemeColor.white : ThemeColor.lightGrey,
 
-                  if (!isAvailable &&
-                      trainer.resumeAt != null &&
-                      trainer.resumeAt!.isAfter(now))
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        'Available at ${DateFormat('hh:mm a').format(trainer.resumeAt!)}',
-                        style: AppWidget.bodyExtraSmall().copyWith(
-                          color: ThemeColor.orange,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color:
+                            isAvailable
+                                ? ThemeColor.darkBlue
+                                : Colors.transparent,
                       ),
                     ),
-                ],
+                    child: Text(
+                      isAvailable ? 'Book Now' : 'Unavailable',
+                      style: AppWidget.bodySmall().copyWith(
+                        color:
+                            isAvailable
+                                ? ThemeColor.darkBlue
+                                : ThemeColor.grey100,
+                        fontWeight:
+                            isAvailable ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
+
+          if (!isAvailable &&
+              trainer.resumeAt != null &&
+              trainer.resumeAt!.isAfter(now))
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'Available at ${DateFormat('hh:mm a').format(trainer.resumeAt!)}',
+                style: AppWidget.bodyExtraSmall().copyWith(
+                  color: ThemeColor.orange,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
         ],
       ),
     );
