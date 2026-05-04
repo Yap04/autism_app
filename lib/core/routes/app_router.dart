@@ -7,6 +7,7 @@ import '../../domain/models/ticket_model.dart';
 import '../../presentation/admin/appointment/admin_appointments_page.dart';
 import '../../presentation/admin/content/admin_content_editor_page.dart';
 import '../../presentation/admin/content/admin_content_page.dart';
+import '../../presentation/admin/content/admin_grant_cpd_page.dart';
 import '../../presentation/admin/dashboard/admin_dashboard_page.dart';
 import '../../presentation/admin/layout/admin_layout_page.dart';
 import '../../presentation/admin/support/admin_support_page.dart';
@@ -38,6 +39,7 @@ import '../../presentation/profile/wallet/all_transactions_page.dart';
 import '../../presentation/profile/wallet/parent_wallet_page.dart';
 import '../../presentation/profile/wallet/trainer_wallet_page.dart';
 import '../../presentation/trainer/session/session_detail_page.dart';
+import '../../presentation/trainer/trainer_academy_page.dart';
 import '../../presentation/trainer/trainer_bottom_nav_page.dart';
 
 part 'app_router.gr.dart';
@@ -64,17 +66,18 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ParentWalletRoute.page),
     AutoRoute(page: TrainerWalletRoute.page),
     AutoRoute(page: ChatRoute.page),
+    AutoRoute(page: ChatListRoute.page),
     AutoRoute(page: AllTransactionsRoute.page),
     AutoRoute(page: ContentListRoute.page),
     AutoRoute(page: SupportRoute.page),
     AutoRoute(page: CreateTicketRoute.page),
     AutoRoute(page: TicketChatRoute.page),
     AutoRoute(page: TrainerVerificationRoute.page),
+    AutoRoute(page: TrainerAcademyRoute.page),
 
     // Admin Web Panel Routes
     AutoRoute(
       page: AdminLayoutRoute.page,
-      // initial: true,
       children: [
         AutoRoute(page: AdminDashboardRoute.page),
         AutoRoute(page: AdminVerificationRoute.page),
@@ -85,6 +88,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AdminSupportRoute.page),
       ],
     ),
+    AutoRoute(page: AdminGrantCpdRoute.page),
     AutoRoute(page: AdminContentEditorRoute.page),
   ];
 }
