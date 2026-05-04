@@ -14,6 +14,7 @@ class MessageModel with _$MessageModel {
     required String text,
     @TimestampConverter() required DateTime createdAt,
     @Default(false) bool isRead,
+    @Default(false) bool isImage,
   }) = _MessageModel;
 
   factory MessageModel.fromJson(Map<String, dynamic> json) =>

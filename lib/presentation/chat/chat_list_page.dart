@@ -187,7 +187,14 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                               return ChatListItem(
                                 username: name,
                                 lastMessage:
-                                    room.lastMessage ??
+                                (room.lastMessage != null &&
+                                        (Uri.tryParse(
+                                              room.lastMessage!,
+                                            )?.hasAbsolutePath ??
+                                            false) &&
+                                        room.lastMessage!.startsWith('http'))
+                                    ? '📷 Sent an image'
+                                    : room.lastMessage ??
                                     'Started a conversation',
                                 time: _formatTimestamp(room.lastUpdatedAt),
                                 imageUrl: avatarUrl,
@@ -210,8 +217,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 ),
               ],
             ),
-          ),
-        ],
       ),
     );
   }

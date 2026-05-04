@@ -41,6 +41,7 @@ class ChatNotifier extends _$ChatNotifier {
   Future<void> sendMessage({
     required String receiverId,
     required String text,
+    bool isImage = false,
   }) async {
     state = const AsyncLoading();
 
@@ -56,6 +57,7 @@ class ChatNotifier extends _$ChatNotifier {
         senderId: user.id,
         receiverId: receiverId,
         text: text.trim(),
+        isImage: isImage,
         createdAt: DateTime.now(),
       );
 

@@ -34,6 +34,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   final ScrollController _scrollController = ScrollController();
 
   String? _roomId;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -59,6 +60,84 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndSendImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, imageQuality: 80);
+    if (picked == null) {
+      return;
+    }
+
+    setState(() => _isUploadingImage = true);
+
+    try {
+      final file = File(picked.path);
+      final url = await ImageService.uploadToImgBB(file);
+
+      if (url != null) {
+        await ref
+            .read(chatNotifierProvider.notifier)
+            .sendMessage(
+              receiverId: widget.trainerId,
+              text: url,
+              isImage: true,
+            );
+        _scrollToBottom();
+      } else {
+        if (mounted) {
+          AppSnackBar.error(context, 'Failed to upload image.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.error(context, 'Error: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingImage = false);
+      }
+    }
+  }
+
+  void _showImageSourceSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (_) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(
+                    Icons.camera_alt_outlined,
+                    color: ThemeColor.darkBlue,
+                  ),
+                  title: const Text('Take a Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickAndSendImage(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.photo_library_outlined,
+                    color: ThemeColor.darkBlue,
+                  ),
+                  title: const Text('Choose from Gallery'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickAndSendImage(ImageSource.gallery);
+                  },
+                ),
+                16.heightBox,
+              ],
+            ),
+          ),
+    );
   }
 
   Future<void> _sendMessage() async {
@@ -216,6 +295,41 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                 crossAxisAlignment:
                     isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
+                  if (message.isImage)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog<void>(
+                            context: context,
+                            builder:
+                                (_) => Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  insetPadding: EdgeInsets.zero,
+                                  child: GestureDetector(
+                                    onTap: () => Navigator.pop(context),
+                                    child: InteractiveViewer(
+                                      child: CachedImage(
+                                        imageUrl: message.text,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        fit: BoxFit.contain,
+                                        borderRadius: 0,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          );
+                        },
+                        child: CachedImage(
+                          imageUrl: message.text,
+                          width: 200,
+                          height: 150,
+                          borderRadius: 12,
+                        ),
+                      ),
+                    )
+                  else
                   Text(
                     message.text,
                     style: AppWidget.bodyLarge().copyWith(
@@ -250,11 +364,21 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       ),
       child: Row(
         children: [
-          IconButton(
+          _isUploadingImage
+              ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: ThemeColor.darkBlue,
+                  ),
+                ),
+              )
+              : IconButton(
             icon: const Icon(Icons.attach_file, color: ThemeColor.grey100),
-            onPressed: () {
-              // TODO: 处理发送图片逻辑
-            },
+                onPressed: _showImageSourceSheet,
           ),
 
           Expanded(
