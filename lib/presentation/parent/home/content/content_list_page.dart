@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../application/content/parent_content_provider.dart';
+import '../../../../application/content/content_provider.dart';
 import '../../../../core/constant/color_constant.dart';
 import '../../../../core/constant/textstyle_constant.dart';
 import '../../../../core/extension/widget_ext.dart';
