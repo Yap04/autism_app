@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../application/auth/auth_notifier.dart';
 import '../../../application/payment/payment_provider.dart';
@@ -14,6 +13,7 @@ import '../../../domain/models/user_model.dart';
 import '../../shared/loading_components.dart';
 import '../../shared/snack_bar.dart';
 import 'bank_details_bottom_sheet.dart';
+import 'shared/transaction_card.dart';
 import 'withdraw_bottom_sheet.dart';
 
 @RoutePage()
@@ -108,7 +108,10 @@ class TrainerWalletPage extends ConsumerWidget {
                       separatorBuilder: (context, index) => 12.heightBox,
                       itemBuilder: (context, index) {
                         final tx = sortedList[index];
-                        return _buildTransactionItem(tx);
+                        return TransactionCard(
+                          transaction: tx,
+                          isCreditTab: false,
+                        );
                       },
                     ),
                 ],
@@ -308,108 +311,5 @@ class TrainerWalletPage extends ConsumerWidget {
         AppSnackBar.error(context, e.toString());
       }
     }
-  }
-
-  //TODO: replace with common widget
-
-  Widget _buildTransactionItem(TransactionModel tx) {
-    final isIncome =
-        tx.type == TransactionType.topUp ||
-        tx.type == TransactionType.payment ||
-        tx.type == TransactionType.earning;
-
-    final amountPrefix = isIncome ? '+' : '-';
-    final amountColor = isIncome ? ThemeColor.green : ThemeColor.orange;
-
-    IconData txIcon;
-    if (tx.type == TransactionType.earning) {
-      txIcon = Icons.monetization_on_outlined;
-    } else if (tx.type == TransactionType.withdrawal) {
-      txIcon = Icons.account_balance_outlined;
-    } else if (tx.type == TransactionType.topUp) {
-      txIcon = Icons.arrow_downward;
-    } else if (tx.type == TransactionType.deduct) {
-      txIcon = Icons.arrow_upward;
-    } else {
-      txIcon = Icons.sync;
-    }
-
-    final dateFormat = DateFormat('dd MMM yyyy, hh:mm a').format(tx.createdAt);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColor.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: amountColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(txIcon, color: amountColor, size: 20),
-          ),
-          16.widthBox,
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tx.description,
-                  style: AppWidget.bodyMedium().copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                4.heightBox,
-                Text(
-                  dateFormat,
-                  style: AppWidget.bodyExtraSmall().copyWith(
-                    color: ThemeColor.grey100,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          8.widthBox,
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$amountPrefix RM ${tx.amount.toStringAsFixed(2)}',
-                style: AppWidget.bodyLarge().copyWith(
-                  color: amountColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (tx.status != TransactionStatus.completed) ...[
-                4.heightBox,
-                Text(
-                  tx.status.name.toUpperCase(),
-                  style: AppWidget.bodyExtraSmall().copyWith(
-                    color: ThemeColor.grey100,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
