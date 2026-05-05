@@ -16,6 +16,8 @@ class FeedbackModel with _$FeedbackModel {
     required int energyLevel,
     required String remarks,
     @TimestampConverter() required DateTime createdAt,
+    int? rating,
+    String? review,
   }) = _FeedbackModel;
 
   factory FeedbackModel.fromJson(Map<String, dynamic> json) =>

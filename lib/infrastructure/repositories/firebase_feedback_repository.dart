@@ -55,4 +55,64 @@ class FirebaseFeedbackRepository implements FeedbackRepository {
       throw Exception('Failed to fetch feedback: $e');
     }
   }
+
+  @override
+  Future<List<FeedbackModel>> getFeedbacksByTrainerId(String trainerId) async {
+    final query =
+        await _firestore
+            .collection('feedbacks')
+            .where('trainerId', isEqualTo: trainerId)
+            .where('rating', isNull: false)
+            .orderBy('createdAt', descending: true)
+            .get();
+
+    return query.docs.map((d) => FeedbackModel.fromJson(d.data())).toList();
+  }
+
+  @override
+  Future<void> updateParentReview({
+    required String appointmentId,
+    required int rating,
+    required String review,
+  }) async {
+    final query =
+        await _firestore
+            .collection('feedbacks')
+            .where('appointmentId', isEqualTo: appointmentId)
+            .limit(1)
+            .get();
+
+    if (query.docs.isEmpty) {
+      throw Exception('Feedback not found');
+    }
+
+    final feedbackDoc = query.docs.first;
+    final trainerId = feedbackDoc.data()['trainerId'] as String;
+
+    await query.docs.first.reference.update({
+      'rating': rating,
+      'review': review,
+    });
+
+    final allFeedbacks =
+        await _firestore
+            .collection('feedbacks')
+            .where('trainerId', isEqualTo: trainerId)
+            .where('rating', isNull: false)
+            .get();
+
+    final ratings =
+        allFeedbacks.docs
+            .map((d) => (d.data()['rating'] as num).toDouble())
+            .toList();
+
+    if (ratings.isEmpty) return;
+
+    final avg = ratings.reduce((a, b) => a + b) / ratings.length;
+
+    await _firestore.collection('users').doc(trainerId).update({
+      'avgRating': double.parse(avg.toStringAsFixed(1)),
+      'totalReviews': ratings.length,
+    });
+  }
 }
