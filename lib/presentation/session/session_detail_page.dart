@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../application/appointment/appointment_notifier.dart';
-import '../../../application/auth/auth_notifier.dart';
-import '../../../application/child/child_provider.dart';
-import '../../../application/providers/repository_providers.dart';
-import '../../../core/constant/color_constant.dart';
-import '../../../core/constant/textstyle_constant.dart';
-import '../../../core/extension/sport_ext.dart';
-import '../../../core/extension/widget_ext.dart';
-import '../../../core/routes/app_router.dart';
-import '../../../domain/models/appointment_model.dart';
-import '../../../domain/models/child_model.dart';
-import '../../../domain/models/feedback_model.dart';
-import '../../../domain/models/transaction_model.dart';
-import '../../shared/bottom_action_button.dart';
-import '../../shared/snack_bar.dart';
-import '../../shared/user_avatar.dart';
-import 'feedback_bottom_sheet.dart';
+import '../../application/appointment/appointment_notifier.dart';
+import '../../application/auth/auth_notifier.dart';
+import '../../application/child/child_provider.dart';
+import '../../application/providers/repository_providers.dart';
+import '../../core/constant/color_constant.dart';
+import '../../core/constant/textstyle_constant.dart';
+import '../../core/extension/sport_ext.dart';
+import '../../core/extension/widget_ext.dart';
+import '../../core/routes/app_router.dart';
+import '../../domain/models/appointment_model.dart';
+import '../../domain/models/child_model.dart';
+import '../../domain/models/feedback_model.dart';
+import '../../domain/models/transaction_model.dart';
+import '../parent/feedback/rate_review_bottom_sheet.dart';
+import '../shared/bottom_action_button.dart';
+import '../shared/snack_bar.dart';
+import '../shared/user_avatar.dart';
+import '../trainer/feedback/feedback_bottom_sheet.dart';
 
 @RoutePage()
 class SessionDetailPage extends ConsumerStatefulWidget {
@@ -32,6 +33,31 @@ class SessionDetailPage extends ConsumerStatefulWidget {
 
 class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
   bool _isLoading = false;
+  FeedbackModel? _cachedFeedback;
+  bool _feedbackLoaded = false;
+
+  Future<void> _loadFeedback() async {
+    if (_feedbackLoaded) {
+      return;
+    }
+    final feedback = await ref
+        .read(feedbackRepositoryProvider)
+        .getFeedbackByAppointmentId(widget.appointment.id);
+    if (mounted) {
+      setState(() {
+        _cachedFeedback = feedback;
+        _feedbackLoaded = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.appointment.status == AppointmentStatus.completed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadFeedback());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,116 +272,143 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     WidgetRef ref,
     String appointmentId,
   ) {
-    return FutureBuilder<FeedbackModel?>(
-      future: ref
-          .read(feedbackRepositoryProvider)
-          .getFeedbackByAppointmentId(appointmentId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(color: ThemeColor.darkBlue),
-            ),
-          );
-        }
+    if (!_feedbackLoaded) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: CircularProgressIndicator(color: ThemeColor.darkBlue),
+        ),
+      );
+    }
 
-        if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: ThemeColor.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: ThemeColor.lightGrey.withValues(alpha: 0.5),
-              ),
-            ),
-            child: Text(
-              'No feedback provided yet.',
-              style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
-            ),
-          );
-        }
-
-        final feedback = snapshot.data!;
-
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: ThemeColor.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: ThemeColor.lightGrey.withValues(alpha: 0.5),
-            ),
+    if (_cachedFeedback == null) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: ThemeColor.lightGrey.withValues(alpha: 0.5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: Text(
+          'No feedback provided yet.',
+          style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
+        ),
+      );
+    }
+
+    final feedback = _cachedFeedback!;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColor.lightGrey.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Focus Level
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Focus & Attention',
-                    style: AppWidget.bodyMedium().copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${feedback.focusLevel}/5',
-                    style: AppWidget.bodyMedium().copyWith(
-                      color: ThemeColor.darkBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              8.heightBox,
-              LinearProgressIndicator(
-                value: feedback.focusLevel / 5,
-                backgroundColor: ThemeColor.lightGrey.withValues(alpha: 0.3),
-                color: ThemeColor.darkBlue,
-                borderRadius: BorderRadius.circular(4),
-              ),
-
-              24.heightBox,
-
-              // Energy Level
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Energy Level',
-                    style: AppWidget.bodyMedium().copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${feedback.energyLevel}/5',
-                    style: AppWidget.bodyMedium().copyWith(
-                      color: ThemeColor.darkBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              8.heightBox,
-              LinearProgressIndicator(
-                value: feedback.energyLevel / 5,
-                backgroundColor: ThemeColor.lightGrey.withValues(alpha: 0.3),
-                color: ThemeColor.darkBlue,
-                borderRadius: BorderRadius.circular(4),
-              ),
-
-              24.heightBox,
-
-              // Remarks
               Text(
-                'Trainer Remarks',
+                'Focus & Attention',
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              Text(
+                '${feedback.focusLevel}/5',
+                style: AppWidget.bodyMedium().copyWith(
+                  color: ThemeColor.darkBlue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          8.heightBox,
+          LinearProgressIndicator(
+            value: feedback.focusLevel / 5,
+            backgroundColor: ThemeColor.lightGrey.withValues(alpha: 0.3),
+            color: ThemeColor.darkBlue,
+            borderRadius: BorderRadius.circular(4),
+          ),
+
+          24.heightBox,
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Energy Level',
+                style: AppWidget.bodyMedium().copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${feedback.energyLevel}/5',
+                style: AppWidget.bodyMedium().copyWith(
+                  color: ThemeColor.darkBlue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          8.heightBox,
+          LinearProgressIndicator(
+            value: feedback.energyLevel / 5,
+            backgroundColor: ThemeColor.lightGrey.withValues(alpha: 0.3),
+            color: ThemeColor.darkBlue,
+            borderRadius: BorderRadius.circular(4),
+          ),
+
+          24.heightBox,
+
+          // Trainer Remarks
+          Text(
+            'Trainer Remarks',
+            style: AppWidget.bodyMedium().copyWith(fontWeight: FontWeight.bold),
+          ),
+          8.heightBox,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeColor.cream,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              feedback.remarks,
+              style: AppWidget.bodyMedium().copyWith(color: ThemeColor.black),
+            ),
+          ),
+
+          // Parent Review
+          if (feedback.rating != null) ...[
+            24.heightBox,
+            const Divider(color: ThemeColor.lightGrey),
+            24.heightBox,
+            Text(
+              'Parent Review',
+              style: AppWidget.bodyMedium().copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            8.heightBox,
+            Row(
+              children: List.generate(5, (index) {
+                return Icon(
+                  (feedback.rating ?? 0) > index
+                      ? Icons.star_rounded
+                      : Icons.star_outline_rounded,
+                  size: 24,
+                  color: ThemeColor.orange,
+                );
+              }),
+            ),
+            if (feedback.review != null && feedback.review!.isNotEmpty) ...[
               8.heightBox,
               Container(
                 width: double.infinity,
@@ -365,16 +418,16 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  feedback.remarks,
+                  feedback.review!,
                   style: AppWidget.bodyMedium().copyWith(
                     color: ThemeColor.black,
                   ),
                 ),
               ),
             ],
-          ),
-        );
-      },
+          ],
+        ],
+      ),
     );
   }
 
@@ -625,6 +678,8 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     final canComplete = appt.status == AppointmentStatus.accepted && isPast;
 
     if (appt.status == AppointmentStatus.completed) {
+      final hasReview = _cachedFeedback?.rating != null;
+
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -638,19 +693,44 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           ],
         ),
         child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.check_circle, color: ThemeColor.green),
-              8.widthBox,
-              Text(
-                'Session Completed',
-                style: AppWidget.h3TextFieldStyle().copyWith(
-                  color: ThemeColor.green,
-                ),
-              ),
-            ],
-          ),
+          child:
+              isParent
+                  ? (hasReview
+                      ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: ThemeColor.green,
+                          ),
+                          8.widthBox,
+                          Text(
+                            'Review Submitted',
+                            style: AppWidget.h3TextFieldStyle().copyWith(
+                              color: ThemeColor.green,
+                            ),
+                          ),
+                        ],
+                      )
+                      : BottomActionButton(
+                        label: 'Rate & Review Trainer',
+                        isLoading: _isLoading,
+                        backgroundColor: ThemeColor.orange,
+                        onPressed: () => _handleRateReview(context, ref, appt),
+                      ))
+                  : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle, color: ThemeColor.green),
+                      8.widthBox,
+                      Text(
+                        'Session Completed',
+                        style: AppWidget.h3TextFieldStyle().copyWith(
+                          color: ThemeColor.green,
+                        ),
+                      ),
+                    ],
+                  ),
         ),
       );
     }
@@ -747,6 +827,51 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       context.router.maybePop();
     } catch (e) {
       AppSnackBar.error(context, e.toString());
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleRateReview(
+    BuildContext context,
+    WidgetRef ref,
+    AppointmentModel appt,
+  ) async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const RateReviewBottomSheet(),
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ref
+          .read(feedbackRepositoryProvider)
+          .updateParentReview(
+            appointmentId: appt.id,
+            rating: result['rating'] as int,
+            review: result['review'] as String,
+          );
+
+      if (context.mounted) {
+        AppSnackBar.success(context, 'Thank you for your review!');
+        setState(() {
+          _cachedFeedback = _cachedFeedback?.copyWith(
+            rating: result['rating'] as int,
+            review: result['review'] as String,
+          );
+        });
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackBar.error(context, e.toString());
+      }
     } finally {
       setState(() => _isLoading = false);
     }

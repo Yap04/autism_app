@@ -503,7 +503,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                                               .copyWith(
                                                 fontWeight: FontWeight.w600,
                                               ),
-                                          maxLines: 1, // 限制单行
+                                          maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),

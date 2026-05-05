@@ -4,16 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../application/auth/auth_notifier.dart';
-import '../../../core/constant/color_constant.dart';
-import '../../../core/constant/textstyle_constant.dart';
-import '../../../core/extension/widget_ext.dart';
-import '../../application/content/content_provider.dart';
-import '../../core/constant/badge_constant.dart';
-import '../../domain/models/content_model.dart';
-import '../../domain/models/user_model.dart';
-import '../parent/home/content/shared/content_card.dart';
-import '../shared/snack_bar.dart';
+import '../../../../application/auth/auth_notifier.dart';
+import '../../../../core/constant/color_constant.dart';
+import '../../../../core/constant/textstyle_constant.dart';
+import '../../../../core/extension/widget_ext.dart';
+import '../../../application/content/content_provider.dart';
+import '../../../core/constant/badge_constant.dart';
+import '../../../domain/models/content_model.dart';
+import '../../../domain/models/user_model.dart';
+import '../../parent/home/content/shared/content_card.dart';
+import '../../shared/snack_bar.dart';
 
 @RoutePage()
 class TrainerAcademyPage extends ConsumerStatefulWidget {

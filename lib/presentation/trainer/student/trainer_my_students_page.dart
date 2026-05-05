@@ -2,16 +2,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../application/user/trainer_provider.dart';
-import '../../application/user/trainer_student_ui_model.dart';
-import '../../core/constant/color_constant.dart';
-import '../../core/constant/textstyle_constant.dart';
-import '../../core/extension/sport_ext.dart';
-import '../../core/extension/widget_ext.dart';
-import '../../core/routes/app_router.dart';
-import '../shared/curved_header_background.dart';
-import '../shared/user_avatar.dart';
-import 'shared/stat_item.dart';
+import '../../../application/user/trainer_provider.dart';
+import '../../../application/user/trainer_student_ui_model.dart';
+import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/sport_ext.dart';
+import '../../../core/extension/widget_ext.dart';
+import '../../../core/routes/app_router.dart';
+import '../../shared/curved_header_background.dart';
+import '../../shared/user_avatar.dart';
+import '../shared/stat_item.dart';
 
 class TrainerMyStudentsPage extends ConsumerStatefulWidget {
   const TrainerMyStudentsPage({super.key});

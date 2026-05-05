@@ -453,7 +453,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                   ),
                 ),
               ),
-              8.heightBox,
+              16.heightBox,
             ] else ...[
               24.heightBox,
             ],
@@ -541,7 +541,15 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: topTrainers.length,
                   itemBuilder: (context, index) {
-                    return TrainerCard(trainer: topTrainers[index]);
+                    return GestureDetector(
+                      onTap:
+                          () => context.pushRoute(
+                            TrainerPublicProfileRoute(
+                              trainer: topTrainers[index],
+                            ),
+                          ),
+                      child: TrainerCard(trainer: topTrainers[index]),
+                    );
                   },
                 );
               },
@@ -577,115 +585,131 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
     final coachName = trainer.name ?? trainer.nickname ?? 'Coach';
     final displaySports = trainer.sports.take(3).toList();
 
-    return Container(
-      width: 260,
-      margin: const EdgeInsets.only(right: 16, bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColor.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              UserAvatar(
-                radius: 24,
-                userAvatarUrl: trainer.userAvatarUrl,
-                username: coachName,
-              ),
-              12.widthBox,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      coachName,
-                      style: AppWidget.bodyLarge().copyWith(
-                        fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap:
+          () => context.pushRoute(TrainerPublicProfileRoute(trainer: trainer)),
+      child: Container(
+        width: 260,
+        margin: const EdgeInsets.only(right: 16, bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                UserAvatar(
+                  radius: 24,
+                  userAvatarUrl: trainer.userAvatarUrl,
+                  username: coachName,
+                ),
+                12.widthBox,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        coachName,
+                        style: AppWidget.bodyLarge().copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      distanceText,
-                      style: AppWidget.bodySmall().copyWith(
-                        color: ThemeColor.grey100,
+                      Text(
+                        distanceText,
+                        style: AppWidget.bodySmall().copyWith(
+                          color: ThemeColor.grey100,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    4.heightBox,
-                    Row(
-                      children:
-                          displaySports.isEmpty
-                              ? [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 4),
-                                  child: Icon(
-                                    Icons.sports,
-                                    size: 16,
-                                    color: ThemeColor.grey100.withValues(
-                                      alpha: 0.5,
+                      4.heightBox,
+                      Row(
+                        children:
+                            displaySports.isEmpty
+                                ? [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: Icon(
+                                      Icons.sports,
+                                      size: 16,
+                                      color: ThemeColor.grey100.withValues(
+                                        alpha: 0.5,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  'Not specified',
-                                  style: AppWidget.bodyExtraSmall().copyWith(
-                                    color: ThemeColor.grey100,
+                                  Text(
+                                    'Not specified',
+                                    style: AppWidget.bodyExtraSmall().copyWith(
+                                      color: ThemeColor.grey100,
+                                    ),
                                   ),
-                                ),
-                              ]
-                              : displaySports.map((sport) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 4),
-                                  child: Icon(
-                                    getSportIcon(sport),
-                                    size: 16,
-                                    color: ThemeColor.black,
-                                  ),
-                                );
-                              }).toList(),
+                                ]
+                                : displaySports.map((sport) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: Icon(
+                                      getSportIcon(sport),
+                                      size: 16,
+                                      color: ThemeColor.black,
+                                    ),
+                                  );
+                                }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: ThemeColor.orange,
+                      size: 16,
+                    ),
+                    4.widthBox,
+                    Text(
+                      trainer.avgRating != null
+                          ? trainer.avgRating!.toStringAsFixed(1)
+                          : '-',
+                      style: AppWidget.bodySmall().copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const Row(
-                children: [
-                  Icon(Icons.star, color: Colors.amber, size: 16),
-                  Text(' 4.9', style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ],
-          ),
-          const Divider(height: 20),
-          Row(
-            children: [
-              const Icon(
-                Icons.verified,
-                color: ThemeColor.lightOrange,
-                size: 18,
-              ),
-              8.widthBox,
-              Text(
-                'Autism Training Certified',
-                style: AppWidget.bodySmall().copyWith(
-                  fontWeight: FontWeight.w600,
+              ],
+            ),
+            const Divider(height: 20),
+            Row(
+              children: [
+                const Icon(
+                  Icons.verified,
+                  color: ThemeColor.lightOrange,
+                  size: 18,
                 ),
-              ),
-            ],
-          ),
-        ],
+                8.widthBox,
+                Text(
+                  'Autism Training Certified',
+                  style: AppWidget.bodySmall().copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
