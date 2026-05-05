@@ -33,6 +33,8 @@ class UserModel with _$UserModel {
     String? bankName,
     String? bankAccountNumber,
     String? accountHolderName,
+    double? avgRating,
+    int? totalReviews,
     @Default(VerificationStatus.none) VerificationStatus verificationStatus,
     List<String>? certificateUrls,
     String? rejectReason,
