@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/models/appointment_model.dart';
 import '../../domain/models/child_model.dart';
 import '../../domain/models/ticket_model.dart';
+import '../../domain/models/user_model.dart';
 import '../../presentation/admin/appointment/admin_appointments_page.dart';
 import '../../presentation/admin/content/admin_content_editor_page.dart';
 import '../../presentation/admin/content/admin_content_page.dart';
@@ -19,11 +20,10 @@ import '../../presentation/auth/signup_page.dart';
 import '../../presentation/auth/splash_page.dart';
 import '../../presentation/chat/chat_list_page.dart';
 import '../../presentation/chat/chat_page.dart';
-import '../../presentation/feedback/student_progress_page.dart';
-import '../../presentation/parent/appointment/booking_details_page.dart';
-import '../../presentation/parent/appointment/trainer_list_page.dart';
+import '../../presentation/parent/appointment/trainer_public_profile_page.dart';
+import '../../presentation/parent/booking/booking_details_page.dart';
+import '../../presentation/parent/discover/trainer_list_page.dart';
 import '../../presentation/parent/home/content/content_list_page.dart';
-import '../../presentation/parent/home/parent_progress_page.dart';
 import '../../presentation/parent/parent_bottom_nav_page.dart';
 import '../../presentation/profile/children/add_children_page.dart';
 import '../../presentation/profile/children/manage_children_page.dart';
@@ -38,8 +38,9 @@ import '../../presentation/profile/trainer_verification_page.dart';
 import '../../presentation/profile/wallet/all_transactions_page.dart';
 import '../../presentation/profile/wallet/parent_wallet_page.dart';
 import '../../presentation/profile/wallet/trainer_wallet_page.dart';
-import '../../presentation/trainer/session/session_detail_page.dart';
-import '../../presentation/trainer/trainer_academy_page.dart';
+import '../../presentation/session/session_detail_page.dart';
+import '../../presentation/session/student_progress_page.dart';
+import '../../presentation/trainer/academy/trainer_academy_page.dart';
 import '../../presentation/trainer/trainer_bottom_nav_page.dart';
 
 part 'app_router.gr.dart';
@@ -54,12 +55,12 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ParentBottomNavRoute.page),
     AutoRoute(page: TrainerBottomNavRoute.page),
     AutoRoute(page: BookingDetailsRoute.page),
-    AutoRoute(page: ParentProgressRoute.page),
     AutoRoute(page: EditProfileRoute.page),
     AutoRoute(page: ManageChildrenRoute.page),
     AutoRoute(page: AddChildrenRoute.page),
     AutoRoute(page: TrainerListRoute.page),
     AutoRoute(page: TrainerDashboardRoute.page),
+    AutoRoute(page: TrainerPublicProfileRoute.page),
     AutoRoute(page: SessionDetailRoute.page),
     AutoRoute(page: StudentProgressRoute.page),
     AutoRoute(page: MapPickerRoute.page),
