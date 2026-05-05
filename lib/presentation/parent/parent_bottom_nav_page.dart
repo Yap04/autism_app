@@ -9,7 +9,7 @@ import '../../core/constant/color_constant.dart';
 import '../../domain/models/appointment_model.dart';
 import '../profile/profile_page.dart';
 import 'appointment/parent_appointments_page.dart';
-import 'appointment/parent_discover_page.dart';
+import 'discover/parent_discover_page.dart';
 import 'home/parent_home_page.dart';
 
 @RoutePage()
