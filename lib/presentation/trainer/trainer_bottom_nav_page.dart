@@ -7,10 +7,10 @@ import '../../core/constant/color_constant.dart';
 import '../../domain/models/user_model.dart';
 import '../profile/profile_page.dart';
 import '../profile/trainer_verification_page.dart';
+import 'academy/trainer_academy_page.dart';
 import 'appointment/trainer_appointments_page.dart';
 import 'home/trainer_home_page.dart';
-import 'trainer_academy_page.dart';
-import 'trainer_my_students_page.dart';
+import 'student/trainer_my_students_page.dart';
 
 @RoutePage()
 class TrainerBottomNavPage extends ConsumerStatefulWidget {
