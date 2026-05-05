@@ -28,19 +28,20 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
   DateTime? _selectedDay;
   String _selectedTab = 'Upcoming';
 
+  final weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
   bool _isDaySelectable(DateTime day, List<dynamic>? operatingHours) {
     if (operatingHours == null || operatingHours.isEmpty) {
       return true;
     }
-    final weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
     final dayString = weekdays[day.weekday - 1];
     final dayConfig = operatingHours.firstWhere(
       (e) => (e as Map)['day'] == dayString,
@@ -62,6 +63,62 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     final trainer = ref.read(fetchTrainerProvider(trainerId)).asData?.value;
     final operatingHours = trainer?.operatingHours;
 
+    Map<String, dynamic>? getOperatingDay(DateTime date) {
+      if (operatingHours == null || operatingHours.isEmpty) return null;
+      final dayString = weekdays[date.weekday - 1];
+      final dayConfig = operatingHours.firstWhere(
+        (e) => (e as Map)['day'] == dayString && e['isOpen'] == true,
+        orElse: () => null,
+      );
+      return dayConfig != null
+          ? Map<String, dynamic>.from(dayConfig as Map)
+          : null;
+    }
+
+    TimeOfDay? parseTime(String? raw) {
+      if (raw == null) return null;
+      final parts = raw.split(':');
+      if (parts.length < 2) return null;
+      return TimeOfDay(
+        hour: int.tryParse(parts[0]) ?? 0,
+        minute: int.tryParse(parts[1]) ?? 0,
+      );
+    }
+
+    String? validateTime(DateTime date, TimeOfDay time) {
+      final now = DateTime.now();
+      final proposed = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+
+      if (proposed.isBefore(now)) {
+        return 'Cannot reschedule to a past time.';
+      }
+
+      final dayConfig = getOperatingDay(date);
+      if (dayConfig != null) {
+        final open = parseTime(dayConfig['openTime'] as String?);
+        final close = parseTime(dayConfig['closeTime'] as String?);
+
+        if (open != null && close != null) {
+          final openMinutes = open.hour * 60 + open.minute;
+          final closeMinutes = close.hour * 60 + close.minute;
+          final pickedMinutes = time.hour * 60 + time.minute;
+
+          if (pickedMinutes < openMinutes || pickedMinutes >= closeMinutes) {
+            String fmt(TimeOfDay t) =>
+                '${t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod}:${t.minute.toString().padLeft(2, '0')} ${t.period == DayPeriod.am ? 'AM' : 'PM'}';
+            return 'Trainer is only available ${fmt(open)} – ${fmt(close)} on this day.';
+          }
+        }
+      }
+      return null; // valid
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -69,6 +126,13 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final validationError =
+                selectedTime != null
+                    ? validateTime(selectedDate, selectedTime!)
+                    : null;
+            final canConfirm =
+                !isLoading && selectedTime != null && validationError == null;
+
             return Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
@@ -106,12 +170,20 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     8.heightBox,
                     GestureDetector(
                       onTap: () async {
+                        var initialDate =
+                            selectedDate.isBefore(DateTime.now())
+                                ? DateTime.now().add(const Duration(days: 1))
+                                : selectedDate;
+
+                        while (!_isDaySelectable(initialDate, operatingHours)) {
+                          initialDate = initialDate.add(
+                            const Duration(days: 1),
+                          );
+                        }
+
                         final picked = await showDatePicker(
                           context: context,
-                          initialDate:
-                              selectedDate.isBefore(DateTime.now())
-                                  ? DateTime.now().add(const Duration(days: 1))
-                                  : selectedDate,
+                          initialDate: initialDate,
                           firstDate: DateTime.now(),
                           lastDate: DateTime.now().add(
                             const Duration(days: 90),
@@ -153,6 +225,46 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
                     16.heightBox,
 
+                    Builder(
+                      builder: (_) {
+                        final dayConfig = getOperatingDay(selectedDate);
+                        if (dayConfig == null) {
+                          return emptyBox;
+                        }
+                        final open = parseTime(
+                          dayConfig['openTime'] as String?,
+                        );
+                        final close = parseTime(
+                          dayConfig['closeTime'] as String?,
+                        );
+                        if (open == null || close == null) {
+                          return emptyBox;
+                        }
+                        String fmt(TimeOfDay t) =>
+                            '${t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod}:${t.minute.toString().padLeft(2, '0')} ${t.period == DayPeriod.am ? 'AM' : 'PM'}';
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.info_outline,
+                                size: 14,
+                                color: ThemeColor.grey100,
+                              ),
+                              4.widthBox,
+                              Text(
+                                'Available ${fmt(open)} – ${fmt(close)}',
+                                style: AppWidget.bodySmall().copyWith(
+                                  color: ThemeColor.grey100,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
                     Text(
                       'Select New Time',
                       style: AppWidget.bodySmall().copyWith(
@@ -173,7 +285,10 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: ThemeColor.white,
+                          color:
+                              validationError != null
+                                  ? ThemeColor.negative
+                                  : ThemeColor.lightGrey,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: ThemeColor.lightGrey),
                         ),
@@ -195,13 +310,34 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                         ),
                       ),
                     ),
+
+                    if (validationError != null) ...[
+                      6.heightBox,
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 14,
+                            color: ThemeColor.negative,
+                          ),
+                          4.widthBox,
+                          Expanded(
+                            child: Text(
+                              validationError,
+                              style: AppWidget.bodySmall().copyWith(
+                                color: ThemeColor.negative,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     32.heightBox,
 
                     GestureDetector(
                       onTap:
-                          isLoading || selectedTime == null
-                              ? null
-                              : () async {
+                          canConfirm
+                              ? () async {
                                 setModalState(() => isLoading = true);
                                 try {
                                   final newDateTime = DateTime(
@@ -234,7 +370,9 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                   }
                                   setModalState(() => isLoading = false);
                                 }
-                              },
+                              }
+                              : null,
+
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         alignment: Alignment.center,
