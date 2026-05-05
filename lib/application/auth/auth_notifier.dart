@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/models/user_model.dart';
 import '../providers/repository_providers.dart';
@@ -8,6 +9,10 @@ part 'auth_notifier.g.dart';
 @riverpod
 class AuthNotifier extends _$AuthNotifier {
   Future<void> _updateDeviceToken(String uid) async {
+    if (kIsWeb) {
+      return;
+    }
+
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
