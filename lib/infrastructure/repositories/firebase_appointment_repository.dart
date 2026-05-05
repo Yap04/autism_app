@@ -245,6 +245,22 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
   }
 
   @override
+  Future<AppointmentModel?> getAppointmentById(String appointmentId) async {
+    try {
+      final doc = await _appointmentsRef.doc(appointmentId).get();
+
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        data['id'] = doc.id;
+        return AppointmentModel.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to get appointment by id: $e');
+    }
+  }
+
+  @override
   Stream<List<AppointmentModel>> watchParentAppointments(String parentId) {
     return _appointmentsRef
         .where('parentId', isEqualTo: parentId)

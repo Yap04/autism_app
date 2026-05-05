@@ -14,6 +14,8 @@ abstract class AppointmentRepository {
     AppointmentStatus status,
   );
 
+  Future<AppointmentModel?> getAppointmentById(String appointmentId);
+
   Stream<List<AppointmentModel>> watchParentAppointments(String parentId);
 
   Stream<List<AppointmentModel>> watchTrainerAppointments(String trainerId);

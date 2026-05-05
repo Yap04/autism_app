@@ -116,11 +116,14 @@ class AppointmentNotifier extends _$AppointmentNotifier {
           await RemoteNotificationService.notifyOtherUser(
             targetFcmToken: trainerToken,
             title: 'New Booking Reminder 📅',
-            body: '${user.name ?? 'A parent'} has booked a new $sport session for $childName!',
+            body:
+                '${user.name ?? 'A parent'} has booked a new $sport session for $childName!',
           );
         }
       } catch (e) {
-        print('Failed to send remote notification to trainer, but appointment was saved: $e');
+        print(
+          'Failed to send remote notification to trainer, but appointment was saved: $e',
+        );
       }
 
       for (final appt in appointmentsToCreate) {
@@ -140,8 +143,45 @@ class AppointmentNotifier extends _$AppointmentNotifier {
       await ref
           .read(appointmentRepositoryProvider)
           .updateAppointmentStatus(appointmentId, newStatus);
+      try {
+        final appointment = await ref
+            .read(appointmentRepositoryProvider)
+            .getAppointmentById(appointmentId);
+
+        if (appointment != null) {
+          final parentToken = await ref
+              .read(userRepositoryProvider)
+              .getUserFcmToken(appointment.parentId);
+
+          if (parentToken != null && parentToken.isNotEmpty) {
+            var title = '';
+            var body = '';
+
+            if (newStatus == AppointmentStatus.accepted) {
+              title = 'Appointment Confirmed ✅';
+              body =
+                  'Trainer ${appointment.trainerName} has accepted your ${appointment.sport} booking.';
+            } else if (newStatus == AppointmentStatus.rejected ||
+                newStatus == AppointmentStatus.cancelled) {
+              title = 'Appointment Rejected/Cancelled ❌';
+              body =
+                  'Unfortunately, Trainer ${appointment.trainerName} is unable to accept your ${appointment.sport} booking.';
+            }
+
+            if (title.isNotEmpty) {
+              await RemoteNotificationService.notifyOtherUser(
+                targetFcmToken: parentToken,
+                title: title,
+                body: body,
+              );
+            }
+          }
+        }
+      } catch (e) {
+        print('Status updated successfully, but failed to notify parent: $e');
+      }
     } catch (e) {
-      throw Exception('Failed to update appointment status: $e');
+      throw Exception('Failed to update status: $e');
     }
   }
 
@@ -149,7 +189,6 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     AppointmentModel appointment,
   ) async {
     if (kIsWeb) {
-      print('Web Environment: Skipping local alarm setup, triggering remote notification only.');
       return;
     }
 
@@ -188,6 +227,58 @@ class AppointmentNotifier extends _$AppointmentNotifier {
       await ref
           .read(appointmentRepositoryProvider)
           .rescheduleAppointment(appointmentId, newDateTime);
+
+      try {
+        final currentUser = ref.read(authNotifierProvider).value;
+
+        final appointment = await ref
+            .read(appointmentRepositoryProvider)
+            .getAppointmentById(appointmentId);
+
+        if (currentUser != null && appointment != null) {
+          String targetUserId;
+          const title = 'Appointment Rescheduled 🔄';
+          var body = '';
+
+          final timeString =
+              '${newDateTime.hour}:${newDateTime.minute.toString().padLeft(2, '0')}';
+          final dateString = '${newDateTime.day}/${newDateTime.month}';
+
+          // parent reschedule
+          if (currentUser.id == appointment.parentId) {
+            targetUserId = appointment.trainerId;
+            body =
+                'The parent requests to reschedule the ${appointment.sport} session to $dateString at $timeString.';
+          }
+          // trainer reschedule
+          else {
+            targetUserId = appointment.parentId;
+            body =
+                'Trainer ${appointment.trainerName} requests to reschedule the ${appointment.sport} session to $dateString at $timeString.';
+          }
+
+          final targetToken = await ref
+              .read(userRepositoryProvider)
+              .getUserFcmToken(targetUserId);
+
+          if (targetToken != null && targetToken.isNotEmpty) {
+            await RemoteNotificationService.notifyOtherUser(
+              targetFcmToken: targetToken,
+              title: title,
+              body: body,
+            );
+          }
+
+          // update local notification
+          final updatedAppointment = appointment.copyWith(
+            dateTime: newDateTime,
+            status: AppointmentStatus.pending,
+          );
+          await scheduleRemindersForAppointment(updatedAppointment);
+        }
+      } catch (e) {
+        print('⚠️ Reschedule successful, but notification failed: $e');
+      }
     } catch (e) {
       throw Exception('Failed to reschedule: $e');
     }
