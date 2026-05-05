@@ -106,7 +106,9 @@ class FirebaseFeedbackRepository implements FeedbackRepository {
             .map((d) => (d.data()['rating'] as num).toDouble())
             .toList();
 
-    if (ratings.isEmpty) return;
+    if (ratings.isEmpty) {
+      return;
+    }
 
     final avg = ratings.reduce((a, b) => a + b) / ratings.length;
 
