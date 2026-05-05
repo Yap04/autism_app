@@ -75,12 +75,21 @@ class TrainerCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.star, color: Colors.amber, size: 16),
+                            const Icon(
+                              Icons.star_rounded,
+                              color: ThemeColor.orange,
+                              size: 16,
+                            ),
+                            4.widthBox,
                             Text(
-                              ' 4.9',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              trainer.avgRating != null
+                                  ? trainer.avgRating!.toStringAsFixed(1)
+                                  : '-',
+                              style: AppWidget.bodySmall().copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
