@@ -339,11 +339,10 @@ class _TrainerAppointmentsPageState
     final showResumeText =
         !isAccepting && resumeAt != null && DateTime.now().isBefore(resumeAt);
 
-    bool isSelectedDayOpen = true;
+    var isSelectedDayOpen = true;
     final operatingHours = currentUser?.operatingHours ?? [];
 
     if (_selectedDay != null && operatingHours.isNotEmpty) {
-      // DateTime.weekday 返回 1(周一) 到 7(周日)
       final weekdays = [
         'Monday',
         'Tuesday',
@@ -355,13 +354,11 @@ class _TrainerAppointmentsPageState
       ];
       final dayString = weekdays[_selectedDay!.weekday - 1];
 
-      // 去 operatingHours 数组里寻找对应星期的配置
       final dayConfig = operatingHours.firstWhere(
         (e) => (e as Map)['day'] == dayString,
         orElse: () => null,
       );
 
-      // 如果找到了配置，读取它的 isOpen 状态
       if (dayConfig != null) {
         isSelectedDayOpen = (dayConfig as Map)['isOpen'] == true;
       }
