@@ -652,246 +652,252 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     final coachName = appointment.trainerName;
     final sport = appointment.sport;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColor.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: ThemeColor.aquaBlue,
-              borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap:
+          () => context.pushRoute(SessionDetailRoute(appointment: appointment)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  timeRangeDisplay,
-                  style: AppWidget.bodyMedium().copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  statusText,
-                  style: AppWidget.bodySmall().copyWith(
-                    color:
-                        status == AppointmentStatus.completed
-                            ? ThemeColor.darkBlue
-                            : status == AppointmentStatus.accepted
-                            ? ThemeColor.green
-                            : status == AppointmentStatus.pending
-                            ? ThemeColor.orange
-                            : ThemeColor.negative,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          16.heightBox,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: ThemeColor.aquaBlue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final trainerAsync = ref.watch(
-                        fetchTrainerProvider(appointment.trainerId),
-                      );
-
-                      return trainerAsync.when(
-                        data:
-                            (trainer) => UserAvatar(
-                              radius: 28,
-                              username: coachName,
-                              userAvatarUrl: trainer?.userAvatarUrl,
-                            ),
-                        loading: () => const CircleAvatar(),
-                        error:
-                            (err, _) =>
-                                UserAvatar(radius: 28, username: coachName),
-                      );
-                    },
-                  ),
-
-                  6.heightBox,
                   Text(
-                    coachName,
-                    style: AppWidget.bodySmall().copyWith(
+                    timeRangeDisplay,
+                    style: AppWidget.bodyMedium().copyWith(
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    statusText,
+                    style: AppWidget.bodySmall().copyWith(
+                      color:
+                          status == AppointmentStatus.completed
+                              ? ThemeColor.darkBlue
+                              : status == AppointmentStatus.accepted
+                              ? ThemeColor.green
+                              : status == AppointmentStatus.pending
+                              ? ThemeColor.orange
+                              : ThemeColor.negative,
                     ),
                   ),
                 ],
               ),
-              16.widthBox,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            16.heightBox,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final trainerAsync = ref.watch(
+                          fetchTrainerProvider(appointment.trainerId),
+                        );
+
+                        return trainerAsync.when(
+                          data:
+                              (trainer) => UserAvatar(
+                                radius: 28,
+                                username: coachName,
+                                userAvatarUrl: trainer?.userAvatarUrl,
+                              ),
+                          loading: () => const CircleAvatar(),
+                          error:
+                              (err, _) =>
+                                  UserAvatar(radius: 28, username: coachName),
+                        );
+                      },
+                    ),
+
+                    6.heightBox,
+                    Text(
+                      coachName,
+                      style: AppWidget.bodySmall().copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      decoration: BoxDecoration(
-                        color: ThemeColor.aquaBlue.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(6),
+                    ),
+                  ],
+                ),
+                16.widthBox,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ThemeColor.aquaBlue.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              getSportIcon(sport),
+                              size: 14,
+                              color: ThemeColor.darkBlue,
+                            ),
+                            4.widthBox,
+                            Text(
+                              sport,
+                              style: AppWidget.bodySmall().copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: ThemeColor.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      8.heightBox,
+                      Text(
+                        '$sport Session',
+                        style: AppWidget.bodyLarge().copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      4.heightBox,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            getSportIcon(sport),
+                          const Icon(
+                            Icons.location_on,
                             size: 14,
-                            color: ThemeColor.darkBlue,
+                            color: ThemeColor.grey100,
                           ),
                           4.widthBox,
-                          Text(
-                            sport,
-                            style: AppWidget.bodySmall().copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: ThemeColor.darkBlue,
+                          Expanded(
+                            child: Text(
+                              appointment.location,
+                              style: AppWidget.bodySmall().copyWith(
+                                color: ThemeColor.grey100,
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    8.heightBox,
-                    Text(
-                      '$sport Session',
-                      style: AppWidget.bodyLarge().copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    4.heightBox,
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: ThemeColor.grey100,
-                        ),
-                        4.widthBox,
-                        Expanded(
-                          child: Text(
-                            appointment.location,
-                            style: AppWidget.bodySmall().copyWith(
-                              color: ThemeColor.grey100,
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            20.heightBox,
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap:
+                        () => context.pushRoute(
+                          ChatRoute(
+                            trainerId: appointment.trainerId,
+                            trainerName: coachName,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          20.heightBox,
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap:
-                      () => context.pushRoute(
-                        ChatRoute(
-                          trainerId: appointment.trainerId,
-                          trainerName: coachName,
-                        ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: ThemeColor.blue,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.blue,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Chat with Coach',
-                      style: AppWidget.bodySmall().copyWith(
-                        color: ThemeColor.white,
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        'Chat with Coach',
+                        style: AppWidget.bodySmall().copyWith(
+                          color: ThemeColor.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              12.widthBox,
-              Expanded(
-                child:
-                    status == AppointmentStatus.completed
-                        ? GestureDetector(
-                          onTap:
-                              () => context.pushRoute(
-                                SessionDetailRoute(appointment: appointment),
+                12.widthBox,
+                Expanded(
+                  child:
+                      status == AppointmentStatus.completed
+                          ? GestureDetector(
+                            onTap:
+                                () => context.pushRoute(
+                                  SessionDetailRoute(appointment: appointment),
+                                ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: ThemeColor.darkBlue),
+                                borderRadius: BorderRadius.circular(20),
+                                color: ThemeColor.aquaBlue.withValues(
+                                  alpha: 0.1,
+                                ),
                               ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: ThemeColor.darkBlue),
-                              borderRadius: BorderRadius.circular(20),
-                              color: ThemeColor.aquaBlue.withValues(alpha: 0.1),
+                              child: Text(
+                                'View Details',
+                                style: AppWidget.bodySmall().copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: ThemeColor.darkBlue,
+                                ),
+                              ),
                             ),
-                            child: Text(
-                              'View Details',
-                              style: AppWidget.bodySmall().copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: ThemeColor.darkBlue,
+                          )
+                          //TODO: cannot reschedule after appointment time
+                          : GestureDetector(
+                            onTap:
+                                isRescheduleDisabled
+                                    ? null
+                                    : () {
+                                      _showRescheduleModal(
+                                        context,
+                                        appointment.id,
+                                        appointment.trainerId,
+                                        appointment.dateTime,
+                                      );
+                                    },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: ThemeColor.lightGrey),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'Reschedule',
+                                style: AppWidget.bodySmall().copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      isRescheduleDisabled
+                                          ? ThemeColor.grey100
+                                          : ThemeColor.black,
+                                ),
                               ),
                             ),
                           ),
-                        )
-                        //TODO: Reschedule 不能超出范围
-                        : GestureDetector(
-                          onTap:
-                              isRescheduleDisabled
-                                  ? null
-                                  : () {
-                                    _showRescheduleModal(
-                                      context,
-                                      appointment.id,
-                                      appointment.trainerId,
-                                      appointment.dateTime,
-                                    );
-                                  },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: ThemeColor.lightGrey),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Reschedule',
-                              style: AppWidget.bodySmall().copyWith(
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    isRescheduleDisabled
-                                        ? ThemeColor.grey100
-                                        : ThemeColor.black,
-                              ),
-                            ),
-                          ),
-                        ),
-              ),
-            ],
-          ),
-        ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
