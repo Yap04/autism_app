@@ -62,9 +62,21 @@ class StripeService {
     }
   }
 
-  Future<bool> refundStripePayment(String paymentIntentId) async {
+  Future<bool> refundStripePayment(
+    String paymentIntentId,
+    double? refundAmount,
+  ) async {
     try {
       debugPrint('Initiating Stripe refund for: $paymentIntentId');
+
+      final requestBody = <String, String>{
+        'payment_intent': paymentIntentId,
+      };
+
+      if (refundAmount != null && refundAmount > 0) {
+        final amountInCents = (refundAmount * 100).round().toString();
+        requestBody['amount'] = amountInCents;
+      }
 
       final response = await http.post(
         Uri.parse('https://api.stripe.com/v1/refunds'),
@@ -72,7 +84,7 @@ class StripeService {
           'Authorization': 'Bearer ${ApiKeys.secretKey}',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: {'payment_intent': paymentIntentId},
+        body: requestBody,
       );
 
       final responseData = jsonDecode(response.body);

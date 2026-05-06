@@ -30,18 +30,23 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
       final parentId = appointments.first.parentId;
       String? firstAppId;
 
+      var totalFiatAmount = 0.0;
+      var totalCreditDeduct = 0;
+
       for (final app in appointments) {
         final appDocRef = _appointmentsRef.doc();
         firstAppId ??= appDocRef.id;
         final newAppointment = app.copyWith(id: appDocRef.id);
         batch.set(appDocRef, newAppointment.toJson());
+
+        totalFiatAmount += app.amount;
+        totalCreditDeduct += app.duration ~/ 60;
       }
 
       if (useCredit) {
-        final totalDeduct = appointments.length;
         final userRef = _firestore.collection('users').doc(parentId);
         batch.update(userRef, {
-          'sessionCredits': FieldValue.increment(-totalDeduct),
+          'sessionCredits': FieldValue.increment(-totalCreditDeduct),
         });
       }
 
@@ -55,11 +60,8 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
       final description =
           'Booked ${appointments.length} ${appointments.first.sport} session(s) with ${appointments.first.trainerName}';
 
-      //todo: assuming that RM80 for each session
       final txAmount =
-          useCredit
-              ? -appointments.length.toDouble()
-              : -80.0 * appointments.length;
+          useCredit ? -totalCreditDeduct.toDouble() : -totalFiatAmount;
 
       final tx = TransactionModel(
         id: txRef.id,
@@ -88,6 +90,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
   ) async {
     try {
       String? stripePaymentIntentIdToRefund;
+      var stripeRefundAmount = 0.0;
 
       await _firestore.runTransaction((transaction) async {
         final appRef = _appointmentsRef.doc(appointmentId);
@@ -107,9 +110,20 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
         final isCreditUsed = appData['paymentMethod'] == 'credit';
         final parentId = appData['parentId'] as String;
         final trainerId = appData['trainerId'] as String;
+        final duration = (appData['duration'] as num?)?.toInt() ?? 60;
 
         final paymentChannel =
             isCreditUsed ? PaymentChannel.credit : PaymentChannel.stripe;
+
+        final singleSessionAmount =
+            (appData['amount'] as num?)?.toDouble() ?? 0.0;
+        final creditToRefund = duration ~/ 60;
+        final refundAmount =
+            isCreditUsed ? creditToRefund.toDouble() : singleSessionAmount;
+
+        if (!isCreditUsed) {
+          stripeRefundAmount = singleSessionAmount;
+        }
 
         final transactionsQuery =
             await _firestore
@@ -121,8 +135,6 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
                 .get();
 
         DocumentReference? originalTxRef;
-        // if pay by credit, refund 1 credit, or else RM80
-        var refundAmount = isCreditUsed ? 1.0 : 80.0;
 
         if (transactionsQuery.docs.isNotEmpty) {
           originalTxRef = transactionsQuery.docs.first.reference;
@@ -131,12 +143,6 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           if (!isCreditUsed) {
             stripePaymentIntentIdToRefund =
                 txData['stripePaymentIntentId'] as String?;
-          }
-
-          final originalAmount = (txData['amount'] as num?)?.toDouble() ?? 0.0;
-
-          if (originalAmount != 0) {
-            refundAmount = originalAmount.abs();
           }
         }
 
@@ -148,8 +154,10 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           }
 
           // release money to trainer
-          final duration = (appData['duration'] as num?)?.toInt() ?? 60;
-          final amountToEarn = (duration / 60) * 80.0;
+          final amountToEarn =
+              singleSessionAmount > 0
+                  ? singleSessionAmount
+                  : (duration / 60) * 80.0;
 
           final earningTxRef =
               _firestore
@@ -184,7 +192,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           if (isCreditUsed) {
             final userRef = _firestore.collection('users').doc(parentId);
             transaction.update(userRef, {
-              'sessionCredits': FieldValue.increment(refundAmount.toInt()),
+              'sessionCredits': FieldValue.increment(creditToRefund),
             });
           }
 
@@ -231,6 +239,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
 
         final refundSuccess = await StripeService().refundStripePayment(
           stripePaymentIntentIdToRefund!,
+          stripeRefundAmount,
         );
 
         if (!refundSuccess) {
