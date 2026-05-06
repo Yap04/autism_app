@@ -105,28 +105,72 @@ class TrainerCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     8.heightBox,
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            isAvailable
-                                ? ThemeColor.aquaBlue
-                                : ThemeColor.lightGrey.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        isAvailable ? 'Available' : 'Not Available',
-                        style: AppWidget.bodySmall().copyWith(
-                          color:
-                              isAvailable
-                                  ? ThemeColor.darkBlue
-                                  : ThemeColor.grey100,
-                          fontWeight: FontWeight.w600,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                isAvailable
+                                    ? ThemeColor.aquaBlue
+                                    : ThemeColor.lightGrey.withValues(
+                                      alpha: 0.5,
+                                    ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color:
+                                  isAvailable
+                                      ? ThemeColor.darkBlue
+                                      : ThemeColor.grey100,
+                            ),
+                          ),
+                          child: Text(
+                            isAvailable ? 'Available' : 'Not Available',
+                            style: AppWidget.bodySmall().copyWith(
+                              color:
+                                  isAvailable
+                                      ? ThemeColor.darkBlue
+                                      : ThemeColor.grey100,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (trainer.acceptsHomeBased) ...[
+                          6.widthBox,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.green),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.home_outlined,
+                                  size: 13,
+                                  color: Colors.green,
+                                ),
+                                4.widthBox,
+                                Text(
+                                  'Home-Based',
+                                  style: AppWidget.bodySmall().copyWith(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
