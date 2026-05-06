@@ -16,6 +16,7 @@ import '../../domain/models/appointment_model.dart';
 import '../../domain/models/child_model.dart';
 import '../../domain/models/feedback_model.dart';
 import '../../domain/models/transaction_model.dart';
+import '../../infrastructure/services/sla_service.dart';
 import '../parent/feedback/rate_review_bottom_sheet.dart';
 import '../shared/bottom_action_button.dart';
 import '../shared/snack_bar.dart';
@@ -851,7 +852,27 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     }
 
     if (appt.status == AppointmentStatus.accepted && isParent) {
-      return emptyBox;
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: BottomActionButton(
+            label: 'Cancel Session',
+            isLoading: _isLoading,
+            backgroundColor: ThemeColor.red,
+            onPressed: () => _showCancellationPolicyDialog(context, ref, appt),
+          ),
+        ),
+      );
     }
 
     if (appt.status == AppointmentStatus.accepted && !isParent) {
@@ -883,6 +904,156 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     }
 
     return emptyBox;
+  }
+
+  Future<void> _showCancellationPolicyDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppointmentModel appt,
+  ) async {
+    final sla = SlaService.calculateCancellation(appt);
+    final currentUser = ref.read(authNotifierProvider).value;
+
+    final isFree = sla['isFree'] as bool;
+    final slaMessage = sla['message'] as String;
+    final refundAmount = sla['refundAmount'] as double;
+
+    final hasGrace = (currentUser?.meltdownGraceUsedThisMonth ?? 0) < 1;
+    var useGrace = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: ThemeColor.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Cancel Session', style: AppWidget.h2TextFieldStyle()),
+                    16.heightBox,
+
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.cream,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        useGrace
+                            ? 'Meltdown Grace applied: You will receive a full refund.'
+                            : slaMessage,
+                        style: AppWidget.bodyMedium().copyWith(
+                          color: ThemeColor.darkBlue,
+                        ),
+                      ),
+                    ),
+                    24.heightBox,
+
+                    if (!isFree && hasGrace) ...[
+                      CheckboxListTile(
+                        value: useGrace,
+                        activeColor: ThemeColor.darkBlue,
+                        title: Text(
+                          'Sudden Meltdown? (Grace Period)',
+                          style: AppWidget.bodyMedium().copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          "Use your monthly 1-time grace for a full refund due to child's condition.",
+                        ),
+                        onChanged: (val) {
+                          setModalState(() => useGrace = val ?? false);
+                        },
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      12.heightBox,
+                    ],
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total Refund:', style: AppWidget.bodyMedium()),
+                        Text(
+                          'RM ${useGrace ? appt.amount.toStringAsFixed(2) : refundAmount.toStringAsFixed(2)}',
+                          style: AppWidget.h3TextFieldStyle().copyWith(
+                            color: ThemeColor.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    32.heightBox,
+
+                    BottomActionButton(
+                      label: 'Confirm Cancellation',
+                      backgroundColor: ThemeColor.red,
+                      isLoading: _isLoading,
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await _handleCancelAppointment(appt, useGrace, sla);
+                      },
+                    ),
+                    12.heightBox,
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Keep Session',
+                          style: AppWidget.bodyMedium().copyWith(
+                            color: ThemeColor.grey100,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _handleCancelAppointment(
+    AppointmentModel appt,
+    bool useGrace,
+    Map<String, dynamic> sla,
+  ) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final refund = useGrace ? appt.amount : (sla['refundAmount'] as double);
+      final compensation =
+          useGrace ? 0.0 : (sla['trainerCompensation'] as double);
+
+      // 🚀 执行原子更新逻辑 (你可以写在 AppointmentNotifier 里)
+      await ref
+          .read(appointmentNotifierProvider.notifier)
+          .cancelAppointment(
+            appointment: appt,
+            refundToParent: refund,
+            compensationToTrainer: compensation,
+            isMeltdownGrace: useGrace,
+          );
+
+      AppSnackBar.success(context, 'Appointment cancelled successfully.');
+      context.router.maybePop();
+    } catch (e) {
+      AppSnackBar.error(context, e.toString());
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _handleMarkAsCompleted(
