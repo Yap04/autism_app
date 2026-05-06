@@ -295,7 +295,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         return;
       }
 
-      final totalPrice = _hourlyPrice * _selectedWeeks;
+      final durationInHours = _selectedDuration / 60.0;
+      final sessionAmount = _hourlyPrice * durationInHours;
+
+      final totalPrice = sessionAmount * _selectedWeeks;
       String? stripePaymentId;
 
       if (_selectedPaymentMethod == PaymentMethod.singlePay) {
@@ -328,6 +331,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
             recurringWeeks: _selectedWeeks,
             stripePaymentIntentId: stripePaymentId,
             sessionType: _sessionType,
+            amount: sessionAmount,
           );
 
       if (_selectedPaymentMethod == PaymentMethod.credit) {
@@ -442,7 +446,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                               const Center(child: CircularProgressIndicator()),
                       error: (e, stack) => Text('Error loading children: $e'),
                       data: (children) {
-                        // 极端情况：家长还没有添加任何孩子
                         if (children.isEmpty) {
                           return Container(
                             width: double.infinity,
@@ -477,7 +480,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                           );
                         }
 
-                        // 正常情况：展示下拉框
                         return DropdownButtonFormField<ChildModel>(
                           isExpanded: true,
                           initialValue: _selectedChild,
@@ -520,7 +522,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                                   value: child,
                                   child: Row(
                                     children: [
-                                      // 下拉框里也能显示孩子的名字和年龄，体验更好
                                       Expanded(
                                         child: Text(
                                           child.name,
@@ -776,7 +777,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
             ),
           ],
         ),
-        // 远程选择时显示提示
         if (_sessionType == SessionType.remote) ...[
           12.heightBox,
           Container(
