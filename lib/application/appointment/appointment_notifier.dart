@@ -41,6 +41,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     required PaymentMethod paymentMethod,
     required int recurringWeeks,
     required int duration,
+    required SessionType sessionType,
     String? stripePaymentIntentId,
     String? childAvatarUrl,
   }) async {
@@ -84,6 +85,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
             sport: sport,
             location: location,
             duration: duration,
+            sessionType: sessionType,
             dateTime: sessionDate,
             status: AppointmentStatus.pending,
             createdAt: DateTime.now(),

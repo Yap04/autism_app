@@ -17,6 +17,7 @@ import '../../../domain/models/child_model.dart';
 import '../../shared/bottom_action_button.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/user_avatar.dart';
+import 'payment_bottom_sheet.dart';
 
 @RoutePage()
 class BookingDetailsPage extends ConsumerStatefulWidget {
@@ -51,6 +52,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   late PaymentMethod _selectedPaymentMethod;
 
   String? _selectedSport;
+
+  SessionType _sessionType = SessionType.inPerson;
 
   @override
   void initState() {
@@ -108,8 +111,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     return true;
   }
 
-  //TODO: _AssertionError ('package:flutter/src/material/date_picker.dart': Failed assertion: line 243 pos 5: 'selectableDayPredicate == null || initialDate == null || selectableDayPredicate(initialDate)': Provided initialDate 2026-05-04 00:00:00.000 must satisfy provided selectableDayPredicate.)
-  //TODO: if not select chid, prompt user
   Future<void> _pickDate() async {
     final trainer =
         ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
@@ -236,6 +237,38 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     }
   }
 
+  Future<void> _openPaymentSheet() async {
+    if (_selectedTime == null) {
+      AppSnackBar.error(context, 'Please select a time.');
+      return;
+    }
+    if (_selectedChild == null) {
+      AppSnackBar.error(context, 'Please select a child profile.');
+      return;
+    }
+
+    final user = ref.read(authNotifierProvider).value;
+    final credits = user?.sessionCredits ?? 0;
+    final durationInHours = _selectedDuration / 60.0;
+    final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
+    final totalPrice = _hourlyPrice * durationInHours * _selectedWeeks;
+    final hasEnoughCredits = credits >= requiredCredits;
+
+    await PaymentBottomSheet.show(
+      context: context,
+      totalPrice: totalPrice,
+      requiredCredits: requiredCredits,
+      availableCredits: credits,
+      hasEnoughCredits: hasEnoughCredits,
+      initialPaymentMethod: _selectedPaymentMethod,
+      // transportFee: 15.0,  // ← 以后加车马费传这里
+      onConfirm: (method) {
+        setState(() => _selectedPaymentMethod = method);
+        _submitBooking();
+      },
+    );
+  }
+
   Future<void> _submitBooking() async {
     if (_selectedTime == null) {
       AppSnackBar.error(context, 'Please select a time.');
@@ -294,6 +327,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
             paymentMethod: _selectedPaymentMethod,
             recurringWeeks: _selectedWeeks,
             stripePaymentIntentId: stripePaymentId,
+            sessionType: _sessionType,
           );
 
       if (_selectedPaymentMethod == PaymentMethod.credit) {
@@ -335,9 +369,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authNotifierProvider).value;
-    final credits = user?.sessionCredits ?? 0;
-
     final trainerAsync = ref.watch(fetchTrainerProvider(widget.trainerId));
     final trainer = trainerAsync.asData?.value;
     final trainerImageUrl = trainer?.userAvatarUrl;
@@ -375,12 +406,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         }
       });
     }
-
-    // Credit Required: 1 hour = 1 credit. 2 hours = 2 credits. Then multiply by weeks.
-    final durationInHours = _selectedDuration / 60.0;
-    final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
-    final totalPrice = _hourlyPrice * durationInHours * _selectedWeeks;
-    final hasEnoughCredits = credits >= requiredCredits;
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -596,6 +621,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                       ),
                     ),
 
+                    32.heightBox,
+                    _buildSessionTypeSection(),
+
                     24.heightBox,
 
                     _buildOperatingHoursSection(operatingHours),
@@ -696,28 +724,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                         return _buildWeekOption(weeks);
                       }),
                     ),
-
-                    32.heightBox,
-
-                    Text('Payment Method', style: AppWidget.h3TextFieldStyle()),
-                    16.heightBox,
-                    _buildPaymentOption(
-                      method: PaymentMethod.credit,
-                      title: 'Use Session Credit',
-                      subtitle:
-                          hasEnoughCredits
-                              ? 'Balance: $credits | Required: $requiredCredits'
-                              : 'Not enough credits (Need $requiredCredits, Have $credits)',
-                      isDisabled: !hasEnoughCredits,
-                    ),
-                    12.heightBox,
-                    _buildPaymentOption(
-                      method: PaymentMethod.singlePay,
-                      title: 'Pay Per Session',
-                      subtitle: 'Total: RM ${totalPrice.toStringAsFixed(2)}',
-                      isDisabled: false,
-                    ),
-
                     16.heightBox,
                   ],
                 ),
@@ -727,12 +733,147 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               color: ThemeColor.cream,
               child: BottomActionButton(
-                label:
-                    _selectedPaymentMethod == PaymentMethod.credit
-                        ? 'Confirm & Deduct $requiredCredits Credit(s)'
-                        : 'Proceed to Pay RM ${totalPrice.toStringAsFixed(2)}',
+                label: 'Review & Pay',
                 isLoading: _isLoading,
-                onPressed: _submitBooking,
+                onPressed: _openPaymentSheet,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSessionTypeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Session Type', style: AppWidget.h3TextFieldStyle()),
+        8.heightBox,
+        Text(
+          'Choose how you want the session to be conducted.',
+          style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
+        ),
+        16.heightBox,
+        Row(
+          children: [
+            Expanded(
+              child: _buildSessionTypeOption(
+                type: SessionType.inPerson,
+                icon: Icons.place_outlined,
+                label: 'In-Person',
+                sublabel: "At trainer's location",
+              ),
+            ),
+            12.widthBox,
+            Expanded(
+              child: _buildSessionTypeOption(
+                type: SessionType.remote,
+                icon: Icons.videocam_outlined,
+                label: 'Remote',
+                sublabel: 'Online consultation',
+              ),
+            ),
+          ],
+        ),
+        // 远程选择时显示提示
+        if (_sessionType == SessionType.remote) ...[
+          12.heightBox,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: ThemeColor.aquaBlue.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: ThemeColor.darkBlue.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: ThemeColor.darkBlue,
+                ),
+                8.widthBox,
+                Expanded(
+                  child: Text(
+                    'A video call link will be shared before the session.',
+                    style: AppWidget.bodyExtraSmall().copyWith(
+                      color: ThemeColor.darkBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSessionTypeOption({
+    required SessionType type,
+    required IconData icon,
+    required String label,
+    required String sublabel,
+  }) {
+    final isSelected = _sessionType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _sessionType = type),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? ThemeColor.darkBlue : ThemeColor.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? ThemeColor.darkBlue : ThemeColor.lightGrey,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow:
+              isSelected
+                  ? [
+                    BoxShadow(
+                      color: ThemeColor.darkBlue.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                  : [],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? ThemeColor.white : ThemeColor.darkBlue,
+            ),
+            10.widthBox,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppWidget.bodyMedium().copyWith(
+                      color: isSelected ? ThemeColor.white : ThemeColor.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  2.heightBox,
+                  Text(
+                    sublabel,
+                    style: AppWidget.bodyExtraSmall().copyWith(
+                      color:
+                          isSelected
+                              ? ThemeColor.white.withValues(alpha: 0.75)
+                              : ThemeColor.grey100,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -742,6 +883,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   }
 
   Widget _buildTrainerCard(String? imageUrl, String selectedSport) {
+    final locationText =
+        _sessionType == SessionType.remote ? 'Online Session' : widget.location;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -828,7 +972,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
               4.widthBox,
               Expanded(
                 child: Text(
-                  widget.location,
+                  locationText,
                   style: AppWidget.bodySmall().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -1041,79 +1185,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildPaymentOption({
-    required PaymentMethod method,
-    required String title,
-    required String subtitle,
-    required bool isDisabled,
-  }) {
-    final isSelected = _selectedPaymentMethod == method;
-    return GestureDetector(
-      onTap:
-          isDisabled
-              ? null
-              : () => setState(() => _selectedPaymentMethod = method),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color:
-              isDisabled
-                  ? ThemeColor.grey100.withValues(alpha: 0.1)
-                  : ThemeColor.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? ThemeColor.darkBlue : ThemeColor.lightGrey,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
-              color:
-                  isDisabled
-                      ? ThemeColor.grey100
-                      : (isSelected
-                          ? ThemeColor.darkBlue
-                          : ThemeColor.lightGrey),
-            ),
-            12.widthBox,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppWidget.bodyLarge().copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isDisabled ? ThemeColor.grey100 : ThemeColor.black,
-                    ),
-                  ),
-                  4.heightBox,
-                  Text(
-                    subtitle,
-                    style: AppWidget.bodySmall().copyWith(
-                      color:
-                          isDisabled
-                              ? ThemeColor.grey100
-                              : (isSelected
-                                  ? ThemeColor.darkBlue
-                                  : ThemeColor.grey100),
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

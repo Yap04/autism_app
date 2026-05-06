@@ -7,6 +7,8 @@ part 'appointment_model.g.dart';
 
 enum AppointmentStatus { pending, accepted, rejected, completed, cancelled }
 
+enum SessionType { inPerson, remote }
+
 enum PaymentMethod { credit, singlePay }
 
 enum PaymentStatus { paid, pendingPayment, refunded }
@@ -24,6 +26,7 @@ class AppointmentModel with _$AppointmentModel {
     required String sport,
     required String location,
     required int duration,
+    required SessionType sessionType,
     @TimestampConverter() required DateTime dateTime,
     required AppointmentStatus status,
     @TimestampConverter() required DateTime createdAt,
