@@ -40,6 +40,7 @@ import '../../presentation/profile/wallet/parent_wallet_page.dart';
 import '../../presentation/profile/wallet/trainer_wallet_page.dart';
 import '../../presentation/session/session_detail_page.dart';
 import '../../presentation/session/student_progress_page.dart';
+import '../../presentation/session/video_call_page.dart';
 import '../../presentation/trainer/academy/trainer_academy_page.dart';
 import '../../presentation/trainer/trainer_bottom_nav_page.dart';
 
@@ -75,6 +76,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: TicketChatRoute.page),
     AutoRoute(page: TrainerVerificationRoute.page),
     AutoRoute(page: TrainerAcademyRoute.page),
+    AutoRoute(page: VideoCallRoute.page),
 
     // Admin Web Panel Routes
     AutoRoute(

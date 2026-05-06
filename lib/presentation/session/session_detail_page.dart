@@ -145,6 +145,13 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             ),
             24.heightBox,
 
+            if (appt.sessionType == SessionType.remote) ...[
+              Text('Remote Consultation', style: AppWidget.h3TextFieldStyle()),
+              12.heightBox,
+              _buildRemoteConsultationBox(context, appt, isParent: isParent),
+              24.heightBox,
+            ],
+
             Text('Special Needs & Notes', style: AppWidget.h3TextFieldStyle()),
             12.heightBox,
             _buildSpecialNeedsBox(childAsync),
