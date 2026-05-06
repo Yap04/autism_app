@@ -41,6 +41,8 @@ class TrainerDashboardPage extends ConsumerWidget {
     var tempLatitude = currentUser.latitude;
     var tempLongitude = currentUser.longitude;
 
+    var tempAcceptsHomeBased = currentUser.acceptsHomeBased;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -223,6 +225,50 @@ class TrainerDashboardPage extends ConsumerWidget {
                     ),
                   ),
 
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: ThemeColor.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: ThemeColor.lightGrey),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Offer Home-based Sessions?',
+                                style: AppWidget.bodyMedium().copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              4.heightBox,
+                              Text(
+                                'Parents can request sessions at their own homes.',
+                                style: AppWidget.bodyExtraSmall().copyWith(
+                                  color: ThemeColor.grey100,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: tempAcceptsHomeBased,
+                          activeThumbColor: ThemeColor.darkBlue,
+                          onChanged: (v) {
+                            setModalState(() {
+                              tempAcceptsHomeBased = v;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  24.heightBox,
+
                   GestureDetector(
                     onTap: () async {
                       try {
@@ -234,6 +280,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                               sports: selectedSports,
                               longitude: tempLongitude,
                               latitude: tempLatitude,
+                              acceptsHomeBased: tempAcceptsHomeBased,
                             );
 
                         if (context.mounted) {

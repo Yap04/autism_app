@@ -178,6 +178,7 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> updatePublicProfile({
+    required bool acceptsHomeBased,
     String? bio,
     String? location,
     List<String>? sports,
@@ -195,6 +196,7 @@ class AuthNotifier extends _$AuthNotifier {
       sports: sports ?? currentUser.sports,
       latitude: latitude ?? currentUser.latitude,
       longitude: longitude ?? currentUser.longitude,
+      acceptsHomeBased: acceptsHomeBased,
     );
 
     state = AsyncData(updatedUser);

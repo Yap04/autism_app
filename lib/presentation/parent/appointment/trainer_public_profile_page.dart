@@ -108,6 +108,69 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                           ],
                         ),
                       ),
+
+                    12.heightBox,
+                    if (trainer.acceptsHomeBased)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ThemeColor.green.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: ThemeColor.green.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.home_work_rounded,
+                              color: ThemeColor.green,
+                              size: 14,
+                            ),
+                            6.widthBox,
+                            Text(
+                              'Home-based Available',
+                              style: AppWidget.bodyExtraSmall().copyWith(
+                                color: ThemeColor.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ThemeColor.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.domain_rounded,
+                              color: ThemeColor.white.withValues(alpha: 0.6),
+                              size: 14,
+                            ),
+                            6.widthBox,
+                            Text(
+                              'Center-based Only',
+                              style: AppWidget.bodyExtraSmall().copyWith(
+                                color: ThemeColor.white.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                     24.heightBox,
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -467,6 +530,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
   }
 
   Widget _buildReviewItem(FeedbackModel feedback) {
+    // Anonymous Review
     const reviewerName = 'User';
     const initials = 'US';
 

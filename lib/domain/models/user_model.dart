@@ -44,6 +44,7 @@ class UserModel with _$UserModel {
     @Default(true) bool isAcceptingRequests,
     @Default([]) List<String> badges,
     @Default(0) int totalCpdPoints,
+    @Default(false) bool acceptsHomeBased,
     DateTime? resumeAt,
     List<dynamic>? operatingHours,
     @TimestampConverter() DateTime? createdAt,
