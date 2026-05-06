@@ -274,6 +274,114 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     );
   }
 
+  Widget _buildRemoteConsultationBox(
+    BuildContext context,
+    AppointmentModel appt, {
+    required bool isParent,
+  }) {
+    final canJoinCall = appt.status == AppointmentStatus.accepted;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColor.aquaBlue.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.videocam_rounded, color: ThemeColor.darkBlue),
+              8.widthBox,
+              Text(
+                'In-App Video Session',
+                style: AppWidget.bodyMedium().copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: ThemeColor.darkBlue,
+                ),
+              ),
+            ],
+          ),
+          8.heightBox,
+          Text(
+            'This session will be conducted remotely. Please ensure you have a stable internet connection before joining.',
+            style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
+          ),
+
+          if (canJoinCall) ...[
+            16.heightBox,
+            GestureDetector(
+              onTap: () {
+                context.pushRoute(
+                  VideoCallRoute(
+                    channelName: appt.id,
+                    role: isParent ? 'subscriber' : 'publisher',
+                  ),
+                );
+
+                AppSnackBar.success(
+                  context,
+                  'Navigating to Video Call Room...',
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: ThemeColor.darkBlue,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeColor.darkBlue.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.video_call_rounded,
+                      color: ThemeColor.white,
+                      size: 20,
+                    ),
+                    8.widthBox,
+                    Text(
+                      'Join Video Call',
+                      style: AppWidget.bodyMedium().copyWith(
+                        color: ThemeColor.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else if (appt.status == AppointmentStatus.completed) ...[
+            16.heightBox,
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: ThemeColor.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Video session ended',
+                style: AppWidget.bodyExtraSmall().copyWith(
+                  color: ThemeColor.green,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildFeedbackBox(
     BuildContext context,
     WidgetRef ref,
