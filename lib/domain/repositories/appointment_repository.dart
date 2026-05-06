@@ -26,4 +26,14 @@ abstract class AppointmentRepository {
     String appointmentId,
     DateTime newDateTime,
   );
+
+  Future<void> cancelAppointment({
+    required String appointmentId,
+    required String parentId,
+    required String trainerId,
+    required double refundAmount,
+    required double trainerCompensation,
+    required bool isMeltdownGrace,
+    required String cancelledBy,
+  });
 }

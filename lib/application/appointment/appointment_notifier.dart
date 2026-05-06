@@ -42,6 +42,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     required int recurringWeeks,
     required int duration,
     required SessionType sessionType,
+    required double amount,
     String? stripePaymentIntentId,
     String? childAvatarUrl,
   }) async {
@@ -86,6 +87,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
             location: location,
             duration: duration,
             sessionType: sessionType,
+            amount: amount,
             dateTime: sessionDate,
             status: AppointmentStatus.pending,
             createdAt: DateTime.now(),
@@ -283,6 +285,63 @@ class AppointmentNotifier extends _$AppointmentNotifier {
       }
     } catch (e) {
       throw Exception('Failed to reschedule: $e');
+    }
+  }
+
+  Future<void> cancelAppointment({
+    required AppointmentModel appointment,
+    required double refundToParent,
+    required double compensationToTrainer,
+    required bool isMeltdownGrace,
+  }) async {
+    final currentUser = await ref.read(authNotifierProvider.future);
+    if (currentUser == null) throw Exception('Please login first');
+
+    try {
+      final cancelledBy =
+          currentUser.id == appointment.parentId ? 'parent' : 'trainer';
+
+      await ref
+          .read(appointmentRepositoryProvider)
+          .cancelAppointment(
+            appointmentId: appointment.id,
+            parentId: appointment.parentId,
+            trainerId: appointment.trainerId,
+            refundAmount: refundToParent,
+            trainerCompensation: compensationToTrainer,
+            isMeltdownGrace: isMeltdownGrace,
+            cancelledBy: cancelledBy,
+          );
+
+      ref.invalidate(authNotifierProvider);
+
+      try {
+        final targetUserId =
+            cancelledBy == 'parent'
+                ? appointment.trainerId
+                : appointment.parentId;
+        final targetToken = await ref
+            .read(userRepositoryProvider)
+            .getUserFcmToken(targetUserId);
+
+        if (targetToken != null && targetToken.isNotEmpty) {
+          const title = 'Session Cancelled ⚠️';
+          final body =
+              cancelledBy == 'parent'
+                  ? 'The parent has cancelled the ${appointment.sport} session.'
+                  : 'Trainer ${appointment.trainerName} has cancelled the ${appointment.sport} session.';
+
+          await RemoteNotificationService.notifyOtherUser(
+            targetFcmToken: targetToken,
+            title: title,
+            body: body,
+          );
+        }
+      } catch (e) {
+        print('Cancellation successful, but notification failed: $e');
+      }
+    } catch (e) {
+      throw Exception('Failed to process cancellation: $e');
     }
   }
 }

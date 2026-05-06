@@ -319,4 +319,162 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
       throw Exception('Failed to reschedule appointment: $e');
     }
   }
+
+  @override
+  Future<void> cancelAppointment({
+    required String appointmentId,
+    required String parentId,
+    required String trainerId,
+    required double refundAmount,
+    required double trainerCompensation,
+    required bool isMeltdownGrace,
+    required String cancelledBy,
+  }) async {
+    String? stripePaymentIntentIdToRefund;
+    var executeStripeRefund = false;
+
+    final appointmentRef = _firestore
+        .collection('appointments')
+        .doc(appointmentId);
+    final parentRef = _firestore.collection('users').doc(parentId);
+    final trainerRef = _firestore.collection('users').doc(trainerId);
+
+    await _firestore.runTransaction((transaction) async {
+      final apptDoc = await transaction.get(appointmentRef);
+      final parentDoc = await transaction.get(parentRef);
+      final trainerDoc = await transaction.get(trainerRef);
+
+      if (!apptDoc.exists || !parentDoc.exists || !trainerDoc.exists) {
+        throw Exception('Required data not found for cancellation.');
+      }
+
+      final appData = apptDoc.data()!;
+      final isCreditUsed = appData['paymentMethod'] == 'credit';
+      final paymentChannel =
+          isCreditUsed ? PaymentChannel.credit : PaymentChannel.stripe;
+
+      final transactionsQuery =
+          await _firestore
+              .collection('users')
+              .doc(parentId)
+              .collection('transactions')
+              .where('relatedAppointmentId', isEqualTo: appointmentId)
+              .limit(1)
+              .get();
+
+      DocumentReference? originalTxRef;
+      if (transactionsQuery.docs.isNotEmpty) {
+        originalTxRef = transactionsQuery.docs.first.reference;
+        final txData = transactionsQuery.docs.first.data();
+
+        if (!isCreditUsed) {
+          stripePaymentIntentIdToRefund =
+              txData['stripePaymentIntentId'] as String?;
+        }
+      }
+
+      transaction.update(appointmentRef, {
+        'status': AppointmentStatus.cancelled.name,
+        'cancelledBy': cancelledBy,
+        'isMeltdownGrace': isMeltdownGrace,
+        'refundAmount': refundAmount,
+        'trainerCompensation': trainerCompensation,
+      });
+
+      final currentGraceUsed =
+          (parentDoc.data()?['meltdownGraceUsedThisMonth'] as num?)?.toInt() ??
+          0;
+      final parentUpdates = <String, dynamic>{
+        if (isMeltdownGrace) 'meltdownGraceUsedThisMonth': currentGraceUsed + 1,
+      };
+
+      var actualRefundRecordAmount = refundAmount;
+
+      if (refundAmount > 0) {
+        if (isCreditUsed) {
+          final creditToRefund = refundAmount.toInt();
+          parentUpdates['sessionCredits'] = FieldValue.increment(
+            creditToRefund,
+          );
+          actualRefundRecordAmount = creditToRefund.toDouble();
+        } else {
+          executeStripeRefund = true;
+        }
+      }
+
+      if (parentUpdates.isNotEmpty) {
+        transaction.update(parentRef, parentUpdates);
+      }
+
+      if (trainerCompensation > 0) {
+        transaction.update(trainerRef, {
+          'walletBalance': FieldValue.increment(trainerCompensation),
+        });
+
+        final earningTxRef =
+            _firestore
+                .collection('users')
+                .doc(trainerId)
+                .collection('transactions')
+                .doc();
+
+        final earningTx = TransactionModel(
+          id: earningTxRef.id,
+          parentId: trainerId,
+          type: TransactionType.earning,
+          paymentChannel: PaymentChannel.stripe,
+          amount: trainerCompensation,
+          description: 'Compensation: Cancelled ${appData['sport']} session',
+          createdAt: DateTime.now(),
+          relatedAppointmentId: appointmentId,
+        );
+        transaction.set(earningTxRef, earningTx.toJson());
+      }
+
+      if (originalTxRef != null) {
+        transaction.update(originalTxRef, {
+          'status': TransactionStatus.refunded.name,
+          'description': '${appData['sport']} Session (Cancelled & Refunded)',
+        });
+      }
+
+      if (actualRefundRecordAmount > 0) {
+        final refundTxRef =
+            _firestore
+                .collection('users')
+                .doc(parentId)
+                .collection('transactions')
+                .doc();
+
+        final refundTx = TransactionModel(
+          id: refundTxRef.id,
+          parentId: parentId,
+          type: TransactionType.refund,
+          paymentChannel: paymentChannel,
+          amount: actualRefundRecordAmount,
+          description: 'Refund: Cancelled by $cancelledBy',
+          createdAt: DateTime.now(),
+          relatedAppointmentId: appointmentId,
+        );
+        transaction.set(refundTxRef, refundTx.toJson());
+      }
+    });
+
+    if (executeStripeRefund && stripePaymentIntentIdToRefund != null) {
+      debugPrint(
+        'Initiating Stripe refund for: $stripePaymentIntentIdToRefund',
+      );
+
+      final refundSuccess = await StripeService().refundStripePayment(
+        stripePaymentIntentIdToRefund!,
+        refundAmount,
+      );
+
+      if (!refundSuccess) {
+        debugPrint(
+          'CRITICAL: Stripe refund API call failed! Manual intervention required.',
+        );
+      }
+    }
+  }
 }
