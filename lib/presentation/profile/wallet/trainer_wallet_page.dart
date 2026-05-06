@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/auth/auth_notifier.dart';
 import '../../../application/payment/payment_provider.dart';
 import '../../../application/providers/repository_providers.dart';
+import '../../../application/user/user_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
@@ -22,11 +23,15 @@ class TrainerWalletPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(authNotifierProvider).value;
+    final authUser = ref.watch(authNotifierProvider).value;
 
-    if (currentUser == null) {
+    if (authUser == null) {
       return const Scaffold(body: Center(child: Text('Please login first')));
     }
+
+    final liveUserAsync = ref.watch(liveUserStreamProvider(authUser.id));
+
+    final currentUser = liveUserAsync.valueOrNull ?? authUser;
 
     final totalBalance = currentUser.walletBalance ?? 0.0;
 

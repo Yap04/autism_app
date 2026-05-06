@@ -102,7 +102,6 @@ class FirebaseUserRepository implements UserRepository {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists && doc.data() != null) {
-
         return doc.data()?['fcmToken'] as String?;
       }
       return null;
@@ -119,5 +118,17 @@ class FirebaseUserRepository implements UserRepository {
     } catch (e) {
       print('⚠️ Failed to update FCM token: $e');
     }
+  }
+
+  @override
+  Stream<UserModel?> watchUser(String userId) {
+    return _firestore.collection('users').doc(userId).snapshots().map((
+      snapshot,
+    ) {
+      if (snapshot.exists && snapshot.data() != null) {
+        return UserModel.fromJson(snapshot.data()!);
+      }
+      return null;
+    });
   }
 }
