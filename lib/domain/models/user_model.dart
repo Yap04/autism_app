@@ -40,6 +40,7 @@ class UserModel with _$UserModel {
     String? rejectReason,
     @Default([]) List<String> sports,
     @Default(0) int sessionCredits,
+    @Default(0) int completedSessionsCount,
     @Default(UserStatus.active) UserStatus status,
     @Default(true) bool isAcceptingRequests,
     @Default([]) List<String> badges,
