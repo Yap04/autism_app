@@ -16,6 +16,7 @@ import '../../domain/models/appointment_model.dart';
 import '../../domain/models/child_model.dart';
 import '../../domain/models/feedback_model.dart';
 import '../../domain/models/transaction_model.dart';
+import '../../infrastructure/services/commision_service.dart';
 import '../../infrastructure/services/sla_service.dart';
 import '../parent/feedback/rate_review_bottom_sheet.dart';
 import '../shared/bottom_action_button.dart';
@@ -1037,7 +1038,6 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       final compensation =
           useGrace ? 0.0 : (sla['trainerCompensation'] as double);
 
-      // 🚀 执行原子更新逻辑 (你可以写在 AppointmentNotifier 里)
       await ref
           .read(appointmentNotifierProvider.notifier)
           .cancelAppointment(
@@ -1105,10 +1105,21 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
 
       ref.invalidate(authNotifierProvider);
 
-      final amountToEarn = (appt.duration / 60) * 80.0;
+      final currentCompletedCount = currentUser.completedSessionsCount;
+      final baseSessionAmount =
+          appt.amount > 0 ? appt.amount : (appt.duration / 60) * 80.0;
+
+      final earningsData = CommissionService.calculateEarnings(
+        sessionAmount: baseSessionAmount,
+        completedSessions: currentCompletedCount,
+      );
+
+      final amountToEarn = earningsData['trainerEarning'] as double;
+      final takeRateStr = earningsData['takeRatePercentage'] as String;
+
       AppSnackBar.success(
         context,
-        'Session completed! RM ${amountToEarn.toStringAsFixed(2)} has been added to your wallet.',
+        'Session completed! RM ${amountToEarn.toStringAsFixed(2)} (after $takeRateStr platform fee) added to your wallet.',
       );
       context.router.maybePop();
     } catch (e) {
