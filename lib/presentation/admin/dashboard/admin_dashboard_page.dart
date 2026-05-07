@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../application/admin/dashboard/admin_dashboard_provider.dart';
 import '../../../core/constant/color_constant.dart';
@@ -39,15 +42,15 @@ class AdminDashboardPage extends ConsumerWidget {
                     ),
                     24.widthBox,
                     _buildStatCard(
-                      'Active Trainers',
-                      '$totalTrainers',
-                      Icons.sports,
+                      'Total GMV',
+                      'RM ${stats.totalGmv.toStringAsFixed(2)}',
+                      Icons.show_chart,
                       ThemeColor.orange,
                     ),
                     24.widthBox,
                     _buildStatCard(
-                      'Total Revenue',
-                      'RM ${stats.totalRevenue.toStringAsFixed(2)}',
+                      'Net Profit',
+                      'RM ${stats.netProfit.toStringAsFixed(2)}',
                       Icons.attach_money,
                       ThemeColor.green,
                     ),
@@ -75,8 +78,8 @@ class AdminDashboardPage extends ConsumerWidget {
                     Expanded(
                       flex: 2,
                       child: _buildChartContainer(
-                        title: 'Revenue Trend (Last 6 Months)',
-                        child: _buildRevenueBarChart(),
+                        title: 'GMV Trend (Last 6 Months)',
+                        child: _buildRevenueBarChart(stats.monthlyGmv),
                       ),
                     ),
                   ],
@@ -267,12 +270,15 @@ class AdminDashboardPage extends ConsumerWidget {
     );
   }
 
-  // 2. 收入趋势柱状图 (使用 Mock 数据演示视觉效果)
-  Widget _buildRevenueBarChart() {
+  Widget _buildRevenueBarChart(List<double> monthlyRevenue) {
+    var maxRevenue = monthlyRevenue.isEmpty ? 5000 : monthlyRevenue.reduce(max);
+    if (maxRevenue < 1000) maxRevenue = 1000;
+    final calculatedMaxY = maxRevenue * 1.2;
+
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: 5000,
+        maxY: calculatedMaxY,
         barTouchData: const BarTouchData(enabled: true),
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
@@ -280,28 +286,25 @@ class AdminDashboardPage extends ConsumerWidget {
               reservedSize: 40,
               showTitles: true,
               getTitlesWidget: (double value, TitleMeta meta) {
+                final index = value.toInt();
+                if (index < 0 || index > 5) {
+                  return emptyBox;
+                }
+
+                final now = DateTime.now();
+                final targetDate = DateTime(now.year, now.month - (5 - index));
+                final monthStr = DateFormat('MMM').format(targetDate);
+
                 final style = AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                   fontWeight: FontWeight.bold,
                 );
-                Widget text;
-                switch (value.toInt()) {
-                  case 0:
-                    text = Text('Nov', style: style);
-                  case 1:
-                    text = Text('Dec', style: style);
-                  case 2:
-                    text = Text('Jan', style: style);
-                  case 3:
-                    text = Text('Feb', style: style);
-                  case 4:
-                    text = Text('Mar', style: style);
-                  case 5:
-                    text = Text('Apr', style: style);
-                  default:
-                    text = Text('', style: style);
-                }
-                return SideTitleWidget(meta: meta, space: 10, child: text);
+
+                return SideTitleWidget(
+                  meta: meta,
+                  space: 10,
+                  child: Text(monthStr, style: style),
+                );
               },
             ),
           ),
@@ -310,11 +313,17 @@ class AdminDashboardPage extends ConsumerWidget {
               showTitles: true,
               reservedSize: 40,
               getTitlesWidget: (value, meta) {
-                if (value == 0) {
-                  return emptyBox;
+                if (value == 0) return emptyBox;
+
+                String text;
+                if (value >= 1000) {
+                  text = '${(value / 1000).toStringAsFixed(1)}k';
+                } else {
+                  text = value.toStringAsFixed(0);
                 }
+
                 return Text(
-                  '${(value / 1000).toStringAsFixed(1)}k',
+                  text,
                   style: AppWidget.bodyExtraSmall().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -327,7 +336,7 @@ class AdminDashboardPage extends ConsumerWidget {
         ),
         gridData: FlGridData(
           drawVerticalLine: false,
-          horizontalInterval: 1000,
+          horizontalInterval: calculatedMaxY / 5,
           getDrawingHorizontalLine:
               (value) => FlLine(
                 color: ThemeColor.lightGrey.withValues(alpha: 0.5),
@@ -335,14 +344,11 @@ class AdminDashboardPage extends ConsumerWidget {
               ),
         ),
         borderData: FlBorderData(show: false),
-        barGroups: [
-          _makeBarData(0, 1200),
-          _makeBarData(1, 2500),
-          _makeBarData(2, 1800),
-          _makeBarData(3, 3200),
-          _makeBarData(4, 2900),
-          _makeBarData(5, 4500),
-        ],
+        barGroups: List.generate(6, (index) {
+          final yValue =
+              index < monthlyRevenue.length ? monthlyRevenue[index] : 0.0;
+          return _makeBarData(index, yValue);
+        }),
       ),
     );
   }
