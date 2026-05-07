@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../domain/models/appointment_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../../domain/repositories/appointment_repository.dart';
+import '../services/commision_service.dart';
 import '../services/stripe_service.dart';
 
 class FirebaseAppointmentRepository implements AppointmentRepository {
@@ -39,8 +40,11 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
         final newAppointment = app.copyWith(id: appDocRef.id);
         batch.set(appDocRef, newAppointment.toJson());
 
-        totalFiatAmount += app.amount;
-        totalCreditDeduct += app.duration ~/ 60;
+        final safeAmount = (app.amount as num?)?.toDouble() ?? 0.0;
+        final safeDuration = (app.duration as num?)?.toInt() ?? 60;
+
+        totalFiatAmount += safeAmount;
+        totalCreditDeduct += safeDuration ~/ 60;
       }
 
       if (useCredit) {
@@ -105,12 +109,33 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           return;
         }
 
-        transaction.update(appRef, {'status': status.name});
-
         final isCreditUsed = appData['paymentMethod'] == 'credit';
         final parentId = appData['parentId'] as String;
         final trainerId = appData['trainerId'] as String;
         final duration = (appData['duration'] as num?)?.toInt() ?? 60;
+
+        DocumentSnapshot? trainerDoc;
+        final trainerRef = _firestore.collection('users').doc(trainerId);
+        if (status == AppointmentStatus.completed) {
+          trainerDoc = await transaction.get(trainerRef);
+        }
+
+        final transactionsQuery =
+            await _firestore
+                .collection('users')
+                .doc(parentId)
+                .collection('transactions')
+                .where('relatedAppointmentId', isEqualTo: appointmentId)
+                .limit(1)
+                .get();
+
+        DocumentReference? originalTxRef;
+        Map<String, dynamic>? txData;
+
+        if (transactionsQuery.docs.isNotEmpty) {
+          originalTxRef = transactionsQuery.docs.first.reference;
+          txData = transactionsQuery.docs.first.data();
+        }
 
         final paymentChannel =
             isCreditUsed ? PaymentChannel.credit : PaymentChannel.stripe;
@@ -125,26 +150,12 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           stripeRefundAmount = singleSessionAmount;
         }
 
-        final transactionsQuery =
-            await _firestore
-                .collection('users')
-                .doc(parentId)
-                .collection('transactions')
-                .where('relatedAppointmentId', isEqualTo: appointmentId)
-                .limit(1)
-                .get();
-
-        DocumentReference? originalTxRef;
-
-        if (transactionsQuery.docs.isNotEmpty) {
-          originalTxRef = transactionsQuery.docs.first.reference;
-          final txData = transactionsQuery.docs.first.data();
-
-          if (!isCreditUsed) {
-            stripePaymentIntentIdToRefund =
-                txData['stripePaymentIntentId'] as String?;
-          }
+        if (!isCreditUsed && txData != null) {
+          stripePaymentIntentIdToRefund =
+              txData['stripePaymentIntentId'] as String?;
         }
+
+        transaction.update(appRef, {'status': status.name});
 
         if (status == AppointmentStatus.completed) {
           if (originalTxRef != null) {
@@ -154,10 +165,24 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
           }
 
           // release money to trainer
-          final amountToEarn =
+          final currentCompletedCount =
+              (trainerDoc?.data()
+                      as Map<String, dynamic>?)?['completedSessionsCount']
+                  as int? ??
+              0;
+
+          final baseSessionAmount =
               singleSessionAmount > 0
                   ? singleSessionAmount
                   : (duration / 60) * 80.0;
+
+          final earningsData = CommissionService.calculateEarnings(
+            sessionAmount: baseSessionAmount,
+            completedSessions: currentCompletedCount,
+          );
+
+          final amountToEarn = earningsData['trainerEarning'] as double;
+          final takeRateStr = earningsData['takeRatePercentage'] as String;
 
           final earningTxRef =
               _firestore
@@ -173,18 +198,30 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
             paymentChannel: PaymentChannel.credit,
             amount: amountToEarn,
             description:
-                'Earnings for ${appData['sport']} session with ${appData['childName']}',
+                'Earnings (${appData['sport']}) - Platform Fee: $takeRateStr',
             createdAt: DateTime.now(),
             relatedAppointmentId: appointmentId,
           );
 
-          transaction.set(earningTxRef, earningTx.toJson());
+          transaction
+            ..set(earningTxRef, earningTx.toJson())
+            ..update(trainerRef, {
+              'walletBalance': FieldValue.increment(amountToEarn),
+              'completedSessionsCount': FieldValue.increment(1),
+            });
 
-          final trainerRef = _firestore.collection('users').doc(trainerId);
+          final platformFee = earningsData['platformFee'] as double;
 
-          transaction.update(trainerRef, {
-            'walletBalance': FieldValue.increment(amountToEarn),
-          });
+          if (platformFee > 0) {
+            final adminStatsRef = _firestore
+                .collection('admin')
+                .doc('platform_stats');
+
+            transaction.set(adminStatsRef, {
+              'totalCommissionEarned': FieldValue.increment(platformFee),
+              'totalCompletedSessions': FieldValue.increment(1),
+            }, SetOptions(merge: true));
+          }
         }
 
         if (status == AppointmentStatus.rejected ||
