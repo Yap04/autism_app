@@ -10,7 +10,9 @@ class DashboardStatsModel with _$DashboardStatsModel {
     required int activeTrainers,
     required int totalParents,
     required int totalAdmins,
-    required double totalRevenue,
+    required double totalGmv,
+    required double netProfit,
+    required List<double> monthlyGmv,
   }) = _DashboardStatsModel;
 
   factory DashboardStatsModel.fromJson(Map<String, dynamic> json) =>
