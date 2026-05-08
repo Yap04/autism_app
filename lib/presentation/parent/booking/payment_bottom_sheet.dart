@@ -14,8 +14,8 @@ class PaymentBottomSheet extends StatefulWidget {
     required this.hasEnoughCredits,
     required this.initialPaymentMethod,
     required this.onConfirm,
-    // 以后加车马费传入这里
     this.transportFee = 0.0,
+    this.isHomeBased = false,
     super.key,
   });
 
@@ -25,6 +25,7 @@ class PaymentBottomSheet extends StatefulWidget {
   final bool hasEnoughCredits;
   final PaymentMethod initialPaymentMethod;
   final double transportFee;
+  final bool isHomeBased;
   final void Function(PaymentMethod method) onConfirm;
 
   static Future<void> show({
@@ -36,6 +37,7 @@ class PaymentBottomSheet extends StatefulWidget {
     required PaymentMethod initialPaymentMethod,
     required void Function(PaymentMethod method) onConfirm,
     double transportFee = 0.0,
+    bool isHomeBased = false,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -49,6 +51,7 @@ class PaymentBottomSheet extends StatefulWidget {
             hasEnoughCredits: hasEnoughCredits,
             initialPaymentMethod: initialPaymentMethod,
             transportFee: transportFee,
+            isHomeBased: isHomeBased,
             onConfirm: onConfirm,
           ),
     );
@@ -133,10 +136,12 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
             method: PaymentMethod.credit,
             title: 'Use Session Credit',
             subtitle:
-                widget.hasEnoughCredits
-                    ? 'Balance: ${widget.availableCredits} | Required: ${widget.requiredCredits}'
-                    : 'Not enough credits (Need ${widget.requiredCredits}, Have ${widget.availableCredits})',
-            isDisabled: !widget.hasEnoughCredits,
+                widget.isHomeBased
+                    ? 'Unavailable for Home-Based'
+                    : (widget.hasEnoughCredits
+                        ? 'Balance: ${widget.availableCredits} | Required: ${widget.requiredCredits}'
+                        : 'Not enough credits (Need ${widget.requiredCredits}, Have ${widget.availableCredits})'),
+            isDisabled: !widget.hasEnoughCredits || widget.isHomeBased,
           ),
 
           12.heightBox,
