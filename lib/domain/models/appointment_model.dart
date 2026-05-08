@@ -7,7 +7,7 @@ part 'appointment_model.g.dart';
 
 enum AppointmentStatus { pending, accepted, rejected, completed, cancelled }
 
-enum SessionType { inPerson, remote }
+enum SessionType { inPerson, remote, homeBased }
 
 enum PaymentMethod { credit, singlePay }
 
@@ -42,6 +42,7 @@ class AppointmentModel with _$AppointmentModel {
     @Default(false) bool isMeltdownGrace,
     @Default(0.0) double refundAmount,
     @Default(0.0) double trainerCompensation,
+    @Default(0.0) double transportFee,
   }) = _AppointmentModel;
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) =>
