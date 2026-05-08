@@ -60,7 +60,6 @@ class AppBadges {
       color: Colors.teal,
       requiredPoints: 600,
     ),
-    // 🚀 新增 3：终极大师徽章
     BadgeDef(
       id: 'master_coach',
       label: 'Master\nCoach',
