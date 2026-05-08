@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../domain/models/user_model.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -130,5 +131,39 @@ class FirebaseUserRepository implements UserRepository {
       }
       return null;
     });
+  }
+
+  @override
+  Future<void> removeBadge({
+    required String userId,
+    required String badgeId,
+  }) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      await userRef.update({
+        'badges': FieldValue.arrayRemove([badgeId]),
+      });
+    } catch (e) {
+      debugPrint('❌ Failed to remove badge: $e');
+    }
+  }
+
+  @override
+  Future<void> unlockBadge({
+    required String userId,
+    required String badgeId,
+  }) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+
+      await userRef.update({
+        'badges': FieldValue.arrayUnion([badgeId]),
+      });
+
+      debugPrint('🎉 Badge $badgeId successfully unlocked and synced to Firestore!');
+    } catch (e) {
+      debugPrint('❌ Failed to update badge: $e');
+      throw Exception('Failed to unlock badge');
+    }
   }
 }

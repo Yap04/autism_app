@@ -20,4 +20,8 @@ abstract class UserRepository {
   Future<String?> getUserFcmToken(String uid);
 
   Future<void> updateUserFcmToken(String uid, String token);
+
+  Future<void> unlockBadge({required String userId, required String badgeId});
+
+  Future<void> removeBadge({required String userId, required String badgeId});
 }
