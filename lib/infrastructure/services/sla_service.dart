@@ -2,24 +2,30 @@ import '../../domain/models/appointment_model.dart';
 
 class SlaService {
   static const double penaltyRate = 0.3;
+  static const int travelPenaltyHours = 4;
 
   static Map<String, dynamic> calculateCancellation(AppointmentModel appt) {
     final now = DateTime.now();
     final hoursUntilSession = appt.dateTime.difference(now).inHours;
+
     final totalPaid = appt.amount;
+    final transportFee = appt.transportFee;
 
     final isCredit = appt.paymentMethod == PaymentMethod.credit;
+
+    final creditsUsed = appt.duration ~/ 60;
 
     // 1. Cancel before 24 hours
     if (hoursUntilSession >= 24) {
       return {
         'isFree': true,
-        'refundAmount': isCredit ? 1.0 : totalPaid,
+        'refundAmount':
+            isCredit ? creditsUsed.toDouble() : (totalPaid + transportFee),
         'trainerCompensation': 0.0,
         'message':
             isCredit
-                ? 'More than 24h notice: 1 Session Credit will be refunded.'
-                : 'More than 24h notice: Full refund to your original payment method.',
+                ? 'More than 24h notice: $creditsUsed Session Credit(s) will be refunded.'
+                : 'More than 24h notice: Full refund (including travel fee) to your original payment method.',
       };
     }
 
@@ -33,17 +39,35 @@ class SlaService {
         'refundAmount': 0.0,
         'trainerCompensation': penalty,
         'message':
-            'Less than 24h notice: 1 Session Credit is forfeited. The coach will be compensated for their reserved time.',
+            'Less than 24h notice: $creditsUsed Session Credit(s) forfeited. The coach will be compensated.',
       };
     } else {
-      final refund = totalPaid - penalty;
-      return {
-        'isFree': false,
-        'refundAmount': refund,
-        'trainerCompensation': penalty,
-        'message':
-            "Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) will be deducted to compensate the coach's time.",
-      };
+      // Cancel 4 hours before the session starts
+      if (hoursUntilSession < travelPenaltyHours && transportFee > 0) {
+        final refund = totalPaid - penalty;
+        final trainerComp = penalty + transportFee;
+
+        return {
+          'isFree': false,
+          'refundAmount': refund,
+          'trainerCompensation': trainerComp,
+          'message':
+              "Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) will be deducted to compensate the coach's time.",
+        };
+      } else {
+        // Cancel before 4 hours before the session starts
+        final refund = (totalPaid - penalty) + transportFee;
+
+        return {
+          'isFree': false,
+          'refundAmount': refund,
+          'trainerCompensation': penalty,
+          'message':
+              transportFee > 0
+                  ? 'Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) deducted. Travel Fee is fully refunded.'
+                  : 'Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) will be deducted.',
+        };
+      }
     }
   }
 }
