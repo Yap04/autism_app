@@ -1109,8 +1109,11 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       final baseSessionAmount =
           appt.amount > 0 ? appt.amount : (appt.duration / 60) * 80.0;
 
+      final transportFee = appt.transportFee;
+
       final earningsData = CommissionService.calculateEarnings(
         sessionAmount: baseSessionAmount,
+        transportFee: transportFee,
         completedSessions: currentCompletedCount,
       );
 
