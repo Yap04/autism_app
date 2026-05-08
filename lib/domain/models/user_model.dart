@@ -46,6 +46,7 @@ class UserModel with _$UserModel {
     @Default([]) List<String> badges,
     @Default(0) int totalCpdPoints,
     @Default(false) bool acceptsHomeBased,
+    @Default(0.0) double travelSurcharge,
     @Default(0) int meltdownGraceUsedThisMonth,
     @TimestampConverter() DateTime? lastGraceResetDate,
     DateTime? resumeAt,
