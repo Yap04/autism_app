@@ -41,9 +41,10 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
         batch.set(appDocRef, newAppointment.toJson());
 
         final safeAmount = (app.amount as num?)?.toDouble() ?? 0.0;
+        final safeTransportFee = (app.transportFee as num?)?.toDouble() ?? 0.0;
         final safeDuration = (app.duration as num?)?.toInt() ?? 60;
 
-        totalFiatAmount += safeAmount;
+        totalFiatAmount += safeAmount + safeTransportFee;
         totalCreditDeduct += safeDuration ~/ 60;
       }
 
@@ -61,9 +62,11 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
               .collection('transactions')
               .doc();
 
+      final hasTransportFee = appointments.any((app) => (app.transportFee) > 0);
       final description =
-          'Booked ${appointments.length} ${appointments.first.sport} session(s) with ${appointments.first.trainerName}';
-
+          hasTransportFee
+              ? 'Booked ${appointments.length} ${appointments.first.sport} session(s) with ${appointments.first.trainerName} (incl. Travel Fee)'
+              : 'Booked ${appointments.length} ${appointments.first.sport} session(s) with ${appointments.first.trainerName}';
       final txAmount =
           useCredit ? -totalCreditDeduct.toDouble() : -totalFiatAmount;
 
@@ -142,12 +145,19 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
 
         final singleSessionAmount =
             (appData['amount'] as num?)?.toDouble() ?? 0.0;
+
+        final transportFee =
+            (appData['transportFee'] as num?)?.toDouble() ?? 0.0;
+
         final creditToRefund = duration ~/ 60;
+
         final refundAmount =
-            isCreditUsed ? creditToRefund.toDouble() : singleSessionAmount;
+            isCreditUsed
+                ? creditToRefund.toDouble()
+                : (singleSessionAmount + transportFee);
 
         if (!isCreditUsed) {
-          stripeRefundAmount = singleSessionAmount;
+          stripeRefundAmount = singleSessionAmount + transportFee;
         }
 
         if (!isCreditUsed && txData != null) {
@@ -178,6 +188,7 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
 
           final earningsData = CommissionService.calculateEarnings(
             sessionAmount: baseSessionAmount,
+            transportFee: transportFee,
             completedSessions: currentCompletedCount,
           );
 

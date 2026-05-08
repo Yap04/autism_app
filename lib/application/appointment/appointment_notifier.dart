@@ -43,6 +43,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
     required int duration,
     required SessionType sessionType,
     required double amount,
+    double transportFee = 0.0,
     String? stripePaymentIntentId,
     String? childAvatarUrl,
   }) async {
@@ -88,6 +89,7 @@ class AppointmentNotifier extends _$AppointmentNotifier {
             duration: duration,
             sessionType: sessionType,
             amount: amount,
+            transportFee: transportFee,
             dateTime: sessionDate,
             status: AppointmentStatus.pending,
             createdAt: DateTime.now(),
