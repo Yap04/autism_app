@@ -247,12 +247,26 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       return;
     }
 
+    final trainer =
+        ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
+    final isHomeBased = _sessionType == SessionType.homeBased;
+    final transportFeePerSession =
+        isHomeBased ? (trainer?.travelSurcharge ?? 0.0) : 0.0;
+    final totalTransportFee = transportFeePerSession * _selectedWeeks;
+
     final user = ref.read(authNotifierProvider).value;
     final credits = user?.sessionCredits ?? 0;
     final durationInHours = _selectedDuration / 60.0;
     final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
     final totalPrice = _hourlyPrice * durationInHours * _selectedWeeks;
     final hasEnoughCredits = credits >= requiredCredits;
+
+    if (isHomeBased) {
+      _selectedPaymentMethod = PaymentMethod.singlePay;
+    } else {
+      _selectedPaymentMethod =
+          hasEnoughCredits ? PaymentMethod.credit : PaymentMethod.singlePay;
+    }
 
     await PaymentBottomSheet.show(
       context: context,
@@ -261,7 +275,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       availableCredits: credits,
       hasEnoughCredits: hasEnoughCredits,
       initialPaymentMethod: _selectedPaymentMethod,
-      // transportFee: 15.0,  // ← 以后加车马费传这里
+      transportFee: totalTransportFee,
+      isHomeBased: isHomeBased,
       onConfirm: (method) {
         setState(() => _selectedPaymentMethod = method);
         _submitBooking();
@@ -295,10 +310,17 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         return;
       }
 
+      final trainer =
+          ref.read(fetchTrainerProvider(widget.trainerId)).asData?.value;
+      final isHomeBased = _sessionType == SessionType.homeBased;
+      final transportFeePerSession =
+          isHomeBased ? (trainer?.travelSurcharge ?? 0.0) : 0.0;
+
       final durationInHours = _selectedDuration / 60.0;
       final sessionAmount = _hourlyPrice * durationInHours;
 
-      final totalPrice = sessionAmount * _selectedWeeks;
+      final singleSessionTotal = sessionAmount + transportFeePerSession;
+      final totalPrice = singleSessionTotal * _selectedWeeks;
       String? stripePaymentId;
 
       if (_selectedPaymentMethod == PaymentMethod.singlePay) {
@@ -332,6 +354,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
             stripePaymentIntentId: stripePaymentId,
             sessionType: _sessionType,
             amount: sessionAmount,
+            transportFee: transportFeePerSession,
           );
 
       if (_selectedPaymentMethod == PaymentMethod.credit) {
@@ -746,6 +769,12 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   }
 
   Widget _buildSessionTypeSection() {
+    final trainer =
+        ref.watch(fetchTrainerProvider(widget.trainerId)).asData?.value;
+    final acceptsHomeBased = trainer?.acceptsHomeBased ?? false;
+    final travelSurcharge = trainer?.travelSurcharge ?? 0.0;
+    final formattedFee = travelSurcharge.toStringAsFixed(2);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -777,6 +806,20 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
             ),
           ],
         ),
+
+        if (acceptsHomeBased) ...[
+          12.heightBox,
+          _buildSessionTypeOption(
+            type: SessionType.homeBased,
+            icon: Icons.home_outlined,
+            label: 'Home-Based',
+            sublabel:
+                travelSurcharge > 0
+                    ? 'Trainer comes to you (+RM $formattedFee Travel Fee)'
+                    : 'Trainer comes to you',
+          ),
+        ],
+
         if (_sessionType == SessionType.remote) ...[
           12.heightBox,
           Container(
@@ -799,9 +842,45 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 8.widthBox,
                 Expanded(
                   child: Text(
-                    'A video call link will be shared before the session.',
+                    'Join the video call from the Session Details page during the scheduled time.',
                     style: AppWidget.bodyExtraSmall().copyWith(
                       color: ThemeColor.darkBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        if (_sessionType == SessionType.homeBased) ...[
+          12.heightBox,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: ThemeColor.orange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: ThemeColor.orange.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.directions_car,
+                  size: 16,
+                  color: ThemeColor.orange,
+                ),
+                8.widthBox,
+                Expanded(
+                  child: Text(
+                    travelSurcharge > 0
+                        ? 'A travel surcharge of RM $formattedFee applies. This session must be paid via Stripe.'
+                        : 'Trainer will travel to your location. This session must be paid via Stripe.',
+                    style: AppWidget.bodyExtraSmall().copyWith(
+                      color: ThemeColor.orange,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
