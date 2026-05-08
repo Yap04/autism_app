@@ -7,27 +7,50 @@ import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
+import '../../core/constant/badge_constant.dart';
 import 'user_avatar.dart';
 
-class TrainerCard extends StatelessWidget {
+class TrainerCard extends StatefulWidget {
   const TrainerCard({required this.trainer, super.key});
   final UserModel trainer;
 
   @override
+  State<TrainerCard> createState() => _TrainerCardState();
+}
+
+class _TrainerCardState extends State<TrainerCard> {
+  bool _badgesExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final isManuallyAccepting = trainer.isAcceptingRequests;
+    final isManuallyAccepting = widget.trainer.isAcceptingRequests;
     final hasResumeTimePassed =
-        trainer.resumeAt != null && now.isAfter(trainer.resumeAt!);
+        widget.trainer.resumeAt != null &&
+        now.isAfter(widget.trainer.resumeAt!);
 
     final isAvailable = isManuallyAccepting || hasResumeTimePassed;
 
     final bioText =
-        (trainer.bio?.isNotEmpty ?? false)
-            ? trainer.bio!
+        (widget.trainer.bio?.isNotEmpty ?? false)
+            ? widget.trainer.bio!
             : 'No description provided.';
     final sportsList =
-        trainer.sports.isNotEmpty ? trainer.sports : ['Not specified'];
+        widget.trainer.sports.isNotEmpty
+            ? widget.trainer.sports
+            : ['Not specified'];
+
+    final userBadgeIds = widget.trainer.badges;
+    final displayBadges =
+        userBadgeIds
+            .map((id) {
+              return AppBadges.allBadges.cast<BadgeDef?>().firstWhere(
+                (b) => b?.id == id,
+                orElse: () => null,
+              );
+            })
+            .whereType<BadgeDef>()
+            .toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -51,8 +74,8 @@ class TrainerCard extends StatelessWidget {
             children: [
               UserAvatar(
                 radius: 36,
-                userAvatarUrl: trainer.userAvatarUrl,
-                username: trainer.name ?? trainer.nickname,
+                userAvatarUrl: widget.trainer.userAvatarUrl,
+                username: widget.trainer.name ?? widget.trainer.nickname,
                 fontSize: 28,
               ),
               16.widthBox,
@@ -65,8 +88,8 @@ class TrainerCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            trainer.name ??
-                                trainer.nickname ??
+                            widget.trainer.name ??
+                                widget.trainer.nickname ??
                                 'Unknown Trainer',
                             style: AppWidget.bodyLarge().copyWith(
                               fontWeight: FontWeight.bold,
@@ -84,8 +107,8 @@ class TrainerCard extends StatelessWidget {
                             ),
                             4.widthBox,
                             Text(
-                              trainer.avgRating != null
-                                  ? trainer.avgRating!.toStringAsFixed(1)
+                              widget.trainer.avgRating != null
+                                  ? widget.trainer.avgRating!.toStringAsFixed(1)
                                   : '-',
                               style: AppWidget.bodySmall().copyWith(
                                 fontWeight: FontWeight.bold,
@@ -105,7 +128,10 @@ class TrainerCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     8.heightBox,
-                    Row(
+
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -138,8 +164,8 @@ class TrainerCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (trainer.acceptsHomeBased) ...[
-                          6.widthBox,
+
+                        if (widget.trainer.acceptsHomeBased)
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -169,7 +195,6 @@ class TrainerCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ],
@@ -215,8 +240,8 @@ class TrainerCard extends StatelessWidget {
                   onTap:
                       () => context.pushRoute(
                         ChatRoute(
-                          trainerId: trainer.id,
-                          trainerName: trainer.name ?? 'Unknown Trainer',
+                          trainerId: widget.trainer.id,
+                          trainerName: widget.trainer.name ?? 'Unknown Trainer',
                         ),
                       ),
 
@@ -246,13 +271,14 @@ class TrainerCard extends StatelessWidget {
                           ? () {
                             context.pushRoute(
                               BookingDetailsRoute(
-                                trainerId: trainer.id,
-                                trainerName: trainer.name ?? 'unknown',
+                                trainerId: widget.trainer.id,
+                                trainerName: widget.trainer.name ?? 'unknown',
                                 sport:
-                                    trainer.sports.isNotEmpty
-                                        ? trainer.sports.first
+                                    widget.trainer.sports.isNotEmpty
+                                        ? widget.trainer.sports.first
                                         : 'Sports',
-                                location: trainer.location ?? 'Kuala Lumpur',
+                                location:
+                                    widget.trainer.location ?? 'Kuala Lumpur',
                               ),
                             );
                           }
@@ -290,18 +316,88 @@ class TrainerCard extends StatelessWidget {
           ),
 
           if (!isAvailable &&
-              trainer.resumeAt != null &&
-              trainer.resumeAt!.isAfter(now))
+              widget.trainer.resumeAt != null &&
+              widget.trainer.resumeAt!.isAfter(now))
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                'Available at ${DateFormat('hh:mm a').format(trainer.resumeAt!)}',
+                'Available at ${DateFormat('hh:mm a').format(widget.trainer.resumeAt!)}',
                 style: AppWidget.bodyExtraSmall().copyWith(
                   color: ThemeColor.orange,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
+          if (displayBadges.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 1),
+            ),
+            GestureDetector(
+              onTap: () => setState(() => _badgesExpanded = !_badgesExpanded),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Achievements (${displayBadges.length})',
+                    style: AppWidget.bodySmall().copyWith(
+                      color: ThemeColor.grey100,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Icon(
+                    _badgesExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: ThemeColor.grey100,
+                  ),
+                ],
+              ),
+            ),
+            if (_badgesExpanded) ...[
+              8.heightBox,
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children:
+                    displayBadges.map((badgeDef) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeDef.color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: badgeDef.color.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              badgeDef.icon,
+                              size: 14,
+                              color: badgeDef.color,
+                            ),
+                            4.widthBox,
+                            Text(
+                              badgeDef.label.replaceAll('\n', ' '),
+                              style: AppWidget.bodyExtraSmall().copyWith(
+                                color: badgeDef.color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ],
+          ],
         ],
       ),
     );
