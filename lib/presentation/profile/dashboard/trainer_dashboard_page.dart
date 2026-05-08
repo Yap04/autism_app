@@ -10,6 +10,7 @@ import '../../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
 import '../../shared/app_text_field.dart';
+import '../../shared/bottom_action_button.dart';
 import '../../shared/snack_bar.dart';
 
 @RoutePage()
@@ -36,6 +37,13 @@ class TrainerDashboardPage extends ConsumerWidget {
     final locationController = TextEditingController(
       text: currentUser.location,
     );
+    final transportFeeController = TextEditingController(
+      text:
+          currentUser.travelSurcharge > 0
+              ? currentUser.travelSurcharge.toStringAsFixed(2)
+              : '',
+    );
+
     final selectedSports = List<String>.from(currentUser.sports);
 
     var tempLatitude = currentUser.latitude;
@@ -50,19 +58,24 @@ class TrainerDashboardPage extends ConsumerWidget {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
             return Container(
-              height: MediaQuery.of(context).size.height * 0.85,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.9,
+              ),
               padding: EdgeInsets.only(
                 top: 24,
                 left: 24,
                 right: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                bottom: keyboardHeight + 24,
               ),
               decoration: const BoxDecoration(
                 color: ThemeColor.cream,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
@@ -79,7 +92,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                   Text('Update Profile', style: AppWidget.h2TextFieldStyle()),
                   16.heightBox,
 
-                  Expanded(
+                  Flexible(
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,46 +245,106 @@ class TrainerDashboardPage extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: ThemeColor.lightGrey),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Offer Home-based Sessions?',
+                                    style: AppWidget.bodyMedium().copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  4.heightBox,
+                                  Text(
+                                    'Parents can request sessions at their own homes.',
+                                    style: AppWidget.bodyExtraSmall().copyWith(
+                                      color: ThemeColor.grey100,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch(
+                              value: tempAcceptsHomeBased,
+                              activeThumbColor: ThemeColor.darkBlue,
+                              onChanged: (v) {
+                                setModalState(() {
+                                  tempAcceptsHomeBased = v;
+                                  if (!v) {
+                                    transportFeeController.clear();
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        if (tempAcceptsHomeBased) ...[
+                          16.heightBox,
+                          const Divider(color: ThemeColor.lightGrey),
+                          12.heightBox,
+                          Row(
                             children: [
-                              Text(
-                                'Offer Home-based Sessions?',
-                                style: AppWidget.bodyMedium().copyWith(
-                                  fontWeight: FontWeight.bold,
+                              const Icon(
+                                Icons.directions_car,
+                                color: ThemeColor.grey100,
+                                size: 20,
+                              ),
+                              12.widthBox,
+                              Expanded(
+                                child: Text(
+                                  'Travel Surcharge (Per Session)',
+                                  style: AppWidget.bodyMedium().copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                              4.heightBox,
-                              Text(
-                                'Parents can request sessions at their own homes.',
-                                style: AppWidget.bodyExtraSmall().copyWith(
-                                  color: ThemeColor.grey100,
+                              SizedBox(
+                                width: 100,
+                                child: AppTextField(
+                                  controller: transportFeeController,
+                                  hintText: 'RM0.00',
+                                  fillColor: ThemeColor.cream,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        Switch(
-                          value: tempAcceptsHomeBased,
-                          activeThumbColor: ThemeColor.darkBlue,
-                          onChanged: (v) {
-                            setModalState(() {
-                              tempAcceptsHomeBased = v;
-                            });
-                          },
-                        ),
+                          4.heightBox,
+                          Text(
+                            'This fee goes 100% to you to cover travel expenses.',
+                            style: AppWidget.bodyExtraSmall().copyWith(
+                              color: ThemeColor.green,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
+
                   24.heightBox,
 
-                  GestureDetector(
-                    onTap: () async {
+                  BottomActionButton(
+                    label: 'Save Profile',
+                    onPressed: () async {
                       try {
+                        var parsedSurcharge = 0.0;
+                        if (tempAcceptsHomeBased &&
+                            transportFeeController.text.isNotEmpty) {
+                          parsedSurcharge =
+                              double.tryParse(transportFeeController.text) ??
+                              0.0;
+                        }
+
                         await ref
                             .read(authNotifierProvider.notifier)
                             .updatePublicProfile(
@@ -281,6 +354,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                               longitude: tempLongitude,
                               latitude: tempLatitude,
                               acceptsHomeBased: tempAcceptsHomeBased,
+                              travelSurcharge: parsedSurcharge,
                             );
 
                         if (context.mounted) {
@@ -296,22 +370,6 @@ class TrainerDashboardPage extends ConsumerWidget {
                         }
                       }
                     },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: ThemeColor.darkBlue,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        'Save Profile',
-                        style: AppWidget.bodyMedium().copyWith(
-                          color: ThemeColor.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -337,10 +395,7 @@ class TrainerDashboardPage extends ConsumerWidget {
           tooltip: 'Go Back',
           onPressed: () => context.router.pop(),
         ),
-        title: Text(
-          'Trainer Dashboard',
-          style: AppWidget.h2TextFieldStyle().copyWith(fontSize: 20),
-        ),
+        title: Text('Trainer Dashboard', style: AppWidget.h2TextFieldStyle()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
