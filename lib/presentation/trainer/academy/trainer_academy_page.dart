@@ -408,5 +408,3 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
     );
   }
 }
-
-
