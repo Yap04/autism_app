@@ -184,6 +184,7 @@ class AuthNotifier extends _$AuthNotifier {
     List<String>? sports,
     double? latitude,
     double? longitude,
+    double? travelSurcharge,
   }) async {
     final currentUser = state.value;
     if (currentUser == null) {
@@ -197,6 +198,7 @@ class AuthNotifier extends _$AuthNotifier {
       latitude: latitude ?? currentUser.latitude,
       longitude: longitude ?? currentUser.longitude,
       acceptsHomeBased: acceptsHomeBased,
+      travelSurcharge: travelSurcharge ?? currentUser.travelSurcharge,
     );
 
     state = AsyncData(updatedUser);
