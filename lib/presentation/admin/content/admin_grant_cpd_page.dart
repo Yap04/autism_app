@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/admin/content/admin_grant_cpd_notifier.dart';
+import '../../../core/constant/badge_constant.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
@@ -40,13 +41,23 @@ class _AdminGrantCpdPageState extends ConsumerState<AdminGrantCpdPage> {
     final points = int.parse(_pointsController.text.trim());
 
     final notifier = ref.read(adminGrantCpdNotifierProvider.notifier);
-    final success = await notifier.grantPoints(email: email, points: points);
 
-    if (success && mounted) {
-      AppSnackBar.success(
-        context,
-        'Successfully granted $points pts to $email!',
-      );
+    final result = await notifier.grantPoints(email: email, points: points);
+
+    if (result['success'] == true && mounted) {
+      final newBadges = result['newBadges'] as List<BadgeDef>? ?? [];
+
+      var successMessage = 'Successfully granted $points pts to $email!';
+
+      if (newBadges.isNotEmpty) {
+        final badgeNames = newBadges
+            .map((b) => b.label.replaceAll('\n', ' '))
+            .join(', ');
+        successMessage += ' 🎉 Unlocked: $badgeNames';
+      }
+
+      AppSnackBar.success(context, successMessage);
+
       _emailController.clear();
       _pointsController.clear();
       context.router.maybePop();
