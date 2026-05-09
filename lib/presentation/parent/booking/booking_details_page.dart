@@ -962,8 +962,14 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   }
 
   Widget _buildTrainerCard(String? imageUrl, String selectedSport) {
+    final currentUser = ref.read(authNotifierProvider).value;
+
     final locationText =
-        _sessionType == SessionType.remote ? 'Online Session' : widget.location;
+        _sessionType == SessionType.remote
+            ? 'Online Session'
+            : _sessionType == SessionType.homeBased
+            ? (currentUser?.address ?? widget.location)
+            : widget.location;
 
     return Container(
       padding: const EdgeInsets.all(16),
