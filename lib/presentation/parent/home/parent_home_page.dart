@@ -106,29 +106,27 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
 
                             24.heightBox,
 
-                            if (completedApps.isNotEmpty) ...[
-                              Text(
-                                "Child's Milestones",
-                                style: AppWidget.h3TextFieldStyle(),
-                              ),
-                              12.heightBox,
-                              _buildMilestonesBox(completedApps),
-                              24.heightBox,
-                            ],
+                            Text(
+                              "Child's Milestones",
+                              style: AppWidget.h3TextFieldStyle(),
+                            ),
+                            12.heightBox,
+                            _buildMilestonesBox(completedApps),
+                            24.heightBox,
 
-                            if (completedApps.isNotEmpty) ...[
-                              Text(
-                                'Latest Session Insight',
-                                style: AppWidget.h3TextFieldStyle(),
-                              ),
-                              12.heightBox,
-                              _buildLatestInsightCard(
-                                context,
-                                ref,
-                                completedApps.first,
-                              ),
-                              24.heightBox,
-                            ],
+                            Text(
+                              'Latest Session Insight',
+                              style: AppWidget.h3TextFieldStyle(),
+                            ),
+                            12.heightBox,
+                            completedApps.isNotEmpty
+                                ? _buildLatestInsightCard(
+                                  context,
+                                  ref,
+                                  completedApps.first,
+                                )
+                                : _buildEmptyInsightCard(),
+                            24.heightBox,
 
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -266,160 +264,165 @@ Widget _buildUpcomingCard(
 
   final trainerAsync = ref.watch(fetchTrainerProvider(app.trainerId));
 
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: ThemeColor.white,
-      borderRadius: BorderRadius.circular(10),
-      boxShadow: [
-        BoxShadow(
-          color: ThemeColor.black.withValues(alpha: 0.05),
-          blurRadius: 8,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Upcoming Appointment', style: AppWidget.bodyLarge()),
-        16.heightBox,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                trainerAsync.when(
-                  data: (trainer) {
-                    return UserAvatar(
-                      radius: 30,
-                      username:
-                          trainer?.name ?? trainer?.nickname ?? app.trainerName,
-                      userAvatarUrl: trainer?.userAvatarUrl,
-                    );
-                  },
-                  loading:
-                      () => const CircleAvatar(
-                        radius: 30,
-                        backgroundColor: ThemeColor.grey100,
-                        child: CircularProgressIndicator(
-                          color: ThemeColor.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                  error:
-                      (_, _) => const CircleAvatar(
-                        radius: 30,
-                        backgroundColor: ThemeColor.grey100,
-                        child: Icon(
-                          Icons.error_outline,
-                          color: ThemeColor.white,
-                          size: 30,
-                        ),
-                      ),
-                ),
-
-                4.heightBox,
-                Text(
-                  app.trainerName,
-                  style: AppWidget.bodySmall(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-            16.widthBox,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+  return GestureDetector(
+    onTap: () => context.pushRoute(SessionDetailRoute(appointment: app)),
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColor.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Upcoming Appointment', style: AppWidget.bodyLarge()),
+          16.heightBox,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ThemeColor.aquaBlue,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      app.sport,
-                      style: AppWidget.bodySmall().copyWith(
-                        color: ThemeColor.darkBlue,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  8.heightBox,
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today,
-                        size: 16,
-                        color: ThemeColor.grey100,
-                      ),
-                      4.widthBox,
-                      Text(dateDisplay, style: AppWidget.bodySmall()),
-                    ],
-                  ),
-                  4.heightBox,
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        size: 16,
-                        color: ThemeColor.grey100,
-                      ),
-                      4.widthBox,
-                      Expanded(
-                        child: Text(
-                          app.location,
-                          style: AppWidget.bodySmall(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                  trainerAsync.when(
+                    data: (trainer) {
+                      return UserAvatar(
+                        radius: 30,
+                        username:
+                            trainer?.name ??
+                            trainer?.nickname ??
+                            app.trainerName,
+                        userAvatarUrl: trainer?.userAvatarUrl,
+                      );
+                    },
+                    loading:
+                        () => const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: ThemeColor.grey100,
+                          child: CircularProgressIndicator(
+                            color: ThemeColor.white,
+                            strokeWidth: 2,
+                          ),
                         ),
-                      ),
-                    ],
+                    error:
+                        (_, _) => const CircleAvatar(
+                          radius: 30,
+                          backgroundColor: ThemeColor.grey100,
+                          child: Icon(
+                            Icons.error_outline,
+                            color: ThemeColor.white,
+                            size: 30,
+                          ),
+                        ),
+                  ),
+
+                  4.heightBox,
+                  Text(
+                    app.trainerName,
+                    style: AppWidget.bodySmall(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-        12.heightBox,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                context.pushRoute(
-                  ChatRoute(
-                    trainerId: app.trainerId,
-                    trainerName: app.trainerName,
+              16.widthBox,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.aquaBlue,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        app.sport,
+                        style: AppWidget.bodySmall().copyWith(
+                          color: ThemeColor.darkBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    8.heightBox,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: ThemeColor.grey100,
+                        ),
+                        4.widthBox,
+                        Text(dateDisplay, style: AppWidget.bodySmall()),
+                      ],
+                    ),
+                    4.heightBox,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: ThemeColor.grey100,
+                        ),
+                        4.widthBox,
+                        Expanded(
+                          child: Text(
+                            app.location,
+                            style: AppWidget.bodySmall(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          12.heightBox,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  context.pushRoute(
+                    ChatRoute(
+                      trainerId: app.trainerId,
+                      trainerName: app.trainerName,
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
                   ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: ThemeColor.blue,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  'Chat with Coach',
-                  style: AppWidget.bodySmall().copyWith(
-                    color: ThemeColor.white,
-                    fontWeight: FontWeight.bold,
+                  decoration: BoxDecoration(
+                    color: ThemeColor.blue,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'Chat with Coach',
+                    style: AppWidget.bodySmall().copyWith(
+                      color: ThemeColor.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -511,6 +514,51 @@ Widget _buildMilestoneItem(
           ),
         ],
       ),
+    ),
+  );
+}
+
+Widget _buildEmptyInsightCard() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: ThemeColor.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: ThemeColor.lightGrey, width: 1.5),
+    ),
+    child: Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: ThemeColor.green.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.insights_rounded,
+            size: 32,
+            color: ThemeColor.green,
+          ),
+        ),
+        16.heightBox,
+        Text(
+          'No insights yet',
+          style: AppWidget.bodyMedium().copyWith(
+            fontWeight: FontWeight.bold,
+            color: ThemeColor.black,
+          ),
+        ),
+        8.heightBox,
+        Text(
+          "After your child's first session, you'll receive detailed feedback and focus scores from the coach right here.",
+          textAlign: TextAlign.center,
+          style: AppWidget.bodySmall().copyWith(
+            color: ThemeColor.grey100,
+            height: 1.4,
+          ),
+        ),
+      ],
     ),
   );
 }
