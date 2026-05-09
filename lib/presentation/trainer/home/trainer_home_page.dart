@@ -11,6 +11,7 @@ import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../../domain/models/transaction_model.dart';
+import '../../../domain/models/user_model.dart';
 import '../../shared/curved_header_background.dart';
 import '../../shared/home_header_row.dart';
 import '../../shared/snack_bar.dart';
@@ -29,6 +30,11 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
   Widget build(BuildContext context) {
     final currentUser = ref.watch(authNotifierProvider).value;
     final appointmentsAsync = ref.watch(appointmentNotifierProvider);
+
+    final isMissingLocation =
+        currentUser?.role == UserRole.trainer &&
+        (currentUser?.location == null ||
+            currentUser!.location!.trim().isEmpty);
 
     final appointments = appointmentsAsync.value ?? [];
 
@@ -159,7 +165,86 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                         ),
                       ),
                     ),
-                    32.heightBox,
+                    16.heightBox,
+                    if (isMissingLocation) ...[
+                      16.heightBox,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: ThemeColor.red.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: ThemeColor.red.withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.warning_rounded,
+                                  color: ThemeColor.red,
+                                  size: 24,
+                                ),
+                              ),
+                              12.widthBox,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Profile Hidden',
+                                      style: AppWidget.bodyMedium().copyWith(
+                                        color: ThemeColor.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    4.heightBox,
+                                    Text(
+                                      'Parents cannot book you until you set your Service Base Location.',
+                                      style: AppWidget.bodyExtraSmall()
+                                          .copyWith(color: ThemeColor.red),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              12.widthBox,
+                              GestureDetector(
+                                onTap: () {
+                                  context.pushRoute(
+                                    const TrainerDashboardRoute(),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: ThemeColor.red,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'Fix Now',
+                                    style: AppWidget.bodySmall().copyWith(
+                                      color: ThemeColor.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    16.heightBox,
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
@@ -697,6 +782,21 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
     AppointmentModel appointment,
     AppointmentStatus status,
   ) async {
+    if (status == AppointmentStatus.accepted) {
+      final currentUser = ref.read(authNotifierProvider).value;
+
+      if (currentUser?.latitude == null || currentUser?.longitude == null) {
+        if (context.mounted) {
+          AppSnackBar.error(
+            context,
+            'Action Required: Please set your Service Base Location in your Dashboard before accepting requests.',
+          );
+          context.pushRoute(const TrainerDashboardRoute());
+        }
+        return;
+      }
+    }
+
     try {
       final paymentChannel =
           appointment.paymentMethod == PaymentMethod.credit
