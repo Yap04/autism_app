@@ -87,7 +87,7 @@ class _ParentBottomNavPageState extends ConsumerState<ParentBottomNavPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today_outlined),
-            label: 'Appointments',
+            label: 'Schedule',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
