@@ -29,7 +29,12 @@ class _TrainerCardState extends State<TrainerCard> {
         widget.trainer.resumeAt != null &&
         now.isAfter(widget.trainer.resumeAt!);
 
-    final isAvailable = isManuallyAccepting || hasResumeTimePassed;
+    final hasValidLocation =
+        widget.trainer.location != null &&
+        widget.trainer.location!.trim().isNotEmpty;
+
+    final isAvailable =
+        (isManuallyAccepting || hasResumeTimePassed) && hasValidLocation;
 
     final bioText =
         (widget.trainer.bio?.isNotEmpty ?? false)
