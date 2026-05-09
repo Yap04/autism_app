@@ -230,7 +230,46 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                   ProfileInputField(
                     label: 'Address',
                     controller: _addressController,
-                    // maxLines: 3,
+                  ),
+                  16.heightBox,
+                  GestureDetector(
+                    onTap: () async {
+                      final result = await context
+                          .pushRoute<Map<String, dynamic>>(
+                            const MapPickerRoute(),
+                          );
+                      if (result != null) {
+                        _addressController.text = result['address'] as String;
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: ThemeColor.orange),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.map_outlined,
+                            color: ThemeColor.orange,
+                            size: 20,
+                          ),
+                          8.widthBox,
+                          Text(
+                            'Pick location on map',
+                            style: AppWidget.bodyMedium().copyWith(
+                              color: ThemeColor.orange,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
