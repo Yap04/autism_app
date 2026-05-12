@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../shared/app_text_field.dart';
 import '../../shared/bottom_action_button.dart';
@@ -58,10 +59,13 @@ class _WithdrawBottomSheetState extends State<WithdrawBottomSheet> {
               ),
             ),
             24.heightBox,
-            Text('Withdraw Funds', style: AppWidget.h2TextFieldStyle()),
+            Text(
+              context.l10n.withdrawFunds,
+              style: AppWidget.h2TextFieldStyle(),
+            ),
             8.heightBox,
             Text(
-              'Enter the amount you wish to transfer to your bank account.',
+              context.l10n.withdrawFundsDescription,
               style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
             ),
             24.heightBox,
@@ -93,14 +97,16 @@ class _WithdrawBottomSheetState extends State<WithdrawBottomSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Available: RM ${widget.maxBalance.toStringAsFixed(2)}',
+                  context.l10n.availableBalanceAmount(
+                    widget.maxBalance.toStringAsFixed(2),
+                  ),
                   style: AppWidget.bodySmall().copyWith(
                     color: ThemeColor.grey100,
                   ),
                 ),
                 if (isExceeding)
                   Text(
-                    'Insufficient balance',
+                    context.l10n.insufficientBalance,
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.red,
                       fontWeight: FontWeight.bold,
@@ -112,7 +118,7 @@ class _WithdrawBottomSheetState extends State<WithdrawBottomSheet> {
             32.heightBox,
 
             BottomActionButton(
-              label: 'Submit Request',
+              label: context.l10n.submitRequest,
               borderRadius: 16,
               textStyle: AppWidget.h3TextFieldStyle().copyWith(
                 color: ThemeColor.white,

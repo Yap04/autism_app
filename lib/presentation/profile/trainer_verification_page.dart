@@ -7,9 +7,12 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../application/user/trainer_verification_provider.dart';
+import '../../core/constant/sport_constant.dart';
+import '../../core/extension/sport_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../shared/app_text_field.dart';
 import '../shared/bottom_action_button.dart';
@@ -29,16 +32,6 @@ class _TrainerVerificationPageState
   final _formKey = GlobalKey<FormState>();
   final _bioController = TextEditingController();
 
-  final List<String> _availableSports = [
-    'Swimming',
-    'Football',
-    'Basketball',
-    'Tennis',
-    'Gymnastics',
-    'Yoga',
-    'Athletics',
-    'Badminton',
-  ];
   final List<String> _selectedSports = [];
 
   final List<File> _selectedImages = [];
@@ -68,21 +61,15 @@ class _TrainerVerificationPageState
 
   Future<void> _submitApplication() async {
     if (_bioController.text.trim().isEmpty) {
-      AppSnackBar.error(context, 'Please write a brief bio about yourself.');
+      AppSnackBar.error(context, context.l10n.pleaseWriteBriefBio);
       return;
     }
     if (_selectedSports.isEmpty) {
-      AppSnackBar.error(
-        context,
-        'Please select at least one sport you can teach.',
-      );
+      AppSnackBar.error(context, context.l10n.pleaseSelectAtLeastOneSport);
       return;
     }
     if (_selectedImages.isEmpty) {
-      AppSnackBar.error(
-        context,
-        'Please upload at least one relevant certificate.',
-      );
+      AppSnackBar.error(context, context.l10n.pleaseUploadCertificate);
       return;
     }
 
@@ -115,13 +102,16 @@ class _TrainerVerificationPageState
       if (mounted) {
         AppSnackBar.success(
           context,
-          'Application submitted successfully! Please wait for admin approval.',
+          context.l10n.applicationSubmittedWaitAdmin,
         );
         context.replaceRoute(const TrainerBottomNavRoute());
       }
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, 'Error submitting application: $e');
+        AppSnackBar.error(
+          context,
+          context.l10n.errorSubmittingApplication(e.toString()),
+        );
       }
     }
   }
@@ -136,7 +126,10 @@ class _TrainerVerificationPageState
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
-        title: Text('Become a Trainer', style: AppWidget.h2TextFieldStyle()),
+        title: Text(
+          context.l10n.becomeTrainerTitle,
+          style: AppWidget.h2TextFieldStyle(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -146,17 +139,20 @@ class _TrainerVerificationPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Join our community of specialized trainers and make a difference.',
+                context.l10n.joinTrainerCommunityDescription,
                 style: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.grey100,
                 ),
               ),
               24.heightBox,
 
-              Text('Personal Bio', style: AppWidget.h3TextFieldStyle()),
+              Text(
+                context.l10n.personalBioTitle,
+                style: AppWidget.h3TextFieldStyle(),
+              ),
               8.heightBox,
               Text(
-                'Tell us about your experience working with special needs children.',
+                context.l10n.experienceWithSpecialNeedsDescription,
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -165,9 +161,8 @@ class _TrainerVerificationPageState
               AppTextField(
                 fillColor: ThemeColor.white,
                 controller: _bioController,
-                label: 'Your Experience',
-                hintText:
-                    'e.g., I have 3 years of experience teaching swimming to children with ASD...',
+                label: context.l10n.yourExperienceLabel,
+                hintText: context.l10n.experienceHintText,
                 maxLines: 5,
               ),
 
@@ -175,10 +170,13 @@ class _TrainerVerificationPageState
               const Divider(height: 1),
               24.heightBox,
 
-              Text('Sports You Teach', style: AppWidget.h3TextFieldStyle()),
+              Text(
+                context.l10n.sportsYouTeachTitle,
+                style: AppWidget.h3TextFieldStyle(),
+              ),
               8.heightBox,
               Text(
-                'Select all the sports you are qualified to teach.',
+                context.l10n.selectQualifiedSportsDescription,
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -187,10 +185,10 @@ class _TrainerVerificationPageState
               Wrap(
                 spacing: 6,
                 children:
-                    _availableSports.map((sport) {
+                    sportCategories.skip(1).map((sport) {
                       final isSelected = _selectedSports.contains(sport);
                       return FilterChip(
-                        label: Text(sport),
+                        label: Text(sport.toLocalizedSport(context)),
                         labelStyle: AppWidget.bodySmall().copyWith(
                           color:
                               isSelected ? ThemeColor.white : ThemeColor.black,
@@ -231,7 +229,7 @@ class _TrainerVerificationPageState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'IC & Certificates',
+                    context.l10n.icAndCertificatesTitle,
                     style: AppWidget.h3TextFieldStyle(),
                   ),
                   TextButton.icon(
@@ -241,7 +239,7 @@ class _TrainerVerificationPageState
                       color: ThemeColor.orange,
                     ),
                     label: Text(
-                      'Add Images',
+                      context.l10n.addImagesAction,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.orange,
                         fontWeight: FontWeight.bold,
@@ -252,7 +250,7 @@ class _TrainerVerificationPageState
               ),
               8.heightBox,
               Text(
-                'Upload photos of your IC and coaching certifications or special needs training qualifications.',
+                context.l10n.uploadIcAndCertificatesDescription,
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -277,7 +275,7 @@ class _TrainerVerificationPageState
                       ),
                       8.heightBox,
                       Text(
-                        'No photos uploaded yet',
+                        context.l10n.noPhotosUploadedYet,
                         style: AppWidget.bodySmall().copyWith(
                           color: ThemeColor.grey100,
                         ),
@@ -333,7 +331,7 @@ class _TrainerVerificationPageState
 
               40.heightBox,
               BottomActionButton(
-                label: 'Submit Application',
+                label: context.l10n.submitApplicationAction,
                 isLoading: isLoading,
                 onPressed: isLoading ? null : _submitApplication,
               ),

@@ -6,6 +6,7 @@ import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
+import '../../core/extension/localization_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/user_model.dart';
 import '../shared/snack_bar.dart';
@@ -68,7 +69,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 ),
                 16.heightBox,
                 Text(
-                  'Create Account',
+                  context.l10n.createAccount,
                   style: AppWidget.h1TextFieldStyle().copyWith(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -77,7 +78,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                 ),
                 6.heightBox,
                 Text(
-                  "Join us today — it's free",
+                  context.l10n.joinUsTodayFree,
                   style: AppWidget.bodySmall().copyWith(
                     color: Colors.grey[500],
                   ),
@@ -102,7 +103,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'I am a...',
+                        context.l10n.iAmA,
                         style: AppWidget.bodySmall().copyWith(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w600,
@@ -120,12 +121,12 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                         child: Row(
                           children: [
                             _buildRoleTab(
-                              label: 'Parent',
+                              label: context.l10n.roleParent,
                               icon: Icons.family_restroom,
                               role: UserRole.parent,
                             ),
                             _buildRoleTab(
-                              label: 'Coach',
+                              label: context.l10n.roleCoach,
                               icon: Icons.sports,
                               role: UserRole.trainer,
                             ),
@@ -135,21 +136,21 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
                       24.heightBox,
 
-                      _buildLabel('Email Address'),
+                      _buildLabel(context.l10n.emailAddressInputLabel),
                       8.heightBox,
                       _buildTextField(
                         controller: _emailController,
-                        hint: 'you@example.com',
+                        hint: context.l10n.emailHint,
                         icon: Icons.mail_outline_rounded,
                       ),
 
                       20.heightBox,
 
-                      _buildLabel('Password'),
+                      _buildLabel(context.l10n.passwordInputLabel),
                       8.heightBox,
                       _buildTextField(
                         controller: _passwordController,
-                        hint: 'Minimum 6 characters',
+                        hint: context.l10n.passwordMinLengthHint,
                         icon: Icons.lock_outline_rounded,
                         isPassword: true,
                         isObscure: isObscure,
@@ -183,7 +184,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                                     ),
                                   )
                                   : Text(
-                                    'Create Account',
+                                    context.l10n.createAccount,
                                     style: AppWidget.bodyLarge().copyWith(
                                       fontWeight: FontWeight.w600,
                                       color: ThemeColor.white,
@@ -201,7 +202,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account?',
+                      context.l10n.alreadyHaveAccountPrompt,
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                     TextButton(
@@ -209,12 +210,11 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
-                      child: const Text(
-                        'Sign in',
-                        style: TextStyle(
+                      child: Text(
+                        context.l10n.signInTextButton,
+                        style: AppWidget.bodyMedium().copyWith(
                           color: ThemeColor.darkBlue,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -337,7 +337,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      AppSnackBar.error(context, 'Please fill in all fields');
+      AppSnackBar.error(context, context.l10n.fillAllFieldsError);
       return;
     }
 
@@ -354,7 +354,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
       );
       AppSnackBar.error(context, errorMessage);
     } else if (authState.value != null) {
-      AppSnackBar.success(context, 'Successfully registered!');
+      AppSnackBar.success(context, context.l10n.signUpSuccess);
       final user = authState.value!;
       if (user.role == UserRole.trainer || (user.name?.isEmpty ?? true)) {
         context.replaceRoute(const EditProfileRoute());

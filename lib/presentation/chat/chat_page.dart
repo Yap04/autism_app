@@ -10,6 +10,7 @@ import '../../../application/auth/auth_notifier.dart';
 import '../../../application/chat/chat_notifier.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/message_model.dart';
 import '../../application/chat/chat_user_provider.dart';
@@ -92,12 +93,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         _scrollToBottom();
       } else {
         if (mounted) {
-          AppSnackBar.error(context, 'Failed to upload image.');
+          AppSnackBar.error(context, context.l10n.failedToUploadImage);
         }
       }
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, 'Error: $e');
+        AppSnackBar.error(context, context.l10n.errorMessage(e.toString()));
       }
     } finally {
       if (mounted) {
@@ -122,7 +123,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     Icons.camera_alt_outlined,
                     color: ThemeColor.darkBlue,
                   ),
-                  title: const Text('Take a Photo'),
+                  title: Text(context.l10n.takeAPhoto),
                   onTap: () {
                     Navigator.pop(context);
                     _pickAndSendImage(ImageSource.camera);
@@ -133,7 +134,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     Icons.photo_library_outlined,
                     color: ThemeColor.darkBlue,
                   ),
-                  title: const Text('Choose from Gallery'),
+                  title: Text(context.l10n.chooseFromGallery),
                   onTap: () {
                     Navigator.pop(context);
                     _pickAndSendImage(ImageSource.gallery);
@@ -159,7 +160,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
       _scrollToBottom();
     } catch (e) {
-      AppSnackBar.error(context, 'Failed to send message: $e');
+      AppSnackBar.error(
+        context,
+        context.l10n.failedToSendMessage(e.toString()),
+      );
     }
   }
 
@@ -263,12 +267,19 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   .when(
                     loading:
                         () => const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => Center(child: Text('Error: $err')),
+                    error:
+                        (err, stack) => Center(
+                          child: Text(
+                            context.l10n.errorMessage(err.toString()),
+                          ),
+                        ),
                     data: (messages) {
                       if (messages.isEmpty) {
                         return Center(
                           child: Text(
-                            'Start a conversation with ${widget.trainerName}',
+                            context.l10n.startConversationWith(
+                              widget.trainerName,
+                            ),
                             style: AppWidget.bodyMedium().copyWith(
                               color: ThemeColor.grey100,
                             ),
@@ -311,7 +322,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           12.widthBox,
           Expanded(
             child: Text(
-              'This account has been suspended. You can no longer send messages.',
+              context.l10n.accountSuspendedNotice,
               style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
             ),
           ),
@@ -445,7 +456,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendMessage(),
               decoration: InputDecoration(
-                hintText: 'Type a message...',
+                hintText: context.l10n.typeAMessage,
                 hintStyle: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.grey100,
                 ),

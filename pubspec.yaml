@@ -26,6 +26,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_local_notifications: ^21.0.0
+  flutter_localizations:
+    sdk: flutter
   flutter_riverpod: ^2.6.1
   flutter_stripe: ^11.5.0
   font_awesome_flutter: ^10.8.0
@@ -59,6 +61,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - asset/image/chatbot.png

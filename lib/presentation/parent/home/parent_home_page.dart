@@ -10,6 +10,7 @@ import '../../../application/providers/repository_providers.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
@@ -68,7 +69,9 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                           (err, _) => SizedBox(
                             height: 300,
                             child: Center(
-                              child: Text('Error loading data: $err'),
+                              child: Text(
+                                context.l10n.errorLoadingData(err.toString()),
+                              ),
                             ),
                           ),
                       data: (appointments) {
@@ -97,7 +100,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             upcomingApps.isEmpty
-                                ? _buildEmptyUpcomingCard()
+                                ? _buildEmptyUpcomingCard(context)
                                 : _buildUpcomingCard(
                                   context,
                                   ref,
@@ -107,17 +110,18 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                             24.heightBox,
 
                             Text(
-                              "Child's Milestones",
+                              context.l10n.childsMilestones,
                               style: AppWidget.h3TextFieldStyle(),
                             ),
                             12.heightBox,
-                            _buildMilestonesBox(completedApps),
+                            _buildMilestonesBox(context, completedApps),
                             24.heightBox,
 
                             Text(
-                              'Latest Session Insight',
+                              context.l10n.latestSessionInsight,
                               style: AppWidget.h3TextFieldStyle(),
                             ),
+
                             12.heightBox,
                             completedApps.isNotEmpty
                                 ? _buildLatestInsightCard(
@@ -125,14 +129,14 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                                   ref,
                                   completedApps.first,
                                 )
-                                : _buildEmptyInsightCard(),
+                                : _buildEmptyInsightCard(context),
                             24.heightBox,
 
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Resources for You',
+                                  context.l10n.resourcesForYou,
                                   style: AppWidget.h3TextFieldStyle(),
                                 ),
                                 GestureDetector(
@@ -143,7 +147,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        'View More',
+                                        context.l10n.viewMore,
                                         style: AppWidget.bodySmall().copyWith(
                                           color: ThemeColor.blue,
                                           fontWeight: FontWeight.bold,
@@ -176,7 +180,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                                     height: 160,
                                     child: Center(
                                       child: Text(
-                                        'Failed to load content.',
+                                        context.l10n.failedToLoadContent,
                                         style: AppWidget.bodySmall().copyWith(
                                           color: ThemeColor.red,
                                         ),
@@ -196,7 +200,7 @@ class _HomePageState extends ConsumerState<ParentHomePage> {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Text(
-                                      'More resources coming soon!',
+                                      context.l10n.moreResourcesComingSoon,
                                       style: AppWidget.bodyMedium().copyWith(
                                         color: ThemeColor.grey100,
                                       ),
@@ -255,9 +259,9 @@ Widget _buildUpcomingCard(
   String dateDisplay;
 
   if (aDate == DateTime(now.year, now.month, now.day)) {
-    dateDisplay = 'Today, $timeStr';
+    dateDisplay = context.l10n.todayTime(timeStr);
   } else if (aDate == tomorrow) {
-    dateDisplay = 'Tomorrow, $timeStr';
+    dateDisplay = context.l10n.tomorrowTime(timeStr);
   } else {
     dateDisplay = DateFormat('d MMM, h:mm a').format(app.dateTime);
   }
@@ -282,7 +286,7 @@ Widget _buildUpcomingCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Upcoming Appointment', style: AppWidget.bodyLarge()),
+          Text(context.l10n.upcomingAppointment, style: AppWidget.bodyLarge()),
           16.heightBox,
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +415,7 @@ Widget _buildUpcomingCard(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    'Chat with Coach',
+                    context.l10n.chatWithCoach,
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.white,
                       fontWeight: FontWeight.bold,
@@ -427,7 +431,10 @@ Widget _buildUpcomingCard(
   );
 }
 
-Widget _buildMilestonesBox(List<AppointmentModel> completedApps) {
+Widget _buildMilestonesBox(
+  BuildContext context,
+  List<AppointmentModel> completedApps,
+) {
   final totalSessions = completedApps.length;
 
   final totalMinutes = completedApps.fold<int>(
@@ -450,21 +457,21 @@ Widget _buildMilestonesBox(List<AppointmentModel> completedApps) {
   return Row(
     children: [
       _buildMilestoneItem(
-        'Total\nSessions',
+        context.l10n.totalSessions,
         '$totalSessions',
         Icons.emoji_events,
         ThemeColor.orange,
       ),
       12.widthBox,
       _buildMilestoneItem(
-        'Hours\nTrained',
+        context.l10n.hoursTrained,
         totalHours,
         Icons.timer,
         ThemeColor.blue,
       ),
       12.widthBox,
       _buildMilestoneItem(
-        'Current\nStreak',
+        context.l10n.currentStreak,
         '$streak',
         Icons.local_fire_department,
         ThemeColor.red,
@@ -518,7 +525,7 @@ Widget _buildMilestoneItem(
   );
 }
 
-Widget _buildEmptyInsightCard() {
+Widget _buildEmptyInsightCard(BuildContext context) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(24),
@@ -543,7 +550,7 @@ Widget _buildEmptyInsightCard() {
         ),
         16.heightBox,
         Text(
-          'No insights yet',
+          context.l10n.noInsightsYet,
           style: AppWidget.bodyMedium().copyWith(
             fontWeight: FontWeight.bold,
             color: ThemeColor.black,
@@ -551,7 +558,7 @@ Widget _buildEmptyInsightCard() {
         ),
         8.heightBox,
         Text(
-          "After your child's first session, you'll receive detailed feedback and focus scores from the coach right here.",
+          context.l10n.noInsightsDescription,
           textAlign: TextAlign.center,
           style: AppWidget.bodySmall().copyWith(
             color: ThemeColor.grey100,
@@ -626,7 +633,7 @@ Widget _buildLatestInsightCard(
                       ),
                       8.widthBox,
                       Text(
-                        '${latestAppt.sport} • $dateStr',
+                        context.l10n.sportAndDate(latestAppt.sport, dateStr),
                         style: AppWidget.bodyMedium().copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -634,7 +641,7 @@ Widget _buildLatestInsightCard(
                     ],
                   ),
                   Text(
-                    'Focus: ${feedback.focusLevel}/5',
+                    context.l10n.focusScore(feedback.focusLevel.toString()),
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.green,
                       fontWeight: FontWeight.bold,
@@ -644,7 +651,7 @@ Widget _buildLatestInsightCard(
               ),
               12.heightBox,
               Text(
-                '"${feedback.remarks}"',
+                context.l10n.feedbackRemarks(feedback.remarks),
                 style: AppWidget.bodyMedium().copyWith(
                   fontStyle: FontStyle.italic,
                   color: ThemeColor.black,
@@ -657,7 +664,7 @@ Widget _buildLatestInsightCard(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    'View Full Report',
+                    context.l10n.viewFullReport,
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.darkBlue,
                       fontWeight: FontWeight.bold,
@@ -679,7 +686,7 @@ Widget _buildLatestInsightCard(
   );
 }
 
-Widget _buildEmptyUpcomingCard() {
+Widget _buildEmptyUpcomingCard(BuildContext context) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(24),
@@ -699,12 +706,12 @@ Widget _buildEmptyUpcomingCard() {
         const Icon(Icons.event_busy, size: 48, color: ThemeColor.lightGrey),
         12.heightBox,
         Text(
-          'No upcoming appointments',
+          context.l10n.noUpcomingAppointments,
           style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
         ),
         8.heightBox,
         Text(
-          'Book a new session to get started!',
+          context.l10n.bookNewSessionPrompt,
           style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
         ),
       ],

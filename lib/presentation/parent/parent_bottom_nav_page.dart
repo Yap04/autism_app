@@ -6,6 +6,7 @@ import '../../application/appointment/appointment_notifier.dart';
 import '../../application/appointment/appointment_provider.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
+import '../../core/extension/localization_ext.dart';
 import '../../domain/models/appointment_model.dart';
 import '../profile/profile_page.dart';
 import 'appointment/parent_appointments_page.dart';
@@ -76,22 +77,22 @@ class _ParentBottomNavPageState extends ConsumerState<ParentBottomNavPage> {
         unselectedItemColor: Colors.black54,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            label: context.l10n.navHome,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            label: 'Discover',
+            icon: const Icon(Icons.explore_outlined),
+            label: context.l10n.navDiscover,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Schedule',
+            icon: const Icon(Icons.calendar_today_outlined),
+            label: context.l10n.navSchedule,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            label: context.l10n.navProfile,
           ),
         ],
       ),

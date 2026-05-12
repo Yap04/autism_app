@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
+import '../../core/extension/localization_ext.dart';
 import '../../domain/models/user_model.dart';
 import '../profile/profile_page.dart';
 import '../profile/trainer_verification_page.dart';
@@ -70,26 +71,26 @@ class _TrainerBottomNavPageState extends ConsumerState<TrainerBottomNavPage> {
         unselectedItemColor: Colors.black54,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            label: context.l10n.navHome,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.school_outlined),
-            label: 'Academy',
+            icon: const Icon(Icons.school_outlined),
+            label: context.l10n.navAcademy,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.supervisor_account_outlined),
-            label: 'Students',
+            icon: const Icon(Icons.supervisor_account_outlined),
+            label: context.l10n.navStudents,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Schedule',
+            icon: const Icon(Icons.calendar_today_outlined),
+            label: context.l10n.navSchedule,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            label: context.l10n.navProfile,
           ),
         ],
       ),

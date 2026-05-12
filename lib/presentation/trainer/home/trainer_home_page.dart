@@ -6,6 +6,7 @@ import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
@@ -82,7 +83,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: HomeHeaderRow(
                         userName: currentUser?.name,
-                        fallbackName: 'trainer',
+                        fallbackName: context.l10n.coachFallbackName,
                       ),
                     ),
                     24.heightBox,
@@ -105,7 +106,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Summary Today',
+                              context.l10n.summaryTodayTitle,
                               style: AppWidget.bodyLarge().copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -117,7 +118,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                   children: [
                                     Expanded(
                                       child: StatItem(
-                                        label: 'Available\nSlots',
+                                        label: context.l10n.availableSlotsLabel,
                                         valueWidget: SizedBox(
                                           height: 56,
                                           width: 56,
@@ -147,13 +148,13 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                     ),
                                     Expanded(
                                       child: StatItem(
-                                        label: 'Today\nSessions',
+                                        label: context.l10n.todaySessionsLabel,
                                         value: '$todaySessionsCount',
                                       ),
                                     ),
                                     Expanded(
                                       child: StatItem(
-                                        label: 'Total\nMembers',
+                                        label: context.l10n.totalMembersLabel,
                                         value: '$uniqueParentsCount',
                                       ),
                                     ),
@@ -199,7 +200,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Profile Hidden',
+                                      context.l10n.profileHiddenTitle,
                                       style: AppWidget.bodyMedium().copyWith(
                                         color: ThemeColor.red,
                                         fontWeight: FontWeight.bold,
@@ -207,7 +208,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                     ),
                                     4.heightBox,
                                     Text(
-                                      'Parents cannot book you until you set your Service Base Location.',
+                                      context.l10n.profileHiddenDesc,
                                       style: AppWidget.bodyExtraSmall()
                                           .copyWith(color: ThemeColor.red),
                                     ),
@@ -231,7 +232,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
-                                    'Fix Now',
+                                    context.l10n.fixNowAction,
                                     style: AppWidget.bodySmall().copyWith(
                                       color: ThemeColor.white,
                                       fontWeight: FontWeight.bold,
@@ -248,7 +249,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'New Requests',
+                        context.l10n.newRequestsTitle,
                         style: AppWidget.h3TextFieldStyle(),
                       ),
                     ),
@@ -262,7 +263,12 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                 color: ThemeColor.darkBlue,
                               ),
                             ),
-                        error: (err, _) => Center(child: Text('Error: $err')),
+                        error:
+                            (err, _) => Center(
+                              child: Text(
+                                context.l10n.errorMessage(err.toString()),
+                              ),
+                            ),
                         data: (appointments) {
                           final pendingRequests =
                               appointments
@@ -278,8 +284,8 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                 horizontal: 20,
                               ),
                               child: _buildEmptyState(
-                                'All Caught Up!',
-                                'You have no pending requests at the moment.',
+                                context.l10n.allCaughtUpTitle,
+                                context.l10n.noPendingRequestsDesc,
                                 Icons.inbox_rounded,
                               ),
                             );
@@ -305,7 +311,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'Today Session Schedule',
+                        context.l10n.todaySessionScheduleTitle,
                         style: AppWidget.h3TextFieldStyle(),
                       ),
                     ),
@@ -317,7 +323,9 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                             () => const Center(
                               child: CircularProgressIndicator(),
                             ),
-                        error: (err, _) => Text('Error: $err'),
+                        error:
+                            (err, _) =>
+                                Text(context.l10n.errorMessage(err.toString())),
                         data: (appointments) {
                           final today = DateTime.now();
                           final todaySessions =
@@ -334,8 +342,8 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
 
                           if (todaySessions.isEmpty) {
                             return _buildEmptyState(
-                              'Free Schedule',
-                              'You have no sessions scheduled for today. Enjoy your day!',
+                              context.l10n.freeScheduleTitle,
+                              context.l10n.noSessionsScheduledDesc,
                               Icons.event_available_rounded,
                             );
                           }
@@ -430,7 +438,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                     ),
                     4.heightBox,
                     Text(
-                      'Student',
+                      context.l10n.studentLabel,
                       style: AppWidget.bodyExtraSmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -474,7 +482,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                 ),
                                 4.widthBox,
                                 Text(
-                                  'New',
+                                  context.l10n.newBadgeLabel,
                                   style: AppWidget.bodyExtraSmall().copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -486,7 +494,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                       ),
                       2.heightBox,
                       Text(
-                        'Parent: ${appointment.parentName}',
+                        context.l10n.parentNameLabel(appointment.parentName),
                         style: AppWidget.bodyExtraSmall().copyWith(
                           color: ThemeColor.darkBlue,
                           fontWeight: FontWeight.w600,
@@ -574,7 +582,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Accept',
+                        context.l10n.acceptAction,
                         style: AppWidget.bodySmall().copyWith(
                           color: ThemeColor.white,
                           fontWeight: FontWeight.bold,
@@ -602,7 +610,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                         border: Border.all(color: ThemeColor.lightGrey),
                       ),
                       child: Text(
-                        'Reject',
+                        context.l10n.rejectAction,
                         style: AppWidget.bodySmall().copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -758,7 +766,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                         ),
                         4.heightBox,
                         Text(
-                          'Chat',
+                          context.l10n.chatAction,
                           style: AppWidget.bodyExtraSmall().copyWith(
                             color: ThemeColor.darkBlue,
                             fontWeight: FontWeight.bold,
@@ -789,7 +797,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
         if (context.mounted) {
           AppSnackBar.error(
             context,
-            'Action Required: Please set your Service Base Location in your Dashboard before accepting requests.',
+            context.l10n.actionRequiredSetLocationDesc,
           );
           context.pushRoute(const TrainerDashboardRoute());
         }
@@ -808,9 +816,9 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
           .updateStatus(appointment.id, status, paymentChannel);
       if (context.mounted) {
         if (status == AppointmentStatus.accepted) {
-          AppSnackBar.success(context, 'Appointment Accepted!');
+          AppSnackBar.success(context, context.l10n.appointmentAcceptedSuccess);
         } else {
-          AppSnackBar.info(context, 'Appointment Rejected!');
+          AppSnackBar.info(context, context.l10n.appointmentRejectedInfo);
         }
       }
     } catch (e) {

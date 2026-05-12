@@ -13,6 +13,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
@@ -51,7 +52,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       if (mounted) {
-        AppSnackBar.info(context, 'Please turn on GPS location services.');
+        AppSnackBar.info(context, context.l10n.gpsServiceDisabled);
       }
       return;
     }
@@ -61,7 +62,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         if (mounted) {
-          AppSnackBar.error(context, 'Location permission denied.');
+          AppSnackBar.error(context, context.l10n.locationPermissionDenied);
         }
         return;
       }
@@ -71,7 +72,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       if (mounted) {
         AppSnackBar.error(
           context,
-          'Location permission permanently denied. Please enable in settings.',
+          context.l10n.locationPermissionPermanentlyDenied,
         );
       }
       return;
@@ -226,7 +227,8 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       if (trainer.latitude != null && trainer.longitude != null) {
         final icon = await _createAvatarMarker(
           trainer.userAvatarUrl,
-          trainer.name ?? 'Trainer',
+          trainer.name ??
+              (mounted ? context.l10n.coachFallbackName : 'Trainer'),
         );
 
         newMarkers.add(
@@ -234,9 +236,15 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
             markerId: MarkerId(trainer.id),
             position: LatLng(trainer.latitude!, trainer.longitude!),
             icon: icon,
+            onTap: () {
+              context.pushRoute(TrainerPublicProfileRoute(trainer: trainer));
+            },
             infoWindow: InfoWindow(
               title: trainer.name,
               snippet: trainer.sports.isNotEmpty ? trainer.sports.first : '',
+              onTap: () {
+                context.pushRoute(TrainerPublicProfileRoute(trainer: trainer));
+              },
             ),
           ),
         );
@@ -287,7 +295,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
         elevation: 0,
         toolbarHeight: 80,
         title: Text(
-          'Find Coaches Near You',
+          context.l10n.findCoachesNearYou,
           style: AppWidget.h2TextFieldStyle(),
         ),
       ),
@@ -422,7 +430,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                       12.widthBox,
                       Expanded(
                         child: Text(
-                          'Turn on location services to find the closest trainers.',
+                          context.l10n.turnOnLocationPrompt,
                           style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.grey100,
                           ),
@@ -441,7 +449,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            'Enable',
+                            context.l10n.enableAction,
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.darkBlue,
                               fontWeight: FontWeight.bold,
@@ -464,7 +472,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Nearby Certified Trainers',
+                    context.l10n.nearbyCertifiedTrainers,
                     style: AppWidget.h3TextFieldStyle(),
                   ),
                   GestureDetector(
@@ -472,7 +480,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                     child: Row(
                       children: [
                         Text(
-                          'View All',
+                          context.l10n.viewAllAction,
                           style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.darkBlue,
                             fontWeight: FontWeight.bold,
@@ -494,13 +502,14 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
 
             trainersAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Text('Error: $err'),
+              error:
+                  (err, _) => Text(context.l10n.errorMessage(err.toString())),
               data: (trainers) {
                 if (trainers.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'No trainers found.',
+                      context.l10n.noTrainersFound,
                       style: AppWidget.bodyMedium().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -562,7 +571,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
   }
 
   Widget _buildHorizontalCoachCard(UserModel trainer) {
-    var distanceText = 'Distance unknown';
+    var distanceText = context.l10n.distanceUnknown;
 
     if (_userLocation != null &&
         trainer.latitude != null &&
@@ -575,14 +584,18 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
       );
 
       if (distanceInMeters < 1000) {
-        distanceText = '${distanceInMeters.toStringAsFixed(0)} m away';
+        distanceText = context.l10n.distanceMetersAway(
+          distanceInMeters.toStringAsFixed(0),
+        );
       } else {
-        distanceText =
-            '${(distanceInMeters / 1000).toStringAsFixed(1)} km away';
+        distanceText = context.l10n.distanceKmAway(
+          (distanceInMeters / 1000).toStringAsFixed(1),
+        );
       }
     }
 
-    final coachName = trainer.name ?? trainer.nickname ?? 'Coach';
+    final coachName =
+        trainer.name ?? trainer.nickname ?? context.l10n.coachFallbackName;
     final displaySports = trainer.sports.take(3).toList();
 
     return GestureDetector(
@@ -651,7 +664,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                                     ),
                                   ),
                                   Text(
-                                    'Not specified',
+                                    context.l10n.notSpecified,
                                     style: AppWidget.bodyExtraSmall().copyWith(
                                       color: ThemeColor.grey100,
                                     ),
@@ -701,7 +714,7 @@ class _ParentDiscoverPageState extends ConsumerState<ParentDiscoverPage> {
                 ),
                 8.widthBox,
                 Text(
-                  'Autism Training Certified',
+                  context.l10n.autismTrainingCertified,
                   style: AppWidget.bodySmall().copyWith(
                     fontWeight: FontWeight.w600,
                   ),

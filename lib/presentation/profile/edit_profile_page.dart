@@ -10,6 +10,7 @@ import '../../application/auth/auth_notifier.dart';
 import '../../application/providers/repository_providers.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
+import '../../core/extension/localization_ext.dart';
 import '../../core/extension/widget_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/user_model.dart';
@@ -55,7 +56,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       final url = await ImageService.uploadToImgBB(file);
 
       if (url == null) {
-        AppSnackBar.error(context, 'Failed to upload image');
+        AppSnackBar.error(context, context.l10n.failedToUploadImage);
         return;
       }
 
@@ -69,9 +70,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           .updateUser(currentUser.copyWith(userAvatarUrl: url));
 
       ref.invalidate(authNotifierProvider);
-      AppSnackBar.success(context, 'Profile picture updated!');
+      AppSnackBar.success(
+        context,
+        context.l10n.profilePictureUpdatedSuccessfully,
+      );
     } catch (e) {
-      AppSnackBar.error(context, 'Error: $e');
+      AppSnackBar.error(context, context.l10n.errorMessage(e.toString()));
     } finally {
       setState(() => _isUploadingAvatar = false);
     }
@@ -152,7 +156,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     onPressed: () => context.router.pop(),
                   )
                   : null,
-          title: Text('Edit profile', style: AppWidget.h2TextFieldStyle()),
+          title: Text(
+            context.l10n.editProfileTitle,
+            style: AppWidget.h2TextFieldStyle(),
+          ),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -163,15 +170,15 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               24.heightBox,
 
               _buildSectionCard(
-                title: 'PERSONAL INFO',
+                title: context.l10n.personalInfoSection,
                 children: [
                   ProfileInputField(
-                    label: 'Full name',
+                    label: context.l10n.fullNameLabel,
                     controller: _nameController,
                   ),
                   16.heightBox,
                   ProfileInputField(
-                    label: 'Nickname',
+                    label: context.l10n.nicknameLabel,
                     controller: _nicknameController,
                   ),
                   16.heightBox,
@@ -185,16 +192,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               16.heightBox,
 
               _buildSectionCard(
-                title: 'CONTACT',
+                title: context.l10n.contactSection,
                 children: [
                   ProfileInputField(
-                    label: 'Email address',
+                    label: context.l10n.emailAddressLabel,
                     controller: _emailController,
                     readOnly: true,
                   ),
                   16.heightBox,
                   ProfileInputField(
-                    label: 'Phone number',
+                    label: context.l10n.phoneNumberLabel,
                     controller: _phoneController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -225,10 +232,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               16.heightBox,
 
               _buildSectionCard(
-                title: 'ADDRESS',
+                title: context.l10n.addressSection,
                 children: [
                   ProfileInputField(
-                    label: 'Address',
+                    label: context.l10n.addressLabel,
                     controller: _addressController,
                   ),
                   16.heightBox,
@@ -261,7 +268,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                           ),
                           8.widthBox,
                           Text(
-                            'Pick location on map',
+                            context.l10n.pickLocationOnMap,
                             style: AppWidget.bodyMedium().copyWith(
                               color: ThemeColor.orange,
                               fontWeight: FontWeight.w600,
@@ -276,23 +283,26 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               32.heightBox,
 
               BottomActionButton(
-                label: 'Save changes',
+                label: context.l10n.saveChangesButton,
                 onPressed: () async {
                   if (_nameController.text.trim().isEmpty) {
-                    AppSnackBar.error(context, 'Full name is required');
+                    AppSnackBar.error(context, context.l10n.fullNameRequired);
                     return;
                   }
 
                   if (_phoneController.text.trim().isEmpty) {
-                    AppSnackBar.error(context, 'Phone number is required');
+                    AppSnackBar.error(
+                      context,
+                      context.l10n.phoneNumberRequired,
+                    );
                     return;
                   }
                   if (_selectedGender == null) {
-                    AppSnackBar.error(context, 'Please select a gender');
+                    AppSnackBar.error(context, context.l10n.genderRequired);
                     return;
                   }
                   if (_addressController.text.trim().isEmpty) {
-                    AppSnackBar.error(context, 'Address is required');
+                    AppSnackBar.error(context, context.l10n.addressRequired);
                     return;
                   }
 
@@ -328,7 +338,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     ref.invalidate(authNotifierProvider);
                     AppSnackBar.success(
                       context,
-                      'Profile updated successfully!',
+                      context.l10n.profileUpdatedSuccessfully,
                     );
 
                     if (canPop) {
@@ -341,7 +351,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       }
                     }
                   } catch (e) {
-                    AppSnackBar.error(context, 'Failed to update profile: $e');
+                    AppSnackBar.error(
+                      context,
+                      context.l10n.failedToUpdateProfile(e.toString()),
+                    );
                   }
                 },
                 backgroundColor: ThemeColor.orange,
@@ -367,7 +380,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 username:
                     currentUser?.name?.trim().isNotEmpty ?? false
                         ? currentUser!.name
-                        : 'New User',
+                        : context.l10n.newUserFallback,
                 userAvatarUrl: currentUser?.userAvatarUrl,
                 fontSize: 36,
               ),
@@ -405,7 +418,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         Text(
           currentUser?.name?.trim().isNotEmpty ?? false
               ? currentUser!.name!
-              : 'New User',
+              : context.l10n.newUserFallback,
           style: AppWidget.bodyLarge().copyWith(fontWeight: FontWeight.bold),
         ),
         4.heightBox,

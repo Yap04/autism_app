@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../application/providers/repository_providers.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
@@ -20,9 +22,21 @@ class TrainerPublicProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final coachName = trainer.name ?? trainer.nickname ?? 'Coach';
+    final coachName =
+        trainer.name ?? trainer.nickname ?? context.l10n.coachFallbackName;
     final avgRating = trainer.avgRating ?? 0.0;
     final totalReviews = trainer.totalReviews ?? 0;
+
+    final now = DateTime.now();
+    final isManuallyAccepting = trainer.isAcceptingRequests;
+    final hasResumeTimePassed =
+        trainer.resumeAt != null && now.isAfter(trainer.resumeAt!);
+
+    final hasValidLocation =
+        trainer.location != null && trainer.location!.trim().isNotEmpty;
+
+    final isAvailable =
+        (isManuallyAccepting || hasResumeTimePassed) && hasValidLocation;
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -133,7 +147,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                             ),
                             6.widthBox,
                             Text(
-                              'Home-based Available',
+                              context.l10n.homeBasedAvailable,
                               style: AppWidget.bodyExtraSmall().copyWith(
                                 color: ThemeColor.green,
                                 fontWeight: FontWeight.bold,
@@ -162,7 +176,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                             ),
                             6.widthBox,
                             Text(
-                              'Center-based Only',
+                              context.l10n.centerBasedOnly,
                               style: AppWidget.bodyExtraSmall().copyWith(
                                 color: ThemeColor.white.withValues(alpha: 0.6),
                               ),
@@ -180,14 +194,17 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                             avgRating == 0.0
                                 ? '-'
                                 : avgRating.toStringAsFixed(1),
-                            'Avg Rating',
+                            context.l10n.avgRating,
                           ),
                           12.widthBox,
-                          _buildHeaderStat('$totalReviews', 'Reviews'),
+                          _buildHeaderStat(
+                            '$totalReviews',
+                            context.l10n.reviewsLabel,
+                          ),
                           12.widthBox,
                           _buildHeaderStat(
                             '${trainer.sports.length}',
-                            'Sports',
+                            context.l10n.sportsLabel,
                           ),
                         ],
                       ),
@@ -206,7 +223,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionCard(
-                    title: 'RATING & REVIEWS',
+                    title: context.l10n.ratingAndReviews,
                     child: Row(
                       children: [
                         Column(
@@ -236,7 +253,9 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                             ),
                             6.heightBox,
                             Text(
-                              '$totalReviews reviews',
+                              context.l10n.reviewsCount(
+                                totalReviews.toString(),
+                              ),
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: ThemeColor.grey100,
@@ -320,7 +339,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                         else
                           Expanded(
                             child: Text(
-                              'No reviews yet.\nBe the first to review!',
+                              context.l10n.noReviewsYet,
                               style: AppWidget.bodySmall().copyWith(
                                 color: ThemeColor.grey100,
                               ),
@@ -332,7 +351,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
 
                   if (trainer.bio?.isNotEmpty ?? false)
                     _buildSectionCard(
-                      title: 'ABOUT',
+                      title: context.l10n.aboutTitle,
                       child: Text(
                         trainer.bio!,
                         style: AppWidget.bodyMedium().copyWith(height: 1.6),
@@ -341,7 +360,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
 
                   if (trainer.sports.isNotEmpty)
                     _buildSectionCard(
-                      title: 'SPORTS',
+                      title: context.l10n.sportsTitle,
                       child: Wrap(
                         spacing: 12,
                         runSpacing: 12,
@@ -368,7 +387,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                                     ),
                                     8.widthBox,
                                     Text(
-                                      sport,
+                                      sport.toLocalizedSport(context),
                                       style: AppWidget.bodySmall().copyWith(
                                         color: ThemeColor.darkBlue,
                                         fontWeight: FontWeight.bold,
@@ -383,7 +402,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
 
                   if (totalReviews > 0)
                     _buildSectionCard(
-                      title: 'REVIEWS',
+                      title: context.l10n.reviewsTitle,
                       child: FutureBuilder<List<FeedbackModel>>(
                         future: ref
                             .read(feedbackRepositoryProvider)
@@ -409,7 +428,7 @@ class TrainerPublicProfilePage extends ConsumerWidget {
 
                           if (reviews.isEmpty) {
                             return Text(
-                              'No written reviews yet.',
+                              context.l10n.noWrittenReviewsYet,
                               style: AppWidget.bodySmall().copyWith(
                                 color: ThemeColor.grey100,
                               ),
@@ -417,7 +436,10 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                           }
 
                           return Column(
-                            children: reviews.map(_buildReviewItem).toList(),
+                            children:
+                                reviews
+                                    .map((f) => _buildReviewItem(context, f))
+                                    .toList(),
                           );
                         },
                       ),
@@ -445,22 +467,33 @@ class TrainerPublicProfilePage extends ConsumerWidget {
         ),
         child: SafeArea(
           child: BottomActionButton(
-            label: 'Book a Session',
+            label:
+                isAvailable
+                    ? context.l10n.bookASession
+                    : context.l10n.unavailableAction,
             borderRadius: 16,
-            onPressed: () {
-              final coachName = trainer.name ?? trainer.nickname ?? 'Coach';
-              final location = trainer.location ?? 'TBD';
-              final sport =
-                  trainer.sports.isNotEmpty ? trainer.sports.first : 'General';
-              context.pushRoute(
-                BookingDetailsRoute(
-                  trainerId: trainer.id,
-                  trainerName: coachName,
-                  sport: sport,
-                  location: location,
-                ),
-              );
-            },
+            onPressed:
+                isAvailable
+                    ? () {
+                      final coachName =
+                          trainer.name ??
+                          trainer.nickname ??
+                          context.l10n.coachFallbackName;
+                      final location = trainer.location!;
+                      final sport =
+                          trainer.sports.isNotEmpty
+                              ? trainer.sports.first
+                              : context.l10n.generalSport;
+                      context.pushRoute(
+                        BookingDetailsRoute(
+                          trainerId: trainer.id,
+                          trainerName: coachName,
+                          sport: sport,
+                          location: location,
+                        ),
+                      );
+                    }
+                    : null,
           ),
         ),
       ),
@@ -529,9 +562,9 @@ class TrainerPublicProfilePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildReviewItem(FeedbackModel feedback) {
+  Widget _buildReviewItem(BuildContext context, FeedbackModel feedback) {
     // Anonymous Review
-    const reviewerName = 'User';
+    final reviewerName = context.l10n.defaultUser;
     const initials = 'US';
 
     return Container(
@@ -560,7 +593,9 @@ class TrainerPublicProfilePage extends ConsumerWidget {
                 ),
               ),
               Text(
-                _formatDate(feedback.createdAt),
+                DateFormat.yMMMd(
+                  context.l10n.localeName,
+                ).format(feedback.createdAt),
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                   fontSize: 11,
@@ -606,23 +641,5 @@ class TrainerPublicProfilePage extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }

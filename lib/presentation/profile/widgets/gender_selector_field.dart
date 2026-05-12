@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/gender_ext.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/user_model.dart';
 
@@ -15,13 +17,26 @@ class GenderSelectorField extends StatelessWidget {
   final Gender? value;
   final ValueChanged<Gender?> onChanged;
 
+  // String _getLocalizedGender(BuildContext context, Gender gender) {
+  //   switch (gender.name.toLowerCase()) {
+  //     case 'male':
+  //       return context.l10n.genderMale;
+  //     case 'female':
+  //       return context.l10n.genderFemale;
+  //     case 'other':
+  //       return context.l10n.genderOther;
+  //     default:
+  //       return gender.name[0].toUpperCase() + gender.name.substring(1);
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'GENDER',
+          context.l10n.genderLabel,
           style: AppWidget.bodyExtraSmall().copyWith(
             color: ThemeColor.grey100,
             fontWeight: FontWeight.bold,
@@ -59,8 +74,7 @@ class GenderSelectorField extends StatelessWidget {
                         ),
                         alignment: Alignment.center,
                         child: Text(
-                          gender.name[0].toUpperCase() +
-                              gender.name.substring(1),
+                          gender.toLocalized(context),
                           style: AppWidget.bodySmall().copyWith(
                             color:
                                 isSelected

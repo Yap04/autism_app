@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../application/auth/auth_notifier.dart';
 import '../../../../core/constant/color_constant.dart';
 import '../../../../core/constant/textstyle_constant.dart';
+import '../../../../core/extension/localization_ext.dart';
 import '../../../../core/extension/widget_ext.dart';
 import '../../../application/content/content_provider.dart';
 import '../../../core/constant/badge_constant.dart';
@@ -40,7 +41,10 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
-        title: Text('Academy', style: AppWidget.h2TextFieldStyle()),
+        title: Text(
+          context.l10n.academyTitle,
+          style: AppWidget.h2TextFieldStyle(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -58,14 +62,14 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome to the Academy!',
+          context.l10n.welcomeToAcademy,
           style: AppWidget.h2TextFieldStyle().copyWith(
             color: ThemeColor.darkBlue,
           ),
         ),
         8.heightBox,
         Text(
-          'Please review the learning materials below and complete the Final Assessment (Quiz). Once passed, our admins will approve your account.',
+          context.l10n.academyPendingDescription,
           style: AppWidget.bodyMedium().copyWith(
             color: ThemeColor.grey100,
             height: 1.4,
@@ -84,7 +88,7 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
           error:
               (err, _) => Center(
                 child: Text(
-                  'Error loading academy content: $err',
+                  context.l10n.errorLoadingAcademyContent(err.toString()),
                   style: const TextStyle(color: ThemeColor.red),
                 ),
               ),
@@ -92,7 +96,7 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
             if (contents.isEmpty) {
               return Center(
                 child: Text(
-                  'No training modules available right now.',
+                  context.l10n.noTrainingModulesAvailable,
                   style: AppWidget.bodyMedium().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -110,7 +114,7 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
               children: [
                 if (materials.isNotEmpty) ...[
                   Text(
-                    'Learning Materials',
+                    context.l10n.learningMaterials,
                     style: AppWidget.h3TextFieldStyle(),
                   ),
                   16.heightBox,
@@ -127,14 +131,14 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
 
                 if (quizzes.isNotEmpty) ...[
                   Text(
-                    'Final Assessment',
+                    context.l10n.finalAssessment,
                     style: AppWidget.h3TextFieldStyle().copyWith(
                       color: ThemeColor.orange,
                     ),
                   ),
                   8.heightBox,
                   Text(
-                    'Tap to open the assessment form. Please ensure you use your registered email.',
+                    context.l10n.finalAssessmentDescription,
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.grey100,
                     ),
@@ -165,14 +169,14 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Continuous Learning',
+          context.l10n.continuousLearning,
           style: AppWidget.h2TextFieldStyle().copyWith(
             color: ThemeColor.darkBlue,
           ),
         ),
         8.heightBox,
         Text(
-          'Upskill yourself, earn exclusive badges, and increase your booking rate!',
+          context.l10n.upskillDescription,
           style: AppWidget.bodyMedium().copyWith(
             color: ThemeColor.grey100,
             height: 1.4,
@@ -181,7 +185,9 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
         24.heightBox,
 
         Text(
-          'My Badges (${currentUser?.totalCpdPoints} pts)',
+          context.l10n.myBadgesWithPoints(
+            (currentUser?.totalCpdPoints ?? 0).toString(),
+          ),
           style: AppWidget.h3TextFieldStyle(),
         ),
         16.heightBox,
@@ -195,14 +201,18 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
                       currentUser!.totalCpdPoints >= badgeDef.requiredPoints;
                   return Padding(
                     padding: const EdgeInsets.only(right: 12),
-                    child: _buildBadgeItem(badgeDef, isLocked: !hasEarned),
+                    child: _buildBadgeItem(
+                      context,
+                      badgeDef,
+                      isLocked: !hasEarned,
+                    ),
                   );
                 }).toList(),
           ),
         ),
         32.heightBox,
 
-        Text('Advanced Courses', style: AppWidget.h3TextFieldStyle()),
+        Text(context.l10n.advancedCourses, style: AppWidget.h3TextFieldStyle()),
         16.heightBox,
 
         contentAsync.when(
@@ -210,11 +220,11 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
               () => const Center(
                 child: CircularProgressIndicator(color: ThemeColor.darkBlue),
               ),
-          error: (err, _) => Text('Error: $err'),
+          error: (err, _) => Text(context.l10n.errorMessage(err.toString())),
           data: (contents) {
             if (contents.isEmpty) {
               return Text(
-                'No advanced courses available yet.',
+                context.l10n.noAdvancedCoursesYet,
                 style: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -236,7 +246,11 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
     );
   }
 
-  Widget _buildBadgeItem(BadgeDef badgeDef, {bool isLocked = false}) {
+  Widget _buildBadgeItem(
+    BuildContext context,
+    BadgeDef badgeDef, {
+    bool isLocked = false,
+  }) {
     return Column(
       children: [
         Container(
@@ -264,7 +278,11 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
         ),
         8.heightBox,
         Text(
-          isLocked ? '${badgeDef.requiredPoints} pt' : badgeDef.label,
+          isLocked
+              ? context.l10n.requiredPointsLabel(
+                badgeDef.requiredPoints.toString(),
+              )
+              : badgeDef.label,
           textAlign: TextAlign.center,
           style: AppWidget.bodyExtraSmall().copyWith(
             fontWeight: FontWeight.bold,
@@ -308,7 +326,10 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
             );
           } catch (e) {
             if (context.mounted) {
-              AppSnackBar.error(context, 'Failed to open course: $e');
+              AppSnackBar.error(
+                context,
+                context.l10n.failedToOpenCourse(e.toString()),
+              );
             }
           }
         }
@@ -376,7 +397,9 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '+ ${content.cpdPoints} CPD Points',
+                              context.l10n.plusCpdPoints(
+                                content.cpdPoints.toString(),
+                              ),
                               style: AppWidget.bodyExtraSmall().copyWith(
                                 color: ThemeColor.orange,
                                 fontWeight: FontWeight.bold,

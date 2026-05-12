@@ -6,6 +6,7 @@ import '../../../application/user/trainer_provider.dart';
 import '../../../application/user/trainer_student_ui_model.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
@@ -33,7 +34,9 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
       // 🚀 2. 处理异步数据的不同状态
       body: studentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        error:
+            (err, stack) =>
+                Center(child: Text(context.l10n.errorMessage(err.toString()))),
         data: (allStudents) {
           // 🚀 3. 动态计算 Summary 卡片的数据
           final activeStudents =
@@ -66,7 +69,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'My Students',
+                          context.l10n.myStudentsTitle,
                           style: AppWidget.h1TextFieldStyle(),
                         ),
                         24.heightBox,
@@ -89,7 +92,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Summary',
+                                context.l10n.summaryTitle,
                                 style: AppWidget.h3TextFieldStyle(),
                               ),
                               16.heightBox,
@@ -97,19 +100,19 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                                 children: [
                                   Expanded(
                                     child: StatItem(
-                                      label: 'Total\nStudents',
+                                      label: context.l10n.totalStudentsLabel,
                                       value: allStudents.length.toString(),
                                     ),
                                   ),
                                   Expanded(
                                     child: StatItem(
-                                      label: 'Active\nSessions',
+                                      label: context.l10n.activeSessionsLabel,
                                       value: activeStudents.length.toString(),
                                     ),
                                   ),
                                   Expanded(
                                     child: StatItem(
-                                      label: 'Pending\nRequests',
+                                      label: context.l10n.pendingRequestsLabel,
                                       value: pendingStudents.length.toString(),
                                     ),
                                   ),
@@ -126,19 +129,19 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                         if (filteredStudents.isEmpty)
                           _currentTabIndex == 0
                               ? _buildEmptyState(
-                                'No Active Students',
-                                'You currently have no active students. When you accept requests, they will appear here.',
+                                context.l10n.noActiveStudentsTitle,
+                                context.l10n.noActiveStudentsDesc,
                                 Icons.people_outline_rounded,
                               )
                               : _currentTabIndex == 1
                               ? _buildEmptyState(
-                                'No Pending Requests',
-                                'You are all caught up! There are no pending student requests right now.',
+                                context.l10n.noPendingRequestsTitle,
+                                context.l10n.noPendingStudentRequestsDesc,
                                 Icons.inbox_rounded,
                               )
                               : _buildEmptyState(
-                                'No Past Students',
-                                'You do not have any past student records yet.',
+                                context.l10n.noPastStudentsTitle,
+                                context.l10n.noPastStudentsDesc,
                                 Icons.history_rounded,
                               )
                         else
@@ -175,9 +178,9 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
       ),
       child: Row(
         children: [
-          _buildTabItem('Active', 0),
-          _buildTabItem('Pending', 1),
-          _buildTabItem('Past', 2),
+          _buildTabItem(context.l10n.tabActive, 0),
+          _buildTabItem(context.l10n.tabPending, 1),
+          _buildTabItem(context.l10n.tabPast, 2),
         ],
       ),
     );
@@ -236,7 +239,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
 
     final hasPendingBooking = data.hasPendingBooking;
 
-    final rating = 'New';
     final lastSession = '-'; // 你可以之后从 booking.dateTime 转换格式
     final progressPercent = 0.5; // TODO: 你的进度条逻辑
     final hasNotification = hasPendingBooking;
@@ -244,12 +246,14 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
 
     String primaryButtonText;
     if (status == 'pending') {
-      primaryButtonText = 'Accept Request';
+      primaryButtonText = context.l10n.acceptRequestAction;
     } else if (status == 'active') {
       primaryButtonText =
-          hasPendingBooking ? 'Review New Request' : 'Log Progress';
+          hasPendingBooking
+              ? context.l10n.reviewNewRequestAction
+              : context.l10n.logProgressAction;
     } else {
-      primaryButtonText = 'View History';
+      primaryButtonText = context.l10n.viewHistoryAction;
     }
 
     return Container(
@@ -282,7 +286,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            '$name (${age}y)',
+                            '$name ${context.l10n.childAgeFormat(age.toString())}',
                             style: AppWidget.bodyLarge().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -290,28 +294,11 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                             maxLines: 1,
                           ),
                         ),
-                        if (status == 'active')
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                color: ThemeColor.lightOrange,
-                                size: 16,
-                              ),
-                              4.widthBox,
-                              Text(
-                                rating,
-                                style: AppWidget.bodyMedium().copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
                       ],
                     ),
                     2.heightBox,
                     Text(
-                      'Parent: $parentName',
+                      context.l10n.parentNameLabel(parentName),
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.darkBlue,
                         fontWeight: FontWeight.w600,
@@ -330,7 +317,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                             ),
                             4.widthBox,
                             Text(
-                              sport,
+                              sport.toLocalizedSport(context),
                               style: AppWidget.bodySmall().copyWith(
                                 color: ThemeColor.grey100,
                               ),
@@ -339,7 +326,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                         ),
                         if (status == 'active')
                           Text(
-                            'Last: $lastSession',
+                            context.l10n.lastSessionLabel(lastSession),
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.grey100,
                             ),
@@ -427,8 +414,8 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                     ),
                     child: Text(
                       status == 'pending'
-                          ? 'Message Parent'
-                          : 'View Performance',
+                          ? context.l10n.messageParentAction
+                          : context.l10n.viewPerformanceAction,
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
                       ),

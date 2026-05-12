@@ -6,6 +6,7 @@ import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/widget_ext.dart';
+import '../../core/extension/localization_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/user_model.dart';
 import '../shared/snack_bar.dart';
@@ -66,7 +67,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 16.heightBox,
                 Text(
-                  'Welcome Back',
+                  context.l10n.welcomeBack,
                   style: AppWidget.h1TextFieldStyle().copyWith(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -75,7 +76,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 6.heightBox,
                 Text(
-                  'Sign in to continue',
+                  context.l10n.signInToContinue,
                   style: AppWidget.bodySmall().copyWith(
                     color: Colors.grey[500],
                   ),
@@ -99,19 +100,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildLabel('Email Address'),
+                      _buildLabel(context.l10n.emailAddressInputLabel),
                       8.heightBox,
                       _buildTextField(
                         controller: _emailController,
-                        hint: 'you@example.com',
+                        hint: context.l10n.emailHint,
                         icon: Icons.mail_outline_rounded,
                       ),
                       20.heightBox,
-                      _buildLabel('Password'),
+                      _buildLabel(context.l10n.passwordInputLabel),
                       8.heightBox,
                       _buildTextField(
                         controller: _passwordController,
-                        hint: 'Enter your password',
+                        hint: context.l10n.passwordHint,
                         icon: Icons.lock_outline_rounded,
                         isPassword: true,
                         isObscure: isObscure,
@@ -144,7 +145,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ),
                                   )
                                   : Text(
-                                    'Sign In',
+                                    context.l10n.signInButton,
                                     style: AppWidget.bodyLarge().copyWith(
                                       fontWeight: FontWeight.w600,
                                       color: ThemeColor.white,
@@ -162,7 +163,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account?",
+                      context.l10n.dontHaveAccountPrompt,
                       style: AppWidget.bodyMedium().copyWith(
                         color: Colors.grey[600],
                       ),
@@ -174,7 +175,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       child: Text(
-                        'Sign up',
+                        context.l10n.signUpTextButton,
                         style: AppWidget.bodyMedium().copyWith(
                           color: ThemeColor.darkBlue,
                           fontWeight: FontWeight.bold,
@@ -259,7 +260,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      AppSnackBar.error(context, 'Please fill in all fields');
+      AppSnackBar.error(context, context.l10n.fillAllFieldsError);
       return;
     }
 
@@ -276,7 +277,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
       AppSnackBar.error(context, errorMessage);
     } else if (authState.value != null) {
-      AppSnackBar.success(context, 'Successfully sign in!');
+      AppSnackBar.success(context, context.l10n.signInSuccess);
       final userRole = authState.value!.role;
       if (userRole == UserRole.trainer) {
         context.replaceRoute(const TrainerBottomNavRoute());

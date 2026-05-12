@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../shared/app_text_field.dart';
 import '../../shared/bottom_action_button.dart';
@@ -66,16 +67,19 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
               ),
             ),
             24.heightBox,
-            Text('Add Bank Details', style: AppWidget.h2TextFieldStyle()),
+            Text(
+              context.l10n.addBankDetails,
+              style: AppWidget.h2TextFieldStyle(),
+            ),
             8.heightBox,
             Text(
-              'Please provide your bank details to receive payouts.',
+              context.l10n.provideBankDetailsDescription,
               style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
             ),
             24.heightBox,
 
             Text(
-              'Bank Name',
+              context.l10n.bankNameLabel,
               style: AppWidget.bodySmall().copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -83,7 +87,7 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             8.heightBox,
             AppTextField(
               controller: _bankNameController,
-              hintText: 'e.g. Maybank, CIMB',
+              hintText: context.l10n.bankNameHint,
               onChanged: (_) => _checkValidity(),
               fillColor: ThemeColor.cream,
               borderRadius: 12,
@@ -96,7 +100,7 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             16.heightBox,
 
             Text(
-              'Account Number',
+              context.l10n.accountNumberLabel,
               style: AppWidget.bodySmall().copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -104,7 +108,7 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             8.heightBox,
             AppTextField(
               controller: _accNumberController,
-              hintText: 'Account Number',
+              hintText: context.l10n.accountNumberHint,
               keyboardType: TextInputType.number,
               onChanged: (_) => _checkValidity(),
               fillColor: ThemeColor.cream,
@@ -118,7 +122,7 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             16.heightBox,
 
             Text(
-              'Account Holder Name',
+              context.l10n.accountHolderNameLabel,
               style: AppWidget.bodySmall().copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -126,7 +130,7 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             8.heightBox,
             AppTextField(
               controller: _holderNameController,
-              hintText: 'Name as per bank account',
+              hintText: context.l10n.accountHolderNameHint,
               keyboardType: TextInputType.number,
               onChanged: (_) => _checkValidity(),
               fillColor: ThemeColor.cream,
@@ -140,7 +144,7 @@ class BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             32.heightBox,
 
             BottomActionButton(
-              label: 'Save Details',
+              label: context.l10n.saveDetailsAction,
               borderRadius: 16,
               textStyle: AppWidget.h3TextFieldStyle().copyWith(
                 color: ThemeColor.white,

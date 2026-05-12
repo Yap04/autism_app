@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
+import '../../../core/constant/sport_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
+import '../../../core/extension/sport_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../shared/app_text_field.dart';
 import '../../shared/bottom_action_button.dart';
@@ -22,18 +25,6 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
   late TextEditingController _searchController;
   String _searchQuery = '';
   String _selectedSportFilter = 'All';
-
-  final List<String> _sportCategories = [
-    'All',
-    'Swimming',
-    'Football',
-    'Basketball',
-    'Tennis',
-    'Gymnastics',
-    'Yoga',
-    'Athletics',
-    'Badminton',
-  ];
 
   @override
   void initState() {
@@ -85,7 +76,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Filter Trainers',
+                        context.l10n.filterTrainersTitle,
                         style: AppWidget.h2TextFieldStyle(),
                       ),
                       TextButton(
@@ -94,7 +85,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                           setState(() => _selectedSportFilter = 'All');
                         },
                         child: Text(
-                          'Reset',
+                          context.l10n.resetAction,
                           style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.blue,
                             fontWeight: FontWeight.bold,
@@ -105,7 +96,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                   ),
                   16.heightBox,
                   Text(
-                    'By Sport Category',
+                    context.l10n.bySportCategory,
                     style: AppWidget.h3TextFieldStyle(),
                   ),
                   16.heightBox,
@@ -113,7 +104,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                     spacing: 12,
                     runSpacing: 12,
                     children:
-                        _sportCategories.map((sport) {
+                        sportCategories.map((sport) {
                           final isSelected = _selectedSportFilter == sport;
                           return GestureDetector(
                             onTap: () {
@@ -138,7 +129,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                                 ),
                               ),
                               child: Text(
-                                sport,
+                                sport.toLocalizedSport(context),
                                 style: AppWidget.bodySmall().copyWith(
                                   color:
                                       isSelected
@@ -156,7 +147,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                   ),
                   32.heightBox,
                   BottomActionButton(
-                    label: 'Apply Filters',
+                    label: context.l10n.applyFiltersAction,
                     onPressed: () {
                       setState(() {});
                       Navigator.pop(context);
@@ -181,7 +172,10 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         iconTheme: const IconThemeData(color: ThemeColor.black),
-        title: Text('Trainer List', style: AppWidget.h2TextFieldStyle()),
+        title: Text(
+          context.l10n.trainerListTitle,
+          style: AppWidget.h2TextFieldStyle(),
+        ),
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(70),
@@ -193,7 +187,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                   child: AppTextField(
                     fillColor: ThemeColor.white,
                     controller: _searchController,
-                    hintText: 'Search by name...',
+                    hintText: context.l10n.searchByNameHint,
                     prefixIcon: const Icon(
                       Icons.search,
                       color: ThemeColor.grey100,
@@ -243,7 +237,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
           if (trainers.isEmpty) {
             return Center(
               child: Text(
-                'No trainers available yet',
+                context.l10n.noTrainersAvailableYet,
                 textAlign: TextAlign.center,
                 style: AppWidget.bodyLarge().copyWith(
                   color: ThemeColor.grey100,
@@ -285,7 +279,7 @@ class _TrainerListPageState extends ConsumerState<TrainerListPage> {
                   ),
                   16.heightBox,
                   Text(
-                    'No trainers found matching your criteria.',
+                    context.l10n.noTrainersMatchCriteria,
                     style: AppWidget.bodyMedium().copyWith(
                       color: ThemeColor.grey100,
                     ),

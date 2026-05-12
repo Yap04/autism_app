@@ -8,6 +8,7 @@ import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../domain/models/ticket_model.dart';
 import '../../shared/ticket_status_color.dart';
 
@@ -24,7 +25,10 @@ class SupportPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         elevation: 0,
-        title: Text('Help & Support', style: AppWidget.h3TextFieldStyle()),
+        title: Text(
+          context.l10n.helpAndSupportTitle,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -32,7 +36,7 @@ class SupportPage extends ConsumerWidget {
         backgroundColor: ThemeColor.darkBlue,
         icon: const Icon(Icons.add, color: ThemeColor.white),
         label: Text(
-          'New Ticket',
+          context.l10n.newTicketAction,
           style: AppWidget.bodyMedium().copyWith(
             color: ThemeColor.white,
             fontWeight: FontWeight.bold,
@@ -60,10 +64,13 @@ class SupportPage extends ConsumerWidget {
                     ),
                   ),
                   16.heightBox,
-                  Text('How can we help?', style: AppWidget.h2TextFieldStyle()),
+                  Text(
+                    context.l10n.howCanWeHelp,
+                    style: AppWidget.h2TextFieldStyle(),
+                  ),
                   8.heightBox,
                   Text(
-                    'Track your support requests or create a new one.',
+                    context.l10n.trackSupportRequests,
                     style: AppWidget.bodyMedium().copyWith(
                       color: ThemeColor.grey100,
                     ),
@@ -74,7 +81,10 @@ class SupportPage extends ConsumerWidget {
             ),
             32.heightBox,
 
-            Text('My Tickets', style: AppWidget.h3TextFieldStyle()),
+            Text(
+              context.l10n.myTicketsTitle,
+              style: AppWidget.h3TextFieldStyle(),
+            ),
             16.heightBox,
 
             ticketsAsync.when(
@@ -88,11 +98,14 @@ class SupportPage extends ConsumerWidget {
                     ),
                   ),
               error:
-                  (err, _) =>
-                      Center(child: Text('Error loading tickets: $err')),
+                  (err, _) => Center(
+                    child: Text(
+                      context.l10n.errorLoadingTickets(err.toString()),
+                    ),
+                  ),
               data: (tickets) {
                 if (tickets.isEmpty) {
-                  return _buildEmptyState();
+                  return _buildEmptyState(context);
                 }
 
                 return ListView.separated(
@@ -113,7 +126,7 @@ class SupportPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -131,12 +144,12 @@ class SupportPage extends ConsumerWidget {
           ),
           16.heightBox,
           Text(
-            'No support tickets yet.',
+            context.l10n.noSupportTicketsYet,
             style: AppWidget.bodyMedium().copyWith(fontWeight: FontWeight.bold),
           ),
           8.heightBox,
           Text(
-            'If you have any issues, feel free to submit a new ticket.',
+            context.l10n.submitNewTicketPrompt,
             style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
             textAlign: TextAlign.center,
           ),
@@ -203,7 +216,9 @@ class SupportPage extends ConsumerWidget {
             ),
             8.heightBox,
             Text(
-              '${ticket.lastMessageFromAdmin ? "Admin: " : "You: "}${ticket.lastMessage}',
+              ticket.lastMessageFromAdmin
+                  ? context.l10n.adminMessage(ticket.lastMessage)
+                  : context.l10n.youMessage(ticket.lastMessage),
               style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -213,7 +228,9 @@ class SupportPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Updated: ${DateFormat('dd MMM, hh:mm a').format(ticket.updatedAt)}',
+                  context.l10n.updatedAtDate(
+                    DateFormat('dd MMM, hh:mm a').format(ticket.updatedAt),
+                  ),
                   style: AppWidget.bodyExtraSmall().copyWith(
                     color: ThemeColor.grey100,
                   ),

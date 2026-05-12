@@ -1,0 +1,750 @@
+{
+  "@@locale": "zh",
+  "parentFallbackName": "家长",
+  "goodMorningGreeting": "早上好，\n{name}！",
+  "@goodMorningGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingData": "加载数据出错：{error}",
+  "@errorLoadingData": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "childsMilestones": "孩子的里程碑",
+  "latestSessionInsight": "最新课程洞察",
+  "resourcesForYou": "为您准备的资源",
+  "viewMore": "查看更多",
+  "failedToLoadContent": "加载内容失败。",
+  "moreResourcesComingSoon": "更多资源即将推出！",
+  "todayTime": "今天，{time}",
+  "@todayTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tomorrowTime": "明天，{time}",
+  "@tomorrowTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "upcomingAppointment": "即将到来的预约",
+  "chatWithCoach": "与教练聊天",
+  "totalSessions": "总计\n课程",
+  "hoursTrained": "训练\n时长",
+  "currentStreak": "连续\n打卡",
+  "noInsightsYet": "暂无数据",
+  "noInsightsDescription": "在孩子的第一次课程结束后，您将在这里收到教练提供的详细反馈和专注度评分。",
+  "sportAndDate": "{sport} • {date}",
+  "@sportAndDate": {
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      }
+    }
+  },
+  "focusScore": "专注度：{score}/5",
+  "@focusScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "feedbackRemarks": "\"{remarks}\"",
+  "@feedbackRemarks": {
+    "placeholders": {
+      "remarks": {
+        "type": "String"
+      }
+    }
+  },
+  "viewFullReport": "查看完整报告",
+  "noUpcomingAppointments": "暂无即将到来的预约",
+  "bookNewSessionPrompt": "预约新课程以开始！",
+  "navHome": "首页",
+  "navDiscover": "发现",
+  "navSchedule": "日程",
+  "navProfile": "我的",
+  "gpsServiceDisabled": "请开启 GPS 定位服务。",
+  "locationPermissionDenied": "定位权限被拒绝。",
+  "locationPermissionPermanentlyDenied": "定位权限已被永久拒绝。请在设置中开启。",
+  "findCoachesNearYou": "发现附近的教练",
+  "turnOnLocationPrompt": "开启定位服务以寻找离您最近的教练。",
+  "enableAction": "开启",
+  "nearbyCertifiedTrainers": "附近的认证教练",
+  "viewAllAction": "查看全部",
+  "errorMessage": "错误：{error}",
+  "@errorMessage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noTrainersFound": "未找到教练。",
+  "distanceUnknown": "距离未知",
+  "distanceMetersAway": "距离 {distance} 米",
+  "@distanceMetersAway": {
+    "placeholders": {
+      "distance": { "type": "String" }
+    }
+  },
+  "distanceKmAway": "距离 {distance} 公里",
+  "@distanceKmAway": {
+    "placeholders": {
+      "distance": { "type": "String" }
+    }
+  },
+  "coachFallbackName": "教练",
+  "notSpecified": "未指定",
+  "autismTrainingCertified": "自闭症训练认证",
+  "noDescriptionProvided": "暂无简介。",
+  "unknownTrainer": "未知教练",
+  "availableStatus": "可预约",
+  "notAvailableStatus": "不可预约",
+  "homeBased": "上门服务",
+  "coachingSports": "辅导项目：",
+  "bookNow": "立即预约",
+  "unavailableAction": "暂不可用",
+  "availableAtTime": "{time} 可预约",
+  "@availableAtTime": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "achievementsCount": "成就 ({count})",
+  "@achievementsCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "filterTrainersTitle": "筛选教练",
+  "resetAction": "重置",
+  "bySportCategory": "按运动项目",
+  "applyFiltersAction": "应用筛选",
+  "trainerListTitle": "教练列表",
+  "searchByNameHint": "按姓名搜索...",
+  "noTrainersAvailableYet": "暂无可预约的教练",
+  "noTrainersMatchCriteria": "未找到符合您条件的教练。",
+  "sportAll": "全部",
+  "sportSwimming": "游泳",
+  "sportFootball": "足球",
+  "sportBasketball": "篮球",
+  "sportTennis": "网球",
+  "sportGymnastics": "体操",
+  "sportYoga": "瑜伽",
+  "sportAthletics": "田径",
+  "sportBadminton": "羽毛球",
+  "homeBasedAvailable": "可上门服务",
+  "centerBasedOnly": "仅限中心服务",
+  "avgRating": "平均评分",
+  "reviewsLabel": "评价",
+  "sportsLabel": "运动项目",
+  "ratingAndReviews": "评分与评价",
+  "reviewsCount": "{count} 条评价",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "noReviewsYet": "暂无评价。\n快来发表第一条评价吧！",
+  "aboutTitle": "关于",
+  "sportsTitle": "运动项目",
+  "reviewsTitle": "评价",
+  "noWrittenReviewsYet": "暂无文字评价。",
+  "bookASession": "预约课程",
+  "tbd": "待定",
+  "generalSport": "通用",
+  "defaultUser": "用户",
+  "selectFutureTime": "请选择一个未来的时间。",
+  "selectTimeBetween": "请选择 {start} 到 {end} 之间的时间。",
+  "@selectTimeBetween": {
+    "placeholders": {
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "selectTimePrompt": "请选择时间。",
+  "selectChildPrompt": "请选择孩子档案。",
+  "cannotBookPast": "无法预约过去的时间，请选择未来的时间。",
+  "paymentCancelled": "支付已取消或失败。",
+  "bookingsConfirmed": "{weeks} 个预约已确认！",
+  "@bookingsConfirmed": {
+    "placeholders": {
+      "weeks": { "type": "String" }
+    }
+  },
+  "bookingDetailsTitle": "预约详情",
+  "bookForChildTitle": "为孩子预约",
+  "selectChildDescription": "为本次课程选择孩子档案。",
+  "errorLoadingChildren": "加载孩子信息出错：{error}",
+  "@errorLoadingChildren": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "addChildFirstPrompt": "在预约之前，请先在“管理孩子”页面添加孩子档案。",
+  "selectYourChildHint": "选择您的孩子",
+  "childAgeFormat": "({age}岁)",
+  "@childAgeFormat": {
+    "placeholders": {
+      "age": { "type": "String" }
+    }
+  },
+  "selectSportTitle": "选择运动项目",
+  "sessionTypeTitle": "授课方式",
+  "sessionTypeDescription": "选择您希望的授课方式。",
+  "inPersonType": "线下",
+  "inPersonDesc": "在教练场地",
+  "remoteType": "远程",
+  "remoteDesc": "线上咨询",
+  "homeBasedType": "上门服务",
+  "homeBasedDescWithFee": "教练上门服务 (+RM {fee} 交通费)",
+  "@homeBasedDescWithFee": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBasedDescFree": "教练上门服务",
+  "remoteNotice": "请在预约时间内从“课程详情”页面加入视频通话。",
+  "homeBasedFeeNotice": "收取 RM {fee} 的差旅费。本次课程必须通过 Stripe 支付。",
+  "@homeBasedFeeNotice": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBasedFreeNotice": "教练将前往您的地点。本次课程必须通过 Stripe 支付。",
+  "onlineSessionLoc": "线上课程",
+  "durationTitle": "时长",
+  "durationDescription": "选择每节课的时长。",
+  "oneHour": "1 小时",
+  "twoHours": "2 小时",
+  "scheduleTitle": "时间安排",
+  "selectTimeHint": "选择时间",
+  "sessionEndsAt": "本节课将于 {time} 结束。",
+  "@sessionEndsAt": { "placeholders": { "time": { "type": "String" } } },
+  "repeatBookingTitle": "重复预约",
+  "maxWeeksFormat": "最多 {weeks} 周",
+  "@maxWeeksFormat": { "placeholders": { "weeks": { "type": "String" } } },
+  "repeatBookingDescription": "在连续的几周内预约同一时间段。",
+  "oneWeek": "1 周",
+  "nWeeks": "{weeks} 周",
+  "@nWeeks": { "placeholders": { "weeks": { "type": "String" } } },
+  "operatingHoursTitle": "营业时间",
+  "restDay": "休息日",
+  "reviewAndPayAction": "检查并支付",
+  "weekdayMonday": "星期一",
+  "weekdayTuesday": "星期二",
+  "weekdayWednesday": "星期三",
+  "weekdayThursday": "星期四",
+  "weekdayFriday": "星期五",
+  "weekdaySaturday": "星期六",
+  "weekdaySunday": "星期日",
+  "paymentSummaryTitle": "支付摘要",
+  "sessionFeeLabel": "课程费用",
+  "rmPriceFormat": "RM {price}",
+  "@rmPriceFormat": { "placeholders": { "price": { "type": "String" } } },
+  "transportFeeLabel": "交通费",
+  "totalLabel": "总计",
+  "paymentMethodTitle": "支付方式",
+  "useSessionCreditTitle": "使用课程积分",
+  "unavailableForHomeBased": "上门服务不可用",
+  "creditBalanceAndRequired": "余额：{balance} | 需求：{required}",
+  "@creditBalanceAndRequired": {
+    "placeholders": {
+      "balance": { "type": "String" },
+      "required": { "type": "String" }
+    }
+  },
+  "notEnoughCredits": "积分不足（需要 {required}，拥有 {balance}）",
+  "@notEnoughCredits": {
+    "placeholders": {
+      "required": { "type": "String" },
+      "balance": { "type": "String" }
+    }
+  },
+  "payPerSessionTitle": "按次单结",
+  "totalPriceFormat": "总计：RM {price}",
+  "@totalPriceFormat": { "placeholders": { "price": { "type": "String" } } },
+  "confirmAndDeductCredits": "确认并扣除 {credits} 个积分",
+  "@confirmAndDeductCredits": { "placeholders": { "credits": { "type": "String" } } },
+  "proceedToPay": "前往支付 RM {price}",
+  "@proceedToPay": { "placeholders": { "price": { "type": "String" } } },
+  "failedToUploadImage": "上传图片失败。",
+  "failedToSendMessage": "发送消息失败：{error}",
+  "@failedToSendMessage": { "placeholders": { "error": { "type": "String" } } },
+  "takeAPhoto": "拍照",
+  "chooseFromGallery": "从相册选择",
+  "startConversationWith": "开始与 {name} 的对话",
+  "@startConversationWith": { "placeholders": { "name": { "type": "String" } } },
+  "accountSuspendedNotice": "此账号已被封禁。您无法再发送消息。",
+  "typeAMessage": "输入消息...",
+  "cannotReschedulePast": "无法改期到过去的时间。",
+  "trainerAvailableTime": "教练在这一天仅在 {open} - {close} 可用。",
+  "@trainerAvailableTime": { "placeholders": { "open": { "type": "String" }, "close": { "type": "String" } } },
+  "rescheduleSessionTitle": "重新安排课程",
+  "selectNewDate": "选择新日期",
+  "availableTimeRange": "{open} - {close} 可预约",
+  "@availableTimeRange": { "placeholders": { "open": { "type": "String" }, "close": { "type": "String" } } },
+  "selectNewTime": "选择新时间",
+  "confirmReschedule": "确认改期",
+  "rescheduledSuccessfully": "改期成功！",
+  "myAppointmentsTitle": "我的预约",
+  "tabPending": "待定",
+  "tabUpcoming": "即将到来",
+  "tabPast": "已结束",
+  "fallbackDatePlaceholder": "3月11日, 星期三",
+  "sportSession": "{sport} 课程",
+  "@sportSession": { "placeholders": { "sport": { "type": "String" } } },
+  "viewDetailsAction": "查看详情",
+  "rescheduleAction": "改期",
+  "noAppointmentsForTab": "暂无{tab}预约",
+  "@noAppointmentsForTab": { "placeholders": { "tab": { "type": "String" } } },
+  "tapDateToViewOrBook": "点击日历上的日期以查看\n或预约新课程",
+  "statusPending": "待定",
+  "statusAccepted": "已接受",
+  "statusCompleted": "已完成",
+  "statusCancelled": "已取消",
+  "statusRejected": "已拒绝",
+  "sessionDetailsTitle": "课程详情",
+  "statusLabel": "状态",
+  "paymentLabel": "支付",
+  "scheduleLocationTitle": "时间与地点",
+  "dateLabel": "日期",
+  "timeLabel": "时间",
+  "timeWithDuration": "{start} - {end} ({duration} 分钟)",
+  "@timeWithDuration": { "placeholders": { "start": { "type": "String" }, "end": { "type": "String" }, "duration": { "type": "String" } } },
+  "sportLabel": "运动项目",
+  "locationLabel": "地点",
+  "remoteConsultationTitle": "远程咨询",
+  "specialNeedsNotesTitle": "特殊需求与备注",
+  "sessionFeedbackTitle": "课程反馈",
+  "parentNameLabel": "家长：{name}",
+  "@parentNameLabel": { "placeholders": { "name": { "type": "String" } } },
+  "inAppVideoSession": "应用内视频课程",
+  "remoteSessionWarning": "本课程将远程进行。加入前请确保您的网络连接稳定。",
+  "navigatingToVideoCall": "正在进入视频通话房间...",
+  "joinVideoCallAction": "加入视频通话",
+  "videoSessionEnded": "视频课程已结束",
+  "noFeedbackProvidedYet": "暂无反馈。",
+  "focusAttentionTitle": "专注与注意力",
+  "scoreOutOfFive": "{score}/5",
+  "@scoreOutOfFive": { "placeholders": { "score": { "type": "String" } } },
+  "energyLevelTitle": "精力水平",
+  "trainerRemarksTitle": "教练点评",
+  "parentReviewTitle": "家长评价",
+  "errorLoadingDetails": "加载详情出错。",
+  "childDataNotFound": "未找到孩子数据。",
+  "notesTitle": "备注",
+  "noSpecialNeedsOrRemarks": "家长未提供具体的特殊需求或备注。",
+  "specialNeedsTitle": "特殊需求",
+  "parentRemarksTitle": "家长备注",
+  "reviewSubmittedStatus": "评价已提交",
+  "rateReviewTrainerAction": "评价教练",
+  "sessionCompletedStatus": "课程已完成",
+  "cancelSessionAction": "取消课程",
+  "markAsCompletedAction": "标记为已完成",
+  "waitingForSessionTime": "等待上课时间",
+  "meltdownGraceApplied": "已应用崩溃豁免：您将获得全额退款。",
+  "suddenMeltdownGrace": "突发崩溃？（豁免期）",
+  "meltdownGraceDescription": "使用每月一次的豁免机会，因孩子状况原因获得全额退款。",
+  "totalRefundLabel": "退款总额：",
+  "confirmCancellationAction": "确认取消",
+  "keepSessionAction": "保留课程",
+  "appointmentCancelledSuccess": "预约取消成功。",
+  "pleaseLoginFirst": "请先登录",
+  "sessionCompletedEarnings": "课程已完成! RM {amount}（扣除 {takeRate} 平台费后）已加入您的钱包。",
+  "@sessionCompletedEarnings": { "placeholders": { "amount": { "type": "String" }, "takeRate": { "type": "String" } } },
+  "thankYouForReview": "感谢您的评价！",
+  "profilePictureUpdatedSuccessfully": "头像更新成功！",
+  "failedToUpdateProfilePicture": "更新头像失败",
+  "pleaseAddPhoneNumber": "请添加手机号码",
+  "editProfileInformation": "编辑个人信息",
+  "manageChildren": "管理孩子",
+  "myTrainerDashboard": "我的教练面板",
+  "language": "语言",
+  "wallet": "钱包",
+  "contactUs": "联系我们",
+  "logOut": "退出登录",
+  "selectLanguage": "选择语言",
+  "languageChangedTo": "语言已切换至 {languageName}",
+  "@languageChangedTo": { "placeholders": { "languageName": { "type": "String" } } },
+  "editProfileTitle": "编辑个人资料",
+  "personalInfoSection": "个人信息",
+  "fullNameLabel": "全名",
+  "nicknameLabel": "昵称",
+  "contactSection": "联系方式",
+  "emailAddressLabel": "电子邮件地址",
+  "phoneNumberLabel": "手机号码",
+  "addressSection": "地址",
+  "addressLabel": "详细地址",
+  "pickLocationOnMap": "在地图上选择位置",
+  "saveChangesButton": "保存更改",
+  "fullNameRequired": "全名不能为空",
+  "phoneNumberRequired": "手机号码不能为空",
+  "genderRequired": "请选择性别",
+  "addressRequired": "地址不能为空",
+  "profileUpdatedSuccessfully": "个人资料更新成功！",
+  "failedToUpdateProfile": "更新个人资料失败：{error}",
+  "@failedToUpdateProfile": { "placeholders": { "error": { "type": "String" } } },
+  "newUserFallback": "新用户",
+  "genderLabel": "性别",
+  "genderMale": "男",
+  "genderFemale": "女",
+  "genderOther": "其他",
+  "moveMapToSelectLocation": "移动地图以选择位置...",
+  "unableToGetLocation": "无法获取位置，默认定位至吉隆坡。",
+  "locationSelected": "已选择位置",
+  "selectLocationTitle": "选择位置",
+  "selectedAddressLabel": "已选地址",
+  "confirmLocationButton": "确认位置",
+  "manageChildrenDescription": "在此管理您孩子的档案。准确的特殊需求标签有助于我们的教练提供最好的关怀。",
+  "addChildButton": "添加孩子",
+  "childAgeAndGender": "{age} 岁 • {gender}",
+  "@childAgeAndGender": {
+    "placeholders": {
+      "age": { "type": "String" },
+      "gender": { "type": "String" }
+    }
+  },
+  "activeTrainersPlural": "{count, plural, =1{1 位活跃教练} other{{count} 位活跃教练}}",
+  "@activeTrainersPlural": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "specialNeedsAndTags": "特殊需求与标签",
+  "noTagsAdded": "未添加标签。",
+  "performanceHistory": "表现记录",
+  "noChildrenAddedYet": "暂未添加孩子",
+  "noChildrenDescription": "添加孩子的档案，开始预约由认证教练提供的专业训练课程。",
+  "fillNameAgeGenderPrompt": "请填写姓名、年龄，并选择性别。",
+  "childProfileUpdatedSuccess": "孩子档案更新成功！",
+  "childProfileCreatedSuccess": "孩子档案创建成功！",
+  "errorSavingProfile": "保存档案出错：{error}",
+  "@errorSavingProfile": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "editChildProfileTitle": "编辑孩子档案",
+  "addChildProfileTitle": "添加孩子档案",
+  "basicInformationTitle": "基本信息",
+  "childNameLabel": "孩子姓名",
+  "childNameHint": "例如: Leo",
+  "ageLabel": "年龄",
+  "ageHint": "例如: 8",
+  "specialNeedsAndTraitsTitle": "特殊需求与特征",
+  "specialNeedsDescription": "请选择所有适用的选项。这有助于我们的教练根据您孩子的需求量身定制课程。",
+  "additionalRemarksOptional": "给教练的额外备注（选填）",
+  "remarksHint": "例如：喜欢安静的环境，喜欢击掌作为奖励，对花生过敏...",
+  "saveProfileButton": "保存档案",
+  "genderDropdownLabel": "性别",
+  "selectHint": "请选择",
+  "performanceTrackingTitle": "表现追踪",
+  "overallAverageTitle": "总体平均",
+  "avgFocusLabel": "平均专注度",
+  "avgEnergyLabel": "平均精力",
+  "sessionHistoryTitle": "课程记录",
+  "noPerformanceRecordsYet": "暂无表现记录。",
+  "completeSessionToLogFeedback": "完成课程后即可记录反馈。",
+  "yearsOldWithGender": "{age} 岁，{gender}",
+  "@yearsOldWithGender": {
+    "placeholders": {
+      "age": { "type": "String" },
+      "gender": { "type": "String" }
+    }
+  },
+  "yearsOld": "{age} 岁",
+  "@yearsOld": {
+    "placeholders": { "age": { "type": "String" } }
+  },
+  "focusLabel": "专注度",
+  "energyLabel": "精力",
+  "trainingCreditsTitle": "培训积分",
+  "availableSessionsLabel": "可用课程：",
+  "creditSingular": "积分",
+  "creditsPlural": "积分",
+  "buyCreditPackages": "购买积分套餐",
+  "creditTab": "积分",
+  "singlePayTab": "单次支付",
+  "viewAllHistory": "查看所有记录",
+  "errorLoadingHistory": "加载记录出错：{error}",
+  "@errorLoadingHistory": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "selectPackageTitle": "选择套餐",
+  "buyMoreCreditsDesc": "购买更多积分以享受批量折扣。",
+  "singleSessionPackage": "单次课程",
+  "starterPackPackage": "入门套餐",
+  "proPackPackage": "专业套餐",
+  "popularBadge": "热门",
+  "creditsCountLabel": "{count, plural, =1{1 个积分} other{{count} 个积分}}",
+  "@creditsCountLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "paymentSuccessfulAddedCredits": "支付成功！已添加 {credits} 个积分。",
+  "@paymentSuccessfulAddedCredits": {
+    "placeholders": { "credits": { "type": "String" } }
+  },
+  "transactionCreditAmount": "{prefix} {val, plural, =1{1 个积分} other{{val} 个积分}}",
+  "@transactionCreditAmount": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "val": { "type": "int" }
+    }
+  },
+  "transactionRmAmount": "{prefix} RM {amount}",
+  "@transactionRmAmount": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "statusRefunded": "已退款",
+  "statusFailed": "已失败",
+  "noTransactionHistoryYet": "暂无交易记录。",
+  "helpAndSupportTitle": "帮助与支持",
+  "newTicketAction": "新建工单",
+  "howCanWeHelp": "我们能如何帮助您？",
+  "trackSupportRequests": "追踪您的支持请求或创建一个新的请求。",
+  "myTicketsTitle": "我的工单",
+  "errorLoadingTickets": "加载工单出错：{err}",
+  "@errorLoadingTickets": {
+    "placeholders": {
+      "err": { "type": "String" }
+    }
+  },
+  "noSupportTicketsYet": "暂无支持工单。",
+  "submitNewTicketPrompt": "如果您有任何问题，请随时提交新工单。",
+  "adminMessage": "管理员: {message}",
+  "@adminMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "youMessage": "您: {message}",
+  "@youMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "updatedAtDate": "更新于: {date}",
+  "@updatedAtDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryBillingAndPayment": "账单与支付",
+  "categoryAppointmentReschedule": "预约 / 改期",
+  "categoryTechnicalIssue": "技术问题",
+  "categoryTrainerFeedback": "教练反馈",
+  "categoryOther": "其他",
+  "pleaseSelectCategory": "请选择一个类别。",
+  "ticketSubmittedSuccessfully": "工单提交成功！",
+  "failedToSubmitTicket": "提交工单失败：{error}",
+  "@failedToSubmitTicket": { "placeholders": { "error": { "type": "String" } } },
+  "newSupportTicketTitle": "新建支持工单",
+  "supportTeamResponseTime": "我们的支持团队通常会在工作日的 2-4 小时内回复。",
+  "whatDoYouNeedHelpWith": "您需要什么帮助？ *",
+  "selectCategoryHint": "选择类别",
+  "detailsLabel": "详情 *",
+  "describeIssueHint": "请详细描述您的问题...",
+  "pleaseEnterMessage": "请输入您的消息",
+  "submitTicketAction": "提交工单",
+  "welcomeBack": "欢迎回来",
+  "signInToContinue": "请登录以继续",
+  "emailAddressInputLabel": "电子邮箱地址",
+  "emailHint": "you@example.com",
+  "passwordInputLabel": "密码",
+  "passwordHint": "请输入您的密码",
+  "signInButton": "登录",
+  "dontHaveAccountPrompt": "还没有账号？",
+  "signUpTextButton": "注册",
+  "fillAllFieldsError": "请填写所有字段",
+  "signInSuccess": "登录成功！",
+  "createAccount": "创建账号",
+  "joinUsTodayFree": "今天就加入我们 — 完全免费",
+  "iAmA": "我是...",
+  "roleParent": "家长",
+  "roleCoach": "教练",
+  "passwordMinLengthHint": "最少 6 个字符",
+  "alreadyHaveAccountPrompt": "已经有账号了？",
+  "signInTextButton": "登录",
+  "signUpSuccess": "注册成功！",
+  "pleaseWriteBriefBio": "请写一段关于您自己的简短简介。",
+  "pleaseSelectAtLeastOneSport": "请至少选择一项您可以教授的运动。",
+  "pleaseUploadCertificate": "请上传至少一份相关的证书。",
+  "applicationSubmittedWaitAdmin": "申请提交成功！请等待管理员审核。",
+  "errorSubmittingApplication": "提交申请时出错：{error}",
+  "@errorSubmittingApplication": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "becomeTrainerTitle": "成为教练",
+  "joinTrainerCommunityDescription": "加入我们的专业教练社区，创造不同。",
+  "personalBioTitle": "个人简介",
+  "experienceWithSpecialNeedsDescription": "向我们讲述您在有特殊需求儿童工作方面的经验。",
+  "yourExperienceLabel": "您的经验",
+  "experienceHintText": "例如：我有 3 年教患有自闭症谱系障碍儿童游泳的经验...",
+  "sportsYouTeachTitle": "您教授的运动",
+  "selectQualifiedSportsDescription": "选择所有您有资格教授的运动。",
+  "icAndCertificatesTitle": "身份证件和证书",
+  "addImagesAction": "添加图片",
+  "uploadIcAndCertificatesDescription": "上传您的身份证件、教练证书或特殊需求培训资格证书的照片。",
+  "noPhotosUploadedYet": "尚未上传图片",
+  "submitApplicationAction": "提交申请",
+  "academyTitle": "学院",
+  "welcomeToAcademy": "欢迎来到学院！",
+  "academyPendingDescription": "请复习以下的学习资料并完成最终评估（测验）。通过后，我们的管理员将批准您的账号。",
+  "errorLoadingAcademyContent": "加载学院内容时出错：{error}",
+  "@errorLoadingAcademyContent": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noTrainingModulesAvailable": "目前没有可用的培训模块。",
+  "learningMaterials": "学习资料",
+  "finalAssessment": "最终评估",
+  "finalAssessmentDescription": "点击打开评估表。请确保使用您的注册邮箱。",
+  "continuousLearning": "持续学习",
+  "upskillDescription": "提升自己，赚取专属徽章，并提高您的预约率！",
+  "myBadgesWithPoints": "我的徽章 ({points} 分)",
+  "@myBadgesWithPoints": {
+    "placeholders": { "points": { "type": "String" } }
+  },
+  "advancedCourses": "进阶课程",
+  "noAdvancedCoursesYet": "暂无进阶课程。",
+  "requiredPointsLabel": "{points} 分",
+  "@requiredPointsLabel": {
+    "placeholders": { "points": { "type": "String" } }
+  },
+  "plusCpdPoints": "+ {points} CPD 积分",
+  "@plusCpdPoints": {
+    "placeholders": { "points": { "type": "String" } }
+  },
+  "failedToOpenCourse": "打开课程失败：{error}",
+  "@failedToOpenCourse": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "summaryTodayTitle": "今日摘要",
+  "availableSlotsLabel": "剩余\n名额",
+  "todaySessionsLabel": "今日\n课程",
+  "totalMembersLabel": "会员\n总数",
+  "profileHiddenTitle": "个人资料已隐藏",
+  "profileHiddenDesc": "在您设置服务基地位置之前，家长无法预约您。",
+  "fixNowAction": "立即修复",
+  "newRequestsTitle": "新请求",
+  "allCaughtUpTitle": "全部处理完毕！",
+  "noPendingRequestsDesc": "您目前没有待处理的请求。",
+  "todaySessionScheduleTitle": "今日课程安排",
+  "freeScheduleTitle": "空闲日程",
+  "noSessionsScheduledDesc": "您今天没有安排任何课程。祝您度过愉快的一天！",
+  "studentLabel": "学生",
+  "newBadgeLabel": "新",
+  "acceptAction": "接受",
+  "rejectAction": "拒绝",
+  "chatAction": "聊天",
+  "actionRequiredSetLocationDesc": "需要操作：在接受请求之前，请先在您的仪表板中设置您的服务基地位置。",
+  "appointmentAcceptedSuccess": "预约已接受！",
+  "appointmentRejectedInfo": "预约已拒绝！",
+  "navAcademy": "学院",
+  "navStudents": "学生",
+  "myStudentsTitle": "我的学生",
+  "summaryTitle": "摘要",
+  "totalStudentsLabel": "学生\n总数",
+  "activeSessionsLabel": "活跃\n课程",
+  "pendingRequestsLabel": "待处理\n请求",
+  "noActiveStudentsTitle": "暂无活跃学生",
+  "noActiveStudentsDesc": "您目前没有活跃的学生。当您接受请求后，他们将显示在这里。",
+  "noPendingRequestsTitle": "暂无待处理请求",
+  "noPendingStudentRequestsDesc": "一切都处理完毕！目前没有待处理的学生请求。",
+  "noPastStudentsTitle": "暂无历史学生",
+  "noPastStudentsDesc": "您还没有任何历史学生记录。",
+  "tabActive": "活跃",
+  "lastSessionLabel": "上次: {date}",
+  "@lastSessionLabel": { "placeholders": { "date": { "type": "String" } } },
+  "acceptRequestAction": "接受请求",
+  "reviewNewRequestAction": "查看新请求",
+  "logProgressAction": "记录进度",
+  "viewHistoryAction": "查看记录",
+  "messageParentAction": "联系家长",
+  "viewPerformanceAction": "查看表现",
+  "pauseReceivingRequestsTitle": "暂停接收请求",
+  "pauseReceivingRequestsMessage": "您希望我们何时为您重新开启？",
+  "pauseForOneHour": "1 小时后",
+  "pauseForFourHours": "4 小时后",
+  "pauseUntilTomorrow": "直到明天",
+  "pauseUntilTurnedBackOn": "直到我手动开启",
+  "cancelAction": "取消",
+  "operatingHoursDesc": "设置您的每周空闲时间。默认全周开放。请关闭您的休息日。",
+  "operatingHoursUpdatedSuccess": "营业时间更新成功。",
+  "failedToUpdateOperatingHours": "更新失败：{error}",
+  "@failedToUpdateOperatingHours": { "placeholders": { "error": { "type": "String" } } },
+  "saveChangesAction": "保存更改",
+  "appointmentsTitle": "预约",
+  "acceptingRequestsLabel": "接收请求",
+  "autoResumesAtTime": "将在 {time} 自动恢复",
+  "@autoResumesAtTime": { "placeholders": { "time": { "type": "String" } } },
+  "youAreNowOnline": "您现在已上线！",
+  "noAppointmentsYet": "暂无预约。",
+  "parentsCanSendRequestsDesc": "家长可以在这一天向您发送请求。",
+  "statusConfirmed": "已确认",
+  "actionRequiredShort": "需处理",
+  "notAcceptingRequestsTitle": "未接收请求",
+  "updateProfileTitle": "更新个人资料",
+  "locationCityAreaLabel": "位置（城市/地区）",
+  "locationCityAreaHint": "例如：吉隆坡，八打灵再也",
+  "aboutYouBioLabel": "关于您（简介）",
+  "aboutYouBioHint": "向家长介绍您的经验和教学风格...",
+  "offerHomeBasedSessionsLabel": "提供上门授课？",
+  "offerHomeBasedSessionsDesc": "家长可以要求在他们自己家里进行授课。",
+  "travelSurchargeLabel": "差旅费（每次课程）",
+  "rmZeroHint": "RM0.00",
+  "travelSurchargeDesc": "此费用100%归您所有，用于支付差旅费用。",
+  "yourPublicProfileTitle": "您的公开资料",
+  "bioNotSetFallback": "向家长介绍您的经验...",
+  "locationNotSetFallback": "未设置位置",
+  "noSportsSelectedFallback": "未选择运动项目",
+  "goBackTooltip": "返回",
+  "trainerDashboardTitle": "教练看板",
+  "reschedulingDisabledWithin24h": "课程开始前24小时内无法重新安排。",
+  "withdrawFunds": "提取资金",
+  "withdrawFundsDescription": "请输入您希望转入银行账户的金额。",
+  "availableBalanceAmount": "可用余额: RM {amount}",
+  "@availableBalanceAmount": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "insufficientBalance": "余额不足",
+  "submitRequest": "提交申请",
+  "myWallet": "我的钱包",
+  "recentTransactions": "近期交易",
+  "noTransactionsYet": "暂无交易。",
+  "availableBalance": "可用余额",
+  "noBalanceToWithdraw": "您没有可提取的余额。",
+  "bankDetailsSaved": "银行信息已保存！您现在可以继续提取资金。",
+  "failedToSaveBankDetails": "保存银行信息失败：{error}",
+  "@failedToSaveBankDetails": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "withdrawalRequestSubmitted": "已提交 RM {amount} 的提款申请！等待管理员审核。",
+  "@withdrawalRequestSubmitted": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "addBankDetails": "添加银行信息",
+  "provideBankDetailsDescription": "请提供您的银行信息以接收付款。",
+  "bankNameLabel": "银行名称",
+  "bankNameHint": "例如: Maybank, CIMB",
+  "accountNumberLabel": "账号",
+  "accountNumberHint": "银行账号",
+  "accountHolderNameLabel": "开户人姓名",
+  "accountHolderNameHint": "与银行账户一致的姓名",
+  "saveDetailsAction": "保存信息"
+}

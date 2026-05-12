@@ -9,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../application/child/child_notifier.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/gender_ext.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/child_model.dart';
 import '../../shared/app_text_field.dart';
@@ -94,10 +96,7 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
     final age = _ageController.text.trim();
 
     if (name.isEmpty || age.isEmpty || _selectedGender == null) {
-      AppSnackBar.info(
-        context,
-        'Please fill in the name, age, and select a gender.',
-      );
+      AppSnackBar.info(context, context.l10n.fillNameAgeGenderPrompt);
       return;
     }
 
@@ -131,12 +130,14 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
 
       if (mounted) {
         final msg =
-            isEditMode ? 'Child profile updated!' : 'Child profile created!';
+            isEditMode
+                ? context.l10n.childProfileUpdatedSuccess
+                : context.l10n.childProfileCreatedSuccess;
         AppSnackBar.success(context, msg);
         context.pop();
       }
     } catch (e) {
-      AppSnackBar.error(context, 'Error saving profile: $e');
+      AppSnackBar.error(context, context.l10n.errorSavingProfile(e.toString()));
     }
   }
 
@@ -151,7 +152,9 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
         title: Text(
-          isEditMode ? 'Edit Child Profile' : 'Add Child Profile',
+          isEditMode
+              ? context.l10n.editChildProfileTitle
+              : context.l10n.addChildProfileTitle,
           style: AppWidget.h2TextFieldStyle(),
         ),
       ),
@@ -162,7 +165,10 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Basic Information', style: AppWidget.h3TextFieldStyle()),
+              Text(
+                context.l10n.basicInformationTitle,
+                style: AppWidget.h3TextFieldStyle(),
+              ),
               16.heightBox,
 
               Center(
@@ -227,8 +233,8 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
               AppTextField(
                 fillColor: ThemeColor.white,
                 controller: _nameController,
-                label: "Child's Name",
-                hintText: 'e.g. Leo',
+                label: context.l10n.childNameLabel,
+                hintText: context.l10n.childNameHint,
               ),
               16.heightBox,
 
@@ -239,8 +245,8 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
                     child: AppTextField(
                       fillColor: ThemeColor.white,
                       controller: _ageController,
-                      label: 'Age',
-                      hintText: 'e.g. 8',
+                      label: context.l10n.ageLabel,
+                      hintText: context.l10n.ageHint,
                       keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -258,12 +264,12 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
               24.heightBox,
 
               Text(
-                'Special Needs & Traits',
+                context.l10n.specialNeedsAndTraitsTitle,
                 style: AppWidget.h3TextFieldStyle(),
               ),
               8.heightBox,
               Text(
-                "Select all that apply. This helps our trainers tailor their sessions to your child's needs.",
+                context.l10n.specialNeedsDescription,
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -319,16 +325,15 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
               AppTextField(
                 fillColor: ThemeColor.white,
                 controller: _remarksController,
-                label: 'Additional Remarks for Trainer (Optional)',
-                hintText:
-                    'e.g., Prefers a quiet environment, loves high-fives as reward, allergic to peanuts...',
+                label: context.l10n.additionalRemarksOptional,
+                hintText: context.l10n.remarksHint,
                 maxLines: 4,
               ),
 
               40.heightBox,
 
               BottomActionButton(
-                label: 'Save Profile',
+                label: context.l10n.saveProfileButton,
                 onPressed: isLoading ? null : _saveChildProfile,
               ),
               20.heightBox,
@@ -344,14 +349,14 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Gender',
+          context.l10n.genderDropdownLabel,
           style: AppWidget.bodySmall().copyWith(fontWeight: FontWeight.w600),
         ),
         8.heightBox,
         DropdownButtonFormField<String>(
           initialValue: _selectedGender,
           hint: Text(
-            'Select',
+            context.l10n.selectHint,
             style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
           ),
           decoration: InputDecoration(
@@ -370,7 +375,10 @@ class _AddChildrenPageState extends ConsumerState<AddChildrenPage> {
               _genderOptions.map((String gender) {
                 return DropdownMenuItem<String>(
                   value: gender,
-                  child: Text(gender, style: AppWidget.bodyMedium()),
+                  child: Text(
+                    gender.toLocalized(context),
+                    style: AppWidget.bodyMedium(),
+                  ),
                 );
               }).toList(),
           onChanged: (String? newValue) {

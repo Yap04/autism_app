@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/constant/weekdays_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
+import '../../../core/extension/status_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
@@ -28,21 +32,11 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
   DateTime? _selectedDay;
   String _selectedTab = 'Upcoming';
 
-  final weekdays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
-
   bool _isDaySelectable(DateTime day, List<dynamic>? operatingHours) {
     if (operatingHours == null || operatingHours.isEmpty) {
       return true;
     }
-    final dayString = weekdays[day.weekday - 1];
+    final dayString = Weekdays.all[day.weekday - 1];
     final dayConfig = operatingHours.firstWhere(
       (e) => (e as Map)['day'] == dayString,
       orElse: () => null,
@@ -65,7 +59,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
 
     Map<String, dynamic>? getOperatingDay(DateTime date) {
       if (operatingHours == null || operatingHours.isEmpty) return null;
-      final dayString = weekdays[date.weekday - 1];
+      final dayString = Weekdays.all[date.weekday - 1];
       final dayConfig = operatingHours.firstWhere(
         (e) => (e as Map)['day'] == dayString && e['isOpen'] == true,
         orElse: () => null,
@@ -76,9 +70,13 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     }
 
     TimeOfDay? parseTime(String? raw) {
-      if (raw == null) return null;
+      if (raw == null) {
+        return null;
+      }
       final parts = raw.split(':');
-      if (parts.length < 2) return null;
+      if (parts.length < 2) {
+        return null;
+      }
       return TimeOfDay(
         hour: int.tryParse(parts[0]) ?? 0,
         minute: int.tryParse(parts[1]) ?? 0,
@@ -96,7 +94,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
       );
 
       if (proposed.isBefore(now)) {
-        return 'Cannot reschedule to a past time.';
+        return context.l10n.cannotReschedulePast;
       }
 
       final dayConfig = getOperatingDay(date);
@@ -112,11 +110,11 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
           if (pickedMinutes < openMinutes || pickedMinutes >= closeMinutes) {
             String fmt(TimeOfDay t) =>
                 '${t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod}:${t.minute.toString().padLeft(2, '0')} ${t.period == DayPeriod.am ? 'AM' : 'PM'}';
-            return 'Trainer is only available ${fmt(open)} – ${fmt(close)} on this day.';
+            return context.l10n.trainerAvailableTime(fmt(open), fmt(close));
           }
         }
       }
-      return null; // valid
+      return null;
     }
 
     showModalBottomSheet(
@@ -156,13 +154,13 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
                     24.heightBox,
                     Text(
-                      'Reschedule Session',
+                      context.l10n.rescheduleSessionTitle,
                       style: AppWidget.h2TextFieldStyle(),
                     ),
                     16.heightBox,
 
                     Text(
-                      'Select New Date',
+                      context.l10n.selectNewDate,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -254,7 +252,10 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                               ),
                               4.widthBox,
                               Text(
-                                'Available ${fmt(open)} – ${fmt(close)}',
+                                context.l10n.availableTimeRange(
+                                  fmt(open),
+                                  fmt(close),
+                                ),
                                 style: AppWidget.bodySmall().copyWith(
                                   color: ThemeColor.grey100,
                                 ),
@@ -266,7 +267,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                     ),
 
                     Text(
-                      'Select New Time',
+                      context.l10n.selectNewTime,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -301,7 +302,8 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                             ),
                             12.widthBox,
                             Text(
-                              selectedTime?.format(context) ?? 'Select Time',
+                              selectedTime?.format(context) ??
+                                  context.l10n.selectTimeHint,
                               style: AppWidget.bodyLarge().copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -361,7 +363,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                     Navigator.pop(context);
                                     AppSnackBar.success(
                                       context,
-                                      'Rescheduled successfully!',
+                                      context.l10n.rescheduledSuccessfully,
                                     );
                                   }
                                 } catch (e) {
@@ -394,7 +396,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                   ),
                                 )
                                 : Text(
-                                  'Confirm Reschedule',
+                                  context.l10n.confirmReschedule,
                                   style: AppWidget.bodyMedium().copyWith(
                                     color: ThemeColor.white,
                                     fontWeight: FontWeight.bold,
@@ -438,7 +440,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'My Appointments',
+                      context.l10n.myAppointmentsTitle,
                       style: AppWidget.h2TextFieldStyle(),
                     ),
                     16.heightBox,
@@ -544,9 +546,9 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                       ),
                       child: Row(
                         children: [
-                          _buildTabButton('Pending'),
-                          _buildTabButton('Upcoming'),
-                          _buildTabButton('Past'),
+                          _buildTabButton('Pending', context.l10n.tabPending),
+                          _buildTabButton('Upcoming', context.l10n.tabUpcoming),
+                          _buildTabButton('Past', context.l10n.tabPast),
                         ],
                       ),
                     ),
@@ -557,7 +559,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                           ? DateFormat(
                             'EEEE, d MMM',
                           ).format(_selectedDay!).toUpperCase()
-                          : 'WEDNESDAY, 11 MAR',
+                          : context.l10n.fallbackDatePlaceholder,
                       style: AppWidget.bodyMedium().copyWith(
                         fontWeight: FontWeight.bold,
                         color: ThemeColor.grey100,
@@ -573,7 +575,12 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                               color: ThemeColor.darkBlue,
                             ),
                           ),
-                      error: (err, _) => Center(child: Text('Error: $err')),
+                      error:
+                          (err, _) => Center(
+                            child: Text(
+                              context.l10n.errorMessage(err.toString()),
+                            ),
+                          ),
                       data: (appointments) {
                         final targetDate = _selectedDay ?? DateTime.now();
                         final filteredAppointments =
@@ -643,11 +650,17 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     final timeRangeDisplay = '$startTimeStr - $endTimeStr';
 
     final status = appointment.status;
-    final statusText = status.name[0].toUpperCase() + status.name.substring(1);
+    final statusText = status.toLocalized(context);
+
+    final now = DateTime.now();
+    final hoursUntilSession = appointment.dateTime.difference(now).inHours;
+    final isWithin24Hours =
+        hoursUntilSession < 24 && appointment.dateTime.isAfter(now);
 
     final isRescheduleDisabled =
         status == AppointmentStatus.cancelled ||
-        status == AppointmentStatus.rejected;
+        status == AppointmentStatus.rejected ||
+        isWithin24Hours;
 
     final coachName = appointment.trainerName;
     final sport = appointment.sport;
@@ -761,7 +774,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                             ),
                             4.widthBox,
                             Text(
-                              sport,
+                              sport.toLocalizedSport(context),
                               style: AppWidget.bodySmall().copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: ThemeColor.darkBlue,
@@ -772,7 +785,9 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                       ),
                       8.heightBox,
                       Text(
-                        '$sport Session',
+                        context.l10n.sportSession(
+                          sport.toLocalizedSport(context),
+                        ),
                         style: AppWidget.bodyLarge().copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -824,7 +839,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Chat with Coach',
+                        context.l10n.chatWithCoach,
                         style: AppWidget.bodySmall().copyWith(
                           color: ThemeColor.white,
                           fontWeight: FontWeight.bold,
@@ -853,7 +868,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                 ),
                               ),
                               child: Text(
-                                'View Details',
+                                context.l10n.viewDetailsAction,
                                 style: AppWidget.bodySmall().copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: ThemeColor.darkBlue,
@@ -861,7 +876,6 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                               ),
                             ),
                           )
-                          //TODO: cannot reschedule after appointment time
                           : GestureDetector(
                             onTap:
                                 isRescheduleDisabled
@@ -882,7 +896,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                'Reschedule',
+                                context.l10n.rescheduleAction,
                                 style: AppWidget.bodySmall().copyWith(
                                   fontWeight: FontWeight.bold,
                                   color:
@@ -896,6 +910,31 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
                 ),
               ],
             ),
+
+            if (isWithin24Hours &&
+                (status == AppointmentStatus.accepted ||
+                    status == AppointmentStatus.pending)) ...[
+              12.heightBox,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: ThemeColor.orange,
+                  ),
+                  6.widthBox,
+                  Expanded(
+                    child: Text(
+                      context.l10n.reschedulingDisabledWithin24h,
+                      style: AppWidget.bodyExtraSmall().copyWith(
+                        color: ThemeColor.orange,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -903,6 +942,15 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
   }
 
   Widget _buildEmptyState() {
+    var localizedTab = '';
+    if (_selectedTab == 'Pending') {
+      localizedTab = context.l10n.tabPending.toLowerCase();
+    } else if (_selectedTab == 'Upcoming') {
+      localizedTab = context.l10n.tabUpcoming.toLowerCase();
+    } else {
+      localizedTab = context.l10n.tabPast.toLowerCase();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Center(
@@ -943,7 +991,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
             ),
             20.heightBox,
             Text(
-              'No ${_selectedTab.toLowerCase()} appointments',
+              context.l10n.noAppointmentsForTab(localizedTab),
               style: AppWidget.bodyLarge().copyWith(
                 fontWeight: FontWeight.bold,
                 color: ThemeColor.black,
@@ -951,7 +999,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
             ),
             8.heightBox,
             Text(
-              'Tap a date on the calendar to check\nor book a new session',
+              context.l10n.tapDateToViewOrBook,
               textAlign: TextAlign.center,
               style: AppWidget.bodySmall().copyWith(
                 color: ThemeColor.grey100,
@@ -964,14 +1012,14 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
     );
   }
 
-  Widget _buildTabButton(String title) {
-    final isSelected = _selectedTab == title;
+  Widget _buildTabButton(String id, String label) {
+    final isSelected = _selectedTab == id;
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
           setState(() {
-            _selectedTab = title;
+            _selectedTab = id;
           });
         },
         child: Container(
@@ -981,7 +1029,7 @@ class _AppointmentsPageState extends ConsumerState<ParentAppointmentsPage> {
           ),
           alignment: Alignment.center,
           child: Text(
-            title,
+            label,
             style: TextStyle(
               color: isSelected ? ThemeColor.white : ThemeColor.grey100,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

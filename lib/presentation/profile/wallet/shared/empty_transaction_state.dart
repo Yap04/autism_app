@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constant/color_constant.dart';
 import '../../../../core/constant/textstyle_constant.dart';
+import '../../../../core/extension/localization_ext.dart';
 
 class EmptyTransactionState extends StatelessWidget {
   const EmptyTransactionState({super.key});
@@ -12,7 +13,7 @@ class EmptyTransactionState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Center(
         child: Text(
-          'No transaction history yet.',
+          context.l10n.noTransactionHistoryYet,
           style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
         ),
       ),

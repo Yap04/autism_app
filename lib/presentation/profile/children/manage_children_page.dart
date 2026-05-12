@@ -6,6 +6,8 @@ import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/child/child_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/gender_ext.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
@@ -27,11 +29,16 @@ class ManageChildrenPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
-        title: Text('Manage Children', style: AppWidget.h2TextFieldStyle()),
+        title: Text(
+          context.l10n.manageChildren,
+          style: AppWidget.h2TextFieldStyle(),
+        ),
       ),
       body: childrenAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error:
+            (err, _) =>
+                Center(child: Text(context.l10n.errorMessage(err.toString()))),
         data: (children) {
           return Column(
             children: [
@@ -42,7 +49,7 @@ class ManageChildrenPage extends ConsumerWidget {
                   vertical: 16,
                 ),
                 child: Text(
-                  "Manage your children's profiles here. Accurate special needs tags help our trainers provide the best care.",
+                  context.l10n.manageChildrenDescription,
                   style: AppWidget.bodySmall().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -92,7 +99,7 @@ class ManageChildrenPage extends ConsumerWidget {
               const Icon(Icons.add, color: ThemeColor.white),
               8.widthBox,
               Text(
-                'Add Child',
+                context.l10n.addChildButton,
                 style: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.white,
                   fontWeight: FontWeight.bold,
@@ -169,7 +176,10 @@ class ManageChildrenPage extends ConsumerWidget {
                       ),
                       4.heightBox,
                       Text(
-                        '$age years old • $gender',
+                        context.l10n.childAgeAndGender(
+                          age.toString(),
+                          gender?.toLocalized(context) ?? '',
+                        ),
                         style: AppWidget.bodySmall().copyWith(
                           color: ThemeColor.grey100,
                         ),
@@ -187,7 +197,9 @@ class ManageChildrenPage extends ConsumerWidget {
                           ),
                           4.widthBox,
                           Text(
-                            '$activeTrainersCount Active Trainer${activeTrainersCount == 1 ? '' : 's'}',
+                            context.l10n.activeTrainersPlural(
+                              activeTrainersCount,
+                            ),
                             style: AppWidget.bodyExtraSmall().copyWith(
                               color:
                                   activeTrainersCount > 0
@@ -231,7 +243,7 @@ class ManageChildrenPage extends ConsumerWidget {
             12.heightBox,
 
             Text(
-              'Special Needs & Tags',
+              context.l10n.specialNeedsAndTags,
               style: AppWidget.bodyExtraSmall().copyWith(
                 color: ThemeColor.grey100,
                 fontWeight: FontWeight.bold,
@@ -240,7 +252,7 @@ class ManageChildrenPage extends ConsumerWidget {
             8.heightBox,
             if (specialNeeds.isEmpty)
               Text(
-                'No tags added.',
+                context.l10n.noTagsAdded,
                 style: AppWidget.bodySmall().copyWith(
                   fontStyle: FontStyle.italic,
                   color: ThemeColor.grey100,
@@ -290,7 +302,7 @@ class ManageChildrenPage extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Performance History',
+                    context.l10n.performanceHistory,
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.darkBlue,
                       fontWeight: FontWeight.bold,
@@ -328,12 +340,15 @@ class ManageChildrenPage extends ConsumerWidget {
           ),
         ),
         24.heightBox,
-        Text('No Children Added Yet', style: AppWidget.h3TextFieldStyle()),
+        Text(
+          context.l10n.noChildrenAddedYet,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
         12.heightBox,
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Text(
-            "Add your child's profile to start booking specialized training sessions with certified coaches.",
+            context.l10n.noChildrenDescription,
             textAlign: TextAlign.center,
             style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
           ),

@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../shared/snack_bar.dart';
 
@@ -22,7 +23,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
 
   LatLng _currentCenter = const LatLng(3.1390, 101.6869);
 
-  String _currentAddress = 'Move map to select location...';
+  String? _currentAddress;
   bool _isDragging = false;
   bool _isLoadingAddress = false;
 
@@ -54,7 +55,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
       _getAddressFromLatLng(userLatLng);
     } catch (e) {
       if (mounted) {
-        AppSnackBar.error(context, 'Unable to get location, defaulting to KL.');
+        AppSnackBar.error(context, context.l10n.unableToGetLocation);
       }
     }
   }
@@ -95,20 +96,24 @@ class _MapPickerPageState extends State<MapPickerPage> {
         });
       }
     } catch (e) {
-      setState(() {
-        _currentAddress = 'Location selected';
-      });
+      if (mounted) {
+        setState(() {
+          _currentAddress = context.l10n.locationSelected;
+        });
+      }
     } finally {
-      setState(() => _isLoadingAddress = false);
+      if (mounted) {
+        setState(() => _isLoadingAddress = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final displayAddress =
+        _currentAddress ?? context.l10n.moveMapToSelectLocation;
     final isDisabled =
-        _isLoadingAddress ||
-        _isDragging ||
-        _currentAddress.startsWith('Move map');
+        _isLoadingAddress || _isDragging || _currentAddress == null;
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -119,7 +124,10 @@ class _MapPickerPageState extends State<MapPickerPage> {
           icon: const Icon(Icons.arrow_back, color: ThemeColor.black),
           onPressed: () => context.router.maybePop(),
         ),
-        title: Text('Select Location', style: AppWidget.h3TextFieldStyle()),
+        title: Text(
+          context.l10n.selectLocationTitle,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
         centerTitle: true,
       ),
       body: Stack(
@@ -193,7 +201,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Selected Address',
+                      context.l10n.selectedAddressLabel,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -218,7 +226,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                         12.widthBox,
                         Expanded(
                           child: Text(
-                            _currentAddress,
+                            displayAddress,
                             style: AppWidget.bodyLarge().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -236,7 +244,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                               ? null
                               : () {
                                 context.router.maybePop({
-                                  'address': _currentAddress,
+                                  'address': displayAddress,
                                   'latLng': _currentCenter,
                                 });
                               },
@@ -249,7 +257,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
-                          'Confirm Location',
+                          context.l10n.confirmLocationButton,
                           style: AppWidget.bodyMedium().copyWith(
                             color:
                                 isDisabled ? Colors.white70 : ThemeColor.white,

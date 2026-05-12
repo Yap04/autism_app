@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constant/color_constant.dart';
 import '../../../../core/constant/textstyle_constant.dart';
+import '../../../../core/extension/localization_ext.dart';
 import '../../../../core/extension/widget_ext.dart';
 import '../../../../domain/models/transaction_model.dart';
 
@@ -15,6 +16,27 @@ class TransactionCard extends StatelessWidget {
 
   final TransactionModel transaction;
   final bool isCreditTab;
+
+  String _getLocalizedStatus(BuildContext context, TransactionStatus status) {
+    switch (status.name) {
+      case 'pending':
+        return context.l10n.statusPending;
+      case 'completed':
+        return context.l10n.statusCompleted;
+      case 'cancelled':
+        return context.l10n.statusCancelled;
+      case 'rejected':
+        return context.l10n.statusRejected;
+      case 'accepted':
+        return context.l10n.statusAccepted;
+      case 'refunded':
+        return context.l10n.statusRefunded;
+      case 'failed':
+        return context.l10n.statusFailed;
+      default:
+        return status.name;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +70,12 @@ class TransactionCard extends StatelessWidget {
     String amountStr;
     if (isCreditTab) {
       final val = absoluteAmount.toInt();
-      amountStr = '$amountPrefix $val Credit';
+      amountStr = context.l10n.transactionCreditAmount(amountPrefix, val);
     } else {
-      amountStr = '$amountPrefix RM ${absoluteAmount.toStringAsFixed(2)}';
+      amountStr = context.l10n.transactionRmAmount(
+        amountPrefix,
+        absoluteAmount.toStringAsFixed(2),
+      );
     }
 
     return Container(
@@ -122,7 +147,10 @@ class TransactionCard extends StatelessWidget {
               if (transaction.status != TransactionStatus.completed) ...[
                 4.heightBox,
                 Text(
-                  transaction.status.name.toUpperCase(),
+                  _getLocalizedStatus(
+                    context,
+                    transaction.status,
+                  ).toUpperCase(),
                   style: AppWidget.bodyExtraSmall().copyWith(
                     color: ThemeColor.grey100,
                     fontWeight: FontWeight.bold,

@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
 import '../../core/constant/badge_constant.dart';
+import '../../core/extension/sport_ext.dart';
 import 'user_avatar.dart';
 
 class TrainerCard extends StatefulWidget {
@@ -39,11 +41,11 @@ class _TrainerCardState extends State<TrainerCard> {
     final bioText =
         (widget.trainer.bio?.isNotEmpty ?? false)
             ? widget.trainer.bio!
-            : 'No description provided.';
+            : context.l10n.noDescriptionProvided;
     final sportsList =
         widget.trainer.sports.isNotEmpty
             ? widget.trainer.sports
-            : ['Not specified'];
+            : [context.l10n.notSpecified];
 
     final userBadgeIds = widget.trainer.badges;
     final displayBadges =
@@ -95,7 +97,7 @@ class _TrainerCardState extends State<TrainerCard> {
                           child: Text(
                             widget.trainer.name ??
                                 widget.trainer.nickname ??
-                                'Unknown Trainer',
+                                context.l10n.unknownTrainer,
                             style: AppWidget.bodyLarge().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -159,7 +161,9 @@ class _TrainerCardState extends State<TrainerCard> {
                             ),
                           ),
                           child: Text(
-                            isAvailable ? 'Available' : 'Not Available',
+                            isAvailable
+                                ? context.l10n.availableStatus
+                                : context.l10n.notAvailableStatus,
                             style: AppWidget.bodySmall().copyWith(
                               color:
                                   isAvailable
@@ -191,7 +195,7 @@ class _TrainerCardState extends State<TrainerCard> {
                                 ),
                                 4.widthBox,
                                 Text(
-                                  'Home-Based',
+                                  context.l10n.homeBased,
                                   style: AppWidget.bodySmall().copyWith(
                                     color: Colors.green,
                                     fontWeight: FontWeight.w600,
@@ -209,7 +213,7 @@ class _TrainerCardState extends State<TrainerCard> {
           ),
           16.heightBox,
           Text(
-            'Coaching Sports:',
+            context.l10n.coachingSports,
             style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
           ),
           8.heightBox,
@@ -228,7 +232,7 @@ class _TrainerCardState extends State<TrainerCard> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      sport,
+                      sport.toLocalizedSport(context),
                       style: AppWidget.bodyExtraSmall().copyWith(
                         color: ThemeColor.black,
                         fontWeight: FontWeight.w600,
@@ -246,7 +250,9 @@ class _TrainerCardState extends State<TrainerCard> {
                       () => context.pushRoute(
                         ChatRoute(
                           trainerId: widget.trainer.id,
-                          trainerName: widget.trainer.name ?? 'Unknown Trainer',
+                          trainerName:
+                              widget.trainer.name ??
+                              context.l10n.unknownTrainer,
                         ),
                       ),
 
@@ -259,7 +265,7 @@ class _TrainerCardState extends State<TrainerCard> {
                       border: Border.all(color: ThemeColor.aquaBlue),
                     ),
                     child: Text(
-                      'Chat with Coach',
+                      context.l10n.chatWithCoach,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.white,
                         fontWeight: FontWeight.w600,
@@ -277,7 +283,9 @@ class _TrainerCardState extends State<TrainerCard> {
                             context.pushRoute(
                               BookingDetailsRoute(
                                 trainerId: widget.trainer.id,
-                                trainerName: widget.trainer.name ?? 'unknown',
+                                trainerName:
+                                    widget.trainer.name ??
+                                    context.l10n.unknownTrainer,
                                 sport:
                                     widget.trainer.sports.isNotEmpty
                                         ? widget.trainer.sports.first
@@ -304,7 +312,9 @@ class _TrainerCardState extends State<TrainerCard> {
                       ),
                     ),
                     child: Text(
-                      isAvailable ? 'Book Now' : 'Unavailable',
+                      isAvailable
+                          ? context.l10n.bookNow
+                          : context.l10n.unavailableAction,
                       style: AppWidget.bodySmall().copyWith(
                         color:
                             isAvailable
@@ -326,7 +336,9 @@ class _TrainerCardState extends State<TrainerCard> {
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                'Available at ${DateFormat('hh:mm a').format(widget.trainer.resumeAt!)}',
+                context.l10n.availableAtTime(
+                  DateFormat('hh:mm a').format(widget.trainer.resumeAt!),
+                ),
                 style: AppWidget.bodyExtraSmall().copyWith(
                   color: ThemeColor.orange,
                   fontWeight: FontWeight.w600,
@@ -345,7 +357,9 @@ class _TrainerCardState extends State<TrainerCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Achievements (${displayBadges.length})',
+                    context.l10n.achievementsCount(
+                      displayBadges.length.toString(),
+                    ),
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.grey100,
                       fontWeight: FontWeight.w600,

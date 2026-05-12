@@ -1,0 +1,753 @@
+{
+  "@@locale": "en",
+  "parentFallbackName": "Parent",
+  "goodMorningGreeting": "Good Morning,\n{name}!",
+  "@goodMorningGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoadingData": "Error loading data: {error}",
+  "@errorLoadingData": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "childsMilestones": "Child's Milestones",
+  "latestSessionInsight": "Latest Session Insight",
+  "resourcesForYou": "Resources for You",
+  "viewMore": "View More",
+  "failedToLoadContent": "Failed to load content.",
+  "moreResourcesComingSoon": "More resources coming soon!",
+  "todayTime": "Today, {time}",
+  "@todayTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tomorrowTime": "Tomorrow, {time}",
+  "@tomorrowTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "upcomingAppointment": "Upcoming Appointment",
+  "chatWithCoach": "Chat with Coach",
+  "totalSessions": "Total\nSessions",
+  "hoursTrained": "Hours\nTrained",
+  "currentStreak": "Current\nStreak",
+  "noInsightsYet": "No insights yet",
+  "noInsightsDescription": "After your child's first session, you'll receive detailed feedback and focus scores from the coach right here.",
+  "sportAndDate": "{sport} • {date}",
+  "@sportAndDate": {
+    "placeholders": {
+      "sport": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "focusScore": "Focus: {score}/5",
+  "@focusScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "feedbackRemarks": "\"{remarks}\"",
+  "@feedbackRemarks": {
+    "placeholders": {
+      "remarks": {
+        "type": "String"
+      }
+    }
+  },
+  "viewFullReport": "View Full Report",
+  "noUpcomingAppointments": "No upcoming appointments",
+  "bookNewSessionPrompt": "Book a new session to get started!",
+  "navHome": "Home",
+  "navDiscover": "Discover",
+  "navSchedule": "Schedule",
+  "navProfile": "Profile",
+  "gpsServiceDisabled": "Please turn on GPS location services.",
+  "locationPermissionDenied": "Location permission denied.",
+  "locationPermissionPermanentlyDenied": "Location permission permanently denied. Please enable in settings.",
+  "findCoachesNearYou": "Find Coaches Near You",
+  "turnOnLocationPrompt": "Turn on location services to find the closest trainers.",
+  "enableAction": "Enable",
+  "nearbyCertifiedTrainers": "Nearby Certified Trainers",
+  "viewAllAction": "View All",
+  "errorMessage": "Error: {error}",
+  "@errorMessage": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noTrainersFound": "No trainers found.",
+  "distanceUnknown": "Distance unknown",
+  "distanceMetersAway": "{distance} m away",
+  "@distanceMetersAway": {
+    "placeholders": {
+      "distance": { "type": "String" }
+    }
+  },
+  "distanceKmAway": "{distance} km away",
+  "@distanceKmAway": {
+    "placeholders": {
+      "distance": { "type": "String" }
+    }
+  },
+  "coachFallbackName": "Coach",
+  "notSpecified": "Not specified",
+  "autismTrainingCertified": "Autism Training Certified",
+  "noDescriptionProvided": "No description provided.",
+  "unknownTrainer": "Unknown Trainer",
+  "availableStatus": "Available",
+  "notAvailableStatus": "Not Available",
+  "homeBased": "Home-Based",
+  "coachingSports": "Coaching Sports:",
+  "bookNow": "Book Now",
+  "unavailableAction": "Unavailable",
+  "availableAtTime": "Available at {time}",
+  "@availableAtTime": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "achievementsCount": "Achievements ({count})",
+  "@achievementsCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "filterTrainersTitle": "Filter Trainers",
+  "resetAction": "Reset",
+  "bySportCategory": "By Sport Category",
+  "applyFiltersAction": "Apply Filters",
+  "trainerListTitle": "Trainer List",
+  "searchByNameHint": "Search by name...",
+  "noTrainersAvailableYet": "No trainers available yet",
+  "noTrainersMatchCriteria": "No trainers found matching your criteria.",
+  "sportAll": "All",
+  "sportSwimming": "Swimming",
+  "sportFootball": "Football",
+  "sportBasketball": "Basketball",
+  "sportTennis": "Tennis",
+  "sportGymnastics": "Gymnastics",
+  "sportYoga": "Yoga",
+  "sportAthletics": "Athletics",
+  "sportBadminton": "Badminton",
+  "homeBasedAvailable": "Home-based Available",
+  "centerBasedOnly": "Center-based Only",
+  "avgRating": "Avg Rating",
+  "reviewsLabel": "Reviews",
+  "sportsLabel": "Sports",
+  "ratingAndReviews": "RATING & REVIEWS",
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "noReviewsYet": "No reviews yet.\nBe the first to review!",
+  "aboutTitle": "ABOUT",
+  "sportsTitle": "SPORTS",
+  "reviewsTitle": "REVIEWS",
+  "noWrittenReviewsYet": "No written reviews yet.",
+  "bookASession": "Book a Session",
+  "tbd": "TBD",
+  "generalSport": "General",
+  "defaultUser": "User",
+  "selectFutureTime": "Please select a future time.",
+  "selectTimeBetween": "Please select a time between {start} and {end}.",
+  "@selectTimeBetween": {
+    "placeholders": {
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "selectTimePrompt": "Please select a time.",
+  "selectChildPrompt": "Please select a child profile.",
+  "cannotBookPast": "Cannot book a session in the past. Please select a future time.",
+  "paymentCancelled": "Payment cancelled or failed.",
+  "bookingsConfirmed": "{weeks} Booking(s) Confirmed!",
+  "@bookingsConfirmed": {
+    "placeholders": {
+      "weeks": { "type": "String" }
+    }
+  },
+  "bookingDetailsTitle": "Booking Details",
+  "bookForChildTitle": "Book for Child",
+  "selectChildDescription": "Select the child profile for this session.",
+  "errorLoadingChildren": "Error loading children: {error}",
+  "@errorLoadingChildren": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "addChildFirstPrompt": "Please add a child profile first in the \"Manage Children\" page before booking.",
+  "selectYourChildHint": "Select your child",
+  "childAgeFormat": "({age}y)",
+  "@childAgeFormat": {
+    "placeholders": {
+      "age": { "type": "String" }
+    }
+  },
+  "selectSportTitle": "Select Sport",
+  "sessionTypeTitle": "Session Type",
+  "sessionTypeDescription": "Choose how you want the session to be conducted.",
+  "inPersonType": "In-Person",
+  "inPersonDesc": "At trainer's location",
+  "remoteType": "Remote",
+  "remoteDesc": "Online consultation",
+  "homeBasedType": "Home-Based",
+  "homeBasedDescWithFee": "Trainer comes to you (+RM {fee} Travel Fee)",
+  "@homeBasedDescWithFee": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBasedDescFree": "Trainer comes to you",
+  "remoteNotice": "Join the video call from the Session Details page during the scheduled time.",
+  "homeBasedFeeNotice": "A travel surcharge of RM {fee} applies. This session must be paid via Stripe.",
+  "@homeBasedFeeNotice": { "placeholders": { "fee": { "type": "String" } } },
+  "homeBasedFreeNotice": "Trainer will travel to your location. This session must be paid via Stripe.",
+  "onlineSessionLoc": "Online Session",
+  "durationTitle": "Duration",
+  "durationDescription": "Select the length of each session.",
+  "oneHour": "1 Hour",
+  "twoHours": "2 Hours",
+  "scheduleTitle": "Schedule",
+  "selectTimeHint": "Select Time",
+  "sessionEndsAt": "This session will end at {time}.",
+  "@sessionEndsAt": { "placeholders": { "time": { "type": "String" } } },
+  "repeatBookingTitle": "Repeat Booking",
+  "maxWeeksFormat": "Max {weeks} weeks",
+  "@maxWeeksFormat": { "placeholders": { "weeks": { "type": "String" } } },
+  "repeatBookingDescription": "Book this same time slot for consecutive weeks.",
+  "oneWeek": "1 Wk",
+  "nWeeks": "{weeks} Wks",
+  "@nWeeks": { "placeholders": { "weeks": { "type": "String" } } },
+  "operatingHoursTitle": "Operating Hours",
+  "restDay": "Rest Day",
+  "reviewAndPayAction": "Review & Pay",
+  "weekdayMonday": "Monday",
+  "weekdayTuesday": "Tuesday",
+  "weekdayWednesday": "Wednesday",
+  "weekdayThursday": "Thursday",
+  "weekdayFriday": "Friday",
+  "weekdaySaturday": "Saturday",
+  "weekdaySunday": "Sunday",
+  "paymentSummaryTitle": "Payment Summary",
+  "sessionFeeLabel": "Session Fee",
+  "rmPriceFormat": "RM {price}",
+  "@rmPriceFormat": { "placeholders": { "price": { "type": "String" } } },
+  "transportFeeLabel": "Transport Fee",
+  "totalLabel": "Total",
+  "paymentMethodTitle": "Payment Method",
+  "useSessionCreditTitle": "Use Session Credit",
+  "unavailableForHomeBased": "Unavailable for Home-Based",
+  "creditBalanceAndRequired": "Balance: {balance} | Required: {required}",
+  "@creditBalanceAndRequired": {
+    "placeholders": {
+      "balance": { "type": "String" },
+      "required": { "type": "String" }
+    }
+  },
+  "notEnoughCredits": "Not enough credits (Need {required}, Have {balance})",
+  "@notEnoughCredits": {
+    "placeholders": {
+      "required": { "type": "String" },
+      "balance": { "type": "String" }
+    }
+  },
+  "payPerSessionTitle": "Pay Per Session",
+  "totalPriceFormat": "Total: RM {price}",
+  "@totalPriceFormat": { "placeholders": { "price": { "type": "String" } } },
+  "confirmAndDeductCredits": "Confirm & Deduct {credits} Credit(s)",
+  "@confirmAndDeductCredits": { "placeholders": { "credits": { "type": "String" } } },
+  "proceedToPay": "Proceed to Pay RM {price}",
+  "@proceedToPay": { "placeholders": { "price": { "type": "String" } } },
+  "failedToUploadImage": "Failed to upload image.",
+  "failedToSendMessage": "Failed to send message: {error}",
+  "@failedToSendMessage": { "placeholders": { "error": { "type": "String" } } },
+  "takeAPhoto": "Take a Photo",
+  "chooseFromGallery": "Choose from Gallery",
+  "startConversationWith": "Start a conversation with {name}",
+  "@startConversationWith": { "placeholders": { "name": { "type": "String" } } },
+  "accountSuspendedNotice": "This account has been suspended. You can no longer send messages.",
+  "typeAMessage": "Type a message...",
+  "cannotReschedulePast": "Cannot reschedule to a past time.",
+  "trainerAvailableTime": "Trainer is only available {open} - {close} on this day.",
+  "@trainerAvailableTime": { "placeholders": { "open": { "type": "String" }, "close": { "type": "String" } } },
+  "rescheduleSessionTitle": "Reschedule Session",
+  "selectNewDate": "Select New Date",
+  "availableTimeRange": "Available {open} - {close}",
+  "@availableTimeRange": { "placeholders": { "open": { "type": "String" }, "close": { "type": "String" } } },
+  "selectNewTime": "Select New Time",
+  "confirmReschedule": "Confirm Reschedule",
+  "rescheduledSuccessfully": "Rescheduled successfully!",
+  "myAppointmentsTitle": "My Appointments",
+  "tabPending": "Pending",
+  "tabUpcoming": "Upcoming",
+  "tabPast": "Past",
+  "fallbackDatePlaceholder": "WEDNESDAY, 11 MAR",
+  "sportSession": "{sport} Session",
+  "@sportSession": { "placeholders": { "sport": { "type": "String" } } },
+  "viewDetailsAction": "View Details",
+  "rescheduleAction": "Reschedule",
+  "noAppointmentsForTab": "No {tab} appointments",
+  "@noAppointmentsForTab": { "placeholders": { "tab": { "type": "String" } } },
+  "tapDateToViewOrBook": "Tap a date on the calendar to check\nor book a new session",
+  "statusPending": "Pending",
+  "statusAccepted": "Accepted",
+  "statusCompleted": "Completed",
+  "statusCancelled": "Cancelled",
+  "statusRejected": "Rejected",
+  "sessionDetailsTitle": "Session Details",
+  "statusLabel": "Status",
+  "paymentLabel": "Payment",
+  "scheduleLocationTitle": "Schedule & Location",
+  "dateLabel": "Date",
+  "timeLabel": "Time",
+  "timeWithDuration": "{start} - {end} ({duration} mins)",
+  "@timeWithDuration": { "placeholders": { "start": { "type": "String" }, "end": { "type": "String" }, "duration": { "type": "String" } } },
+  "sportLabel": "Sport",
+  "locationLabel": "Location",
+  "remoteConsultationTitle": "Remote Consultation",
+  "specialNeedsNotesTitle": "Special Needs & Notes",
+  "sessionFeedbackTitle": "Session Feedback",
+  "parentNameLabel": "Parent: {name}",
+  "@parentNameLabel": { "placeholders": { "name": { "type": "String" } } },
+  "inAppVideoSession": "In-App Video Session",
+  "remoteSessionWarning": "This session will be conducted remotely. Please ensure you have a stable internet connection before joining.",
+  "navigatingToVideoCall": "Navigating to Video Call Room...",
+  "joinVideoCallAction": "Join Video Call",
+  "videoSessionEnded": "Video session ended",
+  "noFeedbackProvidedYet": "No feedback provided yet.",
+  "focusAttentionTitle": "Focus & Attention",
+  "scoreOutOfFive": "{score}/5",
+  "@scoreOutOfFive": { "placeholders": { "score": { "type": "String" } } },
+  "energyLevelTitle": "Energy Level",
+  "trainerRemarksTitle": "Trainer Remarks",
+  "parentReviewTitle": "Parent Review",
+  "errorLoadingDetails": "Error loading details.",
+  "childDataNotFound": "Child data not found.",
+  "notesTitle": "Notes",
+  "noSpecialNeedsOrRemarks": "No specific special needs or remarks provided by the parent.",
+  "specialNeedsTitle": "Special Needs",
+  "parentRemarksTitle": "Parent Remarks",
+  "reviewSubmittedStatus": "Review Submitted",
+  "rateReviewTrainerAction": "Rate & Review Trainer",
+  "sessionCompletedStatus": "Session Completed",
+  "cancelSessionAction": "Cancel Session",
+  "markAsCompletedAction": "Mark as Completed",
+  "waitingForSessionTime": "Waiting for Session Time",
+  "meltdownGraceApplied": "Meltdown Grace applied: You will receive a full refund.",
+  "suddenMeltdownGrace": "Sudden Meltdown? (Grace Period)",
+  "meltdownGraceDescription": "Use your monthly 1-time grace for a full refund due to child's condition.",
+  "totalRefundLabel": "Total Refund:",
+  "confirmCancellationAction": "Confirm Cancellation",
+  "keepSessionAction": "Keep Session",
+  "appointmentCancelledSuccess": "Appointment cancelled successfully.",
+  "pleaseLoginFirst": "Please login first",
+  "sessionCompletedEarnings": "Session completed! RM {amount} (after {takeRate} platform fee) added to your wallet.",
+  "@sessionCompletedEarnings": { "placeholders": { "amount": { "type": "String" }, "takeRate": { "type": "String" } } },
+  "thankYouForReview": "Thank you for your review!",
+  "profilePictureUpdatedSuccessfully": "Profile picture updated successfully!",
+  "failedToUpdateProfilePicture": "Failed to update profile picture",
+  "pleaseAddPhoneNumber": "Please add phone number",
+  "editProfileInformation": "Edit profile information",
+  "manageChildren": "Manage Children",
+  "myTrainerDashboard": "My Trainer Dashboard",
+  "language": "Language",
+  "wallet": "Wallet",
+  "contactUs": "Contact us",
+  "logOut": "Log Out",
+  "selectLanguage": "Select Language",
+  "languageChangedTo": "Language changed to {languageName}",
+  "@languageChangedTo": { "placeholders": { "languageName": { "type": "String" } } },
+  "editProfileTitle": "Edit profile",
+  "personalInfoSection": "PERSONAL INFO",
+  "fullNameLabel": "Full name",
+  "nicknameLabel": "Nickname",
+  "contactSection": "CONTACT",
+  "emailAddressLabel": "Email address",
+  "phoneNumberLabel": "Phone number",
+  "addressSection": "ADDRESS",
+  "addressLabel": "Address",
+  "pickLocationOnMap": "Pick location on map",
+  "saveChangesButton": "Save changes",
+  "fullNameRequired": "Full name is required",
+  "phoneNumberRequired": "Phone number is required",
+  "genderRequired": "Please select a gender",
+  "addressRequired": "Address is required",
+  "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "failedToUpdateProfile": "Failed to update profile: {error}",
+  "@failedToUpdateProfile": { "placeholders": { "error": { "type": "String" } } },
+  "newUserFallback": "New User",
+  "genderLabel": "GENDER",
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderOther": "Other",
+  "moveMapToSelectLocation": "Move map to select location...",
+  "unableToGetLocation": "Unable to get location, defaulting to KL.",
+  "locationSelected": "Location selected",
+  "selectLocationTitle": "Select Location",
+  "selectedAddressLabel": "Selected Address",
+  "confirmLocationButton": "Confirm Location",
+  "manageChildrenDescription": "Manage your children's profiles here. Accurate special needs tags help our trainers provide the best care.",
+  "addChildButton": "Add Child",
+  "childAgeAndGender": "{age} years old • {gender}",
+  "@childAgeAndGender": {
+    "placeholders": {
+      "age": { "type": "String" },
+      "gender": { "type": "String" }
+    }
+  },
+  "activeTrainersPlural": "{count, plural, =1{1 Active Trainer} other{{count} Active Trainers}}",
+  "@activeTrainersPlural": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "specialNeedsAndTags": "Special Needs & Tags",
+  "noTagsAdded": "No tags added.",
+  "performanceHistory": "Performance History",
+  "noChildrenAddedYet": "No Children Added Yet",
+  "noChildrenDescription": "Add your child's profile to start booking specialized training sessions with certified coaches.",
+  "fillNameAgeGenderPrompt": "Please fill in the name, age, and select a gender.",
+  "childProfileUpdatedSuccess": "Child profile updated!",
+  "childProfileCreatedSuccess": "Child profile created!",
+  "errorSavingProfile": "Error saving profile: {error}",
+  "@errorSavingProfile": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "editChildProfileTitle": "Edit Child Profile",
+  "addChildProfileTitle": "Add Child Profile",
+  "basicInformationTitle": "Basic Information",
+  "childNameLabel": "Child's Name",
+  "childNameHint": "e.g. Leo",
+  "ageLabel": "Age",
+  "ageHint": "e.g. 8",
+  "specialNeedsAndTraitsTitle": "Special Needs & Traits",
+  "specialNeedsDescription": "Select all that apply. This helps our trainers tailor their sessions to your child's needs.",
+  "additionalRemarksOptional": "Additional Remarks for Trainer (Optional)",
+  "remarksHint": "e.g., Prefers a quiet environment, loves high-fives as reward, allergic to peanuts...",
+  "saveProfileButton": "Save Profile",
+  "genderDropdownLabel": "Gender",
+  "selectHint": "Select",
+  "performanceTrackingTitle": "Performance Tracking",
+  "overallAverageTitle": "Overall Average",
+  "avgFocusLabel": "Avg Focus",
+  "avgEnergyLabel": "Avg Energy",
+  "sessionHistoryTitle": "Session History",
+  "noPerformanceRecordsYet": "No performance records yet.",
+  "completeSessionToLogFeedback": "Complete a session to log feedback.",
+  "yearsOldWithGender": "{age} years old, {gender}",
+  "@yearsOldWithGender": {
+    "placeholders": {
+      "age": { "type": "String" },
+      "gender": { "type": "String" }
+    }
+  },
+  "yearsOld": "{age} years old",
+  "@yearsOld": {
+    "placeholders": { "age": { "type": "String" } }
+  },
+  "focusLabel": "Focus",
+  "energyLabel": "Energy",
+  "trainingCreditsTitle": "Training Credits",
+  "availableSessionsLabel": "Available Sessions:",
+  "creditSingular": "Credit",
+  "creditsPlural": "Credits",
+  "buyCreditPackages": "Buy Credit Packages",
+  "creditTab": "Credit",
+  "singlePayTab": "Single Pay",
+  "viewAllHistory": "View All History",
+  "errorLoadingHistory": "Error loading history: {error}",
+  "@errorLoadingHistory": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "selectPackageTitle": "Select a Package",
+  "buyMoreCreditsDesc": "Buy more credits to enjoy bulk discounts.",
+  "singleSessionPackage": "Single Session",
+  "starterPackPackage": "Starter Pack",
+  "proPackPackage": "Pro Pack",
+  "popularBadge": "POPULAR",
+  "creditsCountLabel": "{count, plural, =1{1 Credit} other{{count} Credits}}",
+  "@creditsCountLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "paymentSuccessfulAddedCredits": "Payment successful! Added {credits} credits.",
+  "@paymentSuccessfulAddedCredits": {
+    "placeholders": { "credits": { "type": "String" } }
+  },
+  "transactionCreditAmount": "{prefix} {val, plural, =1{1 Credit} other{{val} Credits}}",
+  "@transactionCreditAmount": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "val": { "type": "int" }
+    }
+  },
+  "transactionRmAmount": "{prefix} RM {amount}",
+  "@transactionRmAmount": {
+    "placeholders": {
+      "prefix": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "statusRefunded": "Refunded",
+  "statusFailed": "Failed",
+  "noTransactionHistoryYet": "No transaction history yet.",
+  "helpAndSupportTitle": "Help & Support",
+  "newTicketAction": "New Ticket",
+  "howCanWeHelp": "How can we help?",
+  "trackSupportRequests": "Track your support requests or create a new one.",
+  "myTicketsTitle": "My Tickets",
+  "errorLoadingTickets": "Error loading tickets: {err}",
+  "@errorLoadingTickets": {
+    "placeholders": {
+      "err": { "type": "String" }
+    }
+  },
+  "noSupportTicketsYet": "No support tickets yet.",
+  "submitNewTicketPrompt": "If you have any issues, feel free to submit a new ticket.",
+  "adminMessage": "Admin: {message}",
+  "@adminMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "youMessage": "You: {message}",
+  "@youMessage": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "updatedAtDate": "Updated: {date}",
+  "@updatedAtDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryBillingAndPayment": "Billing & Payment",
+  "categoryAppointmentReschedule": "Appointment / Reschedule",
+  "categoryTechnicalIssue": "Technical Issue",
+  "categoryTrainerFeedback": "Trainer Feedback",
+  "categoryOther": "Other",
+  "pleaseSelectCategory": "Please select a category.",
+  "ticketSubmittedSuccessfully": "Ticket submitted successfully!",
+  "failedToSubmitTicket": "Failed to submit ticket: {error}",
+  "@failedToSubmitTicket": { "placeholders": { "error": { "type": "String" } } },
+  "newSupportTicketTitle": "New Support Ticket",
+  "supportTeamResponseTime": "Our support team usually responds within 2-4 hours during business days.",
+  "whatDoYouNeedHelpWith": "What do you need help with? *",
+  "selectCategoryHint": "Select a category",
+  "detailsLabel": "Details *",
+  "describeIssueHint": "Please describe your issue in detail...",
+  "pleaseEnterMessage": "Please enter your message",
+  "submitTicketAction": "Submit Ticket",
+  "welcomeBack": "Welcome Back",
+  "signInToContinue": "Sign in to continue",
+  "emailAddressInputLabel": "Email Address",
+  "emailHint": "you@example.com",
+  "passwordInputLabel": "Password",
+  "passwordHint": "Enter your password",
+  "signInButton": "Sign In",
+  "dontHaveAccountPrompt": "Don't have an account?",
+  "signUpTextButton": "Sign up",
+  "fillAllFieldsError": "Please fill in all fields",
+  "signInSuccess": "Successfully sign in!",
+  "createAccount": "Create Account",
+  "joinUsTodayFree": "Join us today — it's free",
+  "iAmA": "I am a...",
+  "roleParent": "Parent",
+  "roleCoach": "Coach",
+  "passwordMinLengthHint": "Minimum 6 characters",
+  "alreadyHaveAccountPrompt": "Already have an account?",
+  "signInTextButton": "Sign in",
+  "signUpSuccess": "Successfully registered!",
+  "pleaseWriteBriefBio": "Please write a brief bio about yourself.",
+  "pleaseSelectAtLeastOneSport": "Please select at least one sport you can teach.",
+  "pleaseUploadCertificate": "Please upload at least one relevant certificate.",
+  "applicationSubmittedWaitAdmin": "Application submitted successfully! Please wait for admin approval.",
+  "errorSubmittingApplication": "Error submitting application: {error}",
+  "@errorSubmittingApplication": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "becomeTrainerTitle": "Become a Trainer",
+  "joinTrainerCommunityDescription": "Join our community of specialized trainers and make a difference.",
+  "personalBioTitle": "Personal Bio",
+  "experienceWithSpecialNeedsDescription": "Tell us about your experience working with special needs children.",
+  "yourExperienceLabel": "Your Experience",
+  "experienceHintText": "e.g., I have 3 years of experience teaching swimming to children with ASD...",
+  "sportsYouTeachTitle": "Sports You Teach",
+  "selectQualifiedSportsDescription": "Select all the sports you are qualified to teach.",
+  "icAndCertificatesTitle": "IC & Certificates",
+  "addImagesAction": "Add Images",
+  "uploadIcAndCertificatesDescription": "Upload photos of your IC and coaching certifications or special needs training qualifications.",
+  "noPhotosUploadedYet": "No photos uploaded yet",
+  "submitApplicationAction": "Submit Application",
+  "academyTitle": "Academy",
+  "welcomeToAcademy": "Welcome to the Academy!",
+  "academyPendingDescription": "Please review the learning materials below and complete the Final Assessment (Quiz). Once passed, our admins will approve your account.",
+  "errorLoadingAcademyContent": "Error loading academy content: {error}",
+  "@errorLoadingAcademyContent": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "noTrainingModulesAvailable": "No training modules available right now.",
+  "learningMaterials": "Learning Materials",
+  "finalAssessment": "Final Assessment",
+  "finalAssessmentDescription": "Tap to open the assessment form. Please ensure you use your registered email.",
+  "continuousLearning": "Continuous Learning",
+  "upskillDescription": "Upskill yourself, earn exclusive badges, and increase your booking rate!",
+  "myBadgesWithPoints": "My Badges ({points} pts)",
+  "@myBadgesWithPoints": {
+    "placeholders": { "points": { "type": "String" } }
+  },
+  "advancedCourses": "Advanced Courses",
+  "noAdvancedCoursesYet": "No advanced courses available yet.",
+  "requiredPointsLabel": "{points} pt",
+  "@requiredPointsLabel": {
+    "placeholders": { "points": { "type": "String" } }
+  },
+  "plusCpdPoints": "+ {points} CPD Points",
+  "@plusCpdPoints": {
+    "placeholders": { "points": { "type": "String" } }
+  },
+  "failedToOpenCourse": "Failed to open course: {error}",
+  "@failedToOpenCourse": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "summaryTodayTitle": "Summary Today",
+  "availableSlotsLabel": "Available\nSlots",
+  "todaySessionsLabel": "Today\nSessions",
+  "totalMembersLabel": "Total\nMembers",
+  "profileHiddenTitle": "Profile Hidden",
+  "profileHiddenDesc": "Parents cannot book you until you set your Service Base Location.",
+  "fixNowAction": "Fix Now",
+  "newRequestsTitle": "New Requests",
+  "allCaughtUpTitle": "All Caught Up!",
+  "noPendingRequestsDesc": "You have no pending requests at the moment.",
+  "todaySessionScheduleTitle": "Today Session Schedule",
+  "freeScheduleTitle": "Free Schedule",
+  "noSessionsScheduledDesc": "You have no sessions scheduled for today. Enjoy your day!",
+  "studentLabel": "Student",
+  "newBadgeLabel": "New",
+  "acceptAction": "Accept",
+  "rejectAction": "Reject",
+  "chatAction": "Chat",
+  "actionRequiredSetLocationDesc": "Action Required: Please set your Service Base Location in your Dashboard before accepting requests.",
+  "appointmentAcceptedSuccess": "Appointment Accepted!",
+  "appointmentRejectedInfo": "Appointment Rejected!",
+  "navAcademy": "Academy",
+  "navStudents": "Students",
+  "myStudentsTitle": "My Students",
+  "summaryTitle": "Summary",
+  "totalStudentsLabel": "Total\nStudents",
+  "activeSessionsLabel": "Active\nSessions",
+  "pendingRequestsLabel": "Pending\nRequests",
+  "noActiveStudentsTitle": "No Active Students",
+  "noActiveStudentsDesc": "You currently have no active students. When you accept requests, they will appear here.",
+  "noPendingRequestsTitle": "No Pending Requests",
+  "noPendingStudentRequestsDesc": "You are all caught up! There are no pending student requests right now.",
+  "noPastStudentsTitle": "No Past Students",
+  "noPastStudentsDesc": "You do not have any past student records yet.",
+  "tabActive": "Active",
+  "lastSessionLabel": "Last: {date}",
+  "@lastSessionLabel": { "placeholders": { "date": { "type": "String" } } },
+  "acceptRequestAction": "Accept Request",
+  "reviewNewRequestAction": "Review New Request",
+  "logProgressAction": "Log Progress",
+  "viewHistoryAction": "View History",
+  "messageParentAction": "Message Parent",
+  "viewPerformanceAction": "View Performance",
+  "pauseReceivingRequestsTitle": "Pause Receiving Requests",
+  "pauseReceivingRequestsMessage": "When should we turn it back on for you?",
+  "pauseForOneHour": "For 1 Hour",
+  "pauseForFourHours": "For 4 Hours",
+  "pauseUntilTomorrow": "Until Tomorrow",
+  "pauseUntilTurnedBackOn": "Until I turn it back on",
+  "cancelAction": "Cancel",
+  "operatingHoursDesc": "Set your weekly availability. Default is open all week. Turn off the days you are resting.",
+  "operatingHoursUpdatedSuccess": "Operating hours updated successfully.",
+  "failedToUpdateOperatingHours": "Failed to update: {error}",
+  "@failedToUpdateOperatingHours": { "placeholders": { "error": { "type": "String" } } },
+  "saveChangesAction": "Save Changes",
+  "appointmentsTitle": "Appointments",
+  "acceptingRequestsLabel": "Accepting Requests",
+  "autoResumesAtTime": "Auto-resumes at {time}",
+  "@autoResumesAtTime": { "placeholders": { "time": { "type": "String" } } },
+  "youAreNowOnline": "You are now online!",
+  "noAppointmentsYet": "No appointments yet.",
+  "parentsCanSendRequestsDesc": "Parents can send you requests for this day.",
+  "statusConfirmed": "Confirmed",
+  "actionRequiredShort": "Action Req.",
+  "notAcceptingRequestsTitle": "Not Accepting Requests",
+  "updateProfileTitle": "Update Profile",
+  "locationCityAreaLabel": "Location (City/Area)",
+  "locationCityAreaHint": "e.g., Kuala Lumpur, Petaling Jaya",
+  "aboutYouBioLabel": "About You (Bio)",
+  "aboutYouBioHint": "Tell parents about your experience and teaching style...",
+  "offerHomeBasedSessionsLabel": "Offer Home-based Sessions?",
+  "offerHomeBasedSessionsDesc": "Parents can request sessions at their own homes.",
+  "travelSurchargeLabel": "Travel Surcharge (Per Session)",
+  "rmZeroHint": "RM0.00",
+  "travelSurchargeDesc": "This fee goes 100% to you to cover travel expenses.",
+  "yourPublicProfileTitle": "Your Public Profile",
+  "bioNotSetFallback": "Tell parents about your experience...",
+  "locationNotSetFallback": "Location not set",
+  "noSportsSelectedFallback": "No sports selected",
+  "goBackTooltip": "Go Back",
+  "trainerDashboardTitle": "Trainer Dashboard",
+  "reschedulingDisabledWithin24h": "Rescheduling is disabled within 24h of the session.",
+  "withdrawFunds": "Withdraw Funds",
+  "withdrawFundsDescription": "Enter the amount you wish to transfer to your bank account.",
+  "availableBalanceAmount": "Available: RM {amount}",
+  "@availableBalanceAmount": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "insufficientBalance": "Insufficient balance",
+  "submitRequest": "Submit Request",
+  "myWallet": "My Wallet",
+  "recentTransactions": "Recent Transactions",
+  "noTransactionsYet": "No transactions yet.",
+  "availableBalance": "Available Balance",
+  "noBalanceToWithdraw": "You have no balance to withdraw.",
+  "bankDetailsSaved": "Bank details saved! You can now proceed to withdraw funds.",
+  "failedToSaveBankDetails": "Failed to save bank details: {error}",
+  "@failedToSaveBankDetails": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "withdrawalRequestSubmitted": "Withdrawal request for RM {amount} submitted! Pending admin approval.",
+  "@withdrawalRequestSubmitted": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "addBankDetails": "Add Bank Details",
+  "provideBankDetailsDescription": "Please provide your bank details to receive payouts.",
+  "bankNameLabel": "Bank Name",
+  "bankNameHint": "e.g. Maybank, CIMB",
+  "accountNumberLabel": "Account Number",
+  "accountNumberHint": "Account Number",
+  "accountHolderNameLabel": "Account Holder Name",
+  "accountHolderNameHint": "Name as per bank account",
+  "saveDetailsAction": "Save Details"
+}

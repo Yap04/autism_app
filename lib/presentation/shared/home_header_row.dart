@@ -7,25 +7,24 @@ import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
+import '../../core/extension/localization_ext.dart';
 
 class HomeHeaderRow extends ConsumerWidget {
-  const HomeHeaderRow({
-    required this.userName,
-    this.fallbackName = 'Parent',
-    super.key,
-  });
+  const HomeHeaderRow({required this.userName, this.fallbackName, super.key});
 
   final String? userName;
-  final String fallbackName;
+  final String? fallbackName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final name = userName ?? fallbackName ?? context.l10n.parentFallbackName;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Good Morning,\n${userName ?? fallbackName}!',
+          context.l10n.goodMorningGreeting(name),
           style: AppWidget.h2TextFieldStyle(),
         ),
         Stack(

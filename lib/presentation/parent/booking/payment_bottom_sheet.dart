@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../shared/bottom_action_button.dart';
@@ -101,19 +102,24 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
             ),
           ),
 
-          Text('Payment Summary', style: AppWidget.h3TextFieldStyle()),
+          Text(
+            context.l10n.paymentSummaryTitle,
+            style: AppWidget.h3TextFieldStyle(),
+          ),
           20.heightBox,
 
           _buildPriceRow(
-            'Session Fee',
-            'RM ${widget.totalPrice.toStringAsFixed(2)}',
+            context.l10n.sessionFeeLabel,
+            context.l10n.rmPriceFormat(widget.totalPrice.toStringAsFixed(2)),
           ),
 
           if (widget.transportFee > 0) ...[
             8.heightBox,
             _buildPriceRow(
-              'Transport Fee',
-              'RM ${widget.transportFee.toStringAsFixed(2)}',
+              context.l10n.transportFeeLabel,
+              context.l10n.rmPriceFormat(
+                widget.transportFee.toStringAsFixed(2),
+              ),
             ),
           ],
 
@@ -122,25 +128,34 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
           12.heightBox,
 
           _buildPriceRow(
-            'Total',
-            'RM ${_grandTotal.toStringAsFixed(2)}',
+            context.l10n.totalLabel,
+            context.l10n.rmPriceFormat(_grandTotal.toStringAsFixed(2)),
             isBold: true,
           ),
 
           24.heightBox,
 
-          Text('Payment Method', style: AppWidget.h3TextFieldStyle()),
+          Text(
+            context.l10n.paymentMethodTitle,
+            style: AppWidget.h3TextFieldStyle(),
+          ),
           16.heightBox,
 
           _buildPaymentOption(
             method: PaymentMethod.credit,
-            title: 'Use Session Credit',
+            title: context.l10n.useSessionCreditTitle,
             subtitle:
                 widget.isHomeBased
-                    ? 'Unavailable for Home-Based'
+                    ? context.l10n.unavailableForHomeBased
                     : (widget.hasEnoughCredits
-                        ? 'Balance: ${widget.availableCredits} | Required: ${widget.requiredCredits}'
-                        : 'Not enough credits (Need ${widget.requiredCredits}, Have ${widget.availableCredits})'),
+                        ? context.l10n.creditBalanceAndRequired(
+                          widget.availableCredits.toString(),
+                          widget.requiredCredits.toString(),
+                        )
+                        : context.l10n.notEnoughCredits(
+                          widget.requiredCredits.toString(),
+                          widget.availableCredits.toString(),
+                        )),
             isDisabled: !widget.hasEnoughCredits || widget.isHomeBased,
           ),
 
@@ -148,8 +163,10 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
 
           _buildPaymentOption(
             method: PaymentMethod.singlePay,
-            title: 'Pay Per Session',
-            subtitle: 'Total: RM ${_grandTotal.toStringAsFixed(2)}',
+            title: context.l10n.payPerSessionTitle,
+            subtitle: context.l10n.totalPriceFormat(
+              _grandTotal.toStringAsFixed(2),
+            ),
             isDisabled: false,
           ),
 
@@ -158,8 +175,10 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
           BottomActionButton(
             label:
                 _selectedMethod == PaymentMethod.credit
-                    ? 'Confirm & Deduct ${widget.requiredCredits} Credit(s)'
-                    : 'Proceed to Pay RM ${_grandTotal.toStringAsFixed(2)}',
+                    ? context.l10n.confirmAndDeductCredits(
+                      widget.requiredCredits.toString(),
+                    )
+                    : context.l10n.proceedToPay(_grandTotal.toStringAsFixed(2)),
             onPressed: () {
               Navigator.of(context).pop();
               widget.onConfirm(_selectedMethod);

@@ -7,6 +7,7 @@ import '../../../application/payment/payment_notifier.dart';
 import '../../../application/payment/payment_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/transaction_model.dart';
@@ -55,7 +56,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
-        title: Text('Wallet', style: AppWidget.h2TextFieldStyle()),
+        title: Text(context.l10n.wallet, style: AppWidget.h2TextFieldStyle()),
         centerTitle: true,
       ),
       body: Padding(
@@ -85,14 +86,14 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Training Credits',
+                      context.l10n.trainingCreditsTitle,
                       style: AppWidget.h3TextFieldStyle().copyWith(
                         color: ThemeColor.white,
                       ),
                     ),
                     16.heightBox,
                     Text(
-                      'Available Sessions:',
+                      context.l10n.availableSessionsLabel,
                       style: AppWidget.bodyMedium().copyWith(
                         color: Colors.white70,
                       ),
@@ -118,7 +119,9 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                         ),
                         8.widthBox,
                         Text(
-                          currentCredits == 1 ? 'Credit' : 'Credits',
+                          currentCredits == 1
+                              ? context.l10n.creditSingular
+                              : context.l10n.creditsPlural,
                           style: AppWidget.bodyLarge().copyWith(
                             color: Colors.white70,
                             fontWeight: FontWeight.bold,
@@ -148,7 +151,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                             ),
                             16.widthBox,
                             Text(
-                              'Buy Credit Packages',
+                              context.l10n.buyCreditPackages,
                               style: AppWidget.bodyLarge().copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: ThemeColor.darkBlue,
@@ -186,9 +189,9 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                       labelStyle: AppWidget.bodyMedium().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
-                      tabs: const [
-                        Tab(text: 'Credit'),
-                        Tab(text: 'Single Pay'),
+                      tabs: [
+                        Tab(text: context.l10n.creditTab),
+                        Tab(text: context.l10n.singlePayTab),
                       ],
                     ),
                   ),
@@ -238,7 +241,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'View All History',
+                                    context.l10n.viewAllHistory,
                                     style: AppWidget.bodyMedium().copyWith(
                                       color: ThemeColor.darkBlue,
                                       fontWeight: FontWeight.bold,
@@ -269,7 +272,9 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                         (err, _) => Padding(
                           padding: const EdgeInsets.all(20),
                           child: Center(
-                            child: Text('Error loading history: $err'),
+                            child: Text(
+                              context.l10n.errorLoadingHistory(err.toString()),
+                            ),
                           ),
                         ),
                   ),
@@ -306,10 +311,13 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Select a Package', style: AppWidget.h2TextFieldStyle()),
+              Text(
+                context.l10n.selectPackageTitle,
+                style: AppWidget.h2TextFieldStyle(),
+              ),
               8.heightBox,
               Text(
-                'Buy more credits to enjoy bulk discounts.',
+                context.l10n.buyMoreCreditsDesc,
                 style: AppWidget.bodySmall().copyWith(
                   color: ThemeColor.grey100,
                 ),
@@ -320,9 +328,9 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                 context: context,
                 ref: ref,
                 currentUser: currentUser,
-                title: 'Single Session',
+                title: context.l10n.singleSessionPackage,
                 credits: 1,
-                price: 'RM 80',
+                price: context.l10n.rmPriceFormat('80'),
                 isPopular: false,
               ),
               12.heightBox,
@@ -330,9 +338,9 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                 context: context,
                 ref: ref,
                 currentUser: currentUser,
-                title: 'Starter Pack',
+                title: context.l10n.starterPackPackage,
                 credits: 5,
-                price: 'RM 380',
+                price: context.l10n.rmPriceFormat('380'),
                 isPopular: true,
               ),
               12.heightBox,
@@ -340,9 +348,9 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                 context: context,
                 ref: ref,
                 currentUser: currentUser,
-                title: 'Pro Pack',
+                title: context.l10n.proPackPackage,
                 credits: 10,
-                price: 'RM 700',
+                price: context.l10n.rmPriceFormat('700'),
                 isPopular: false,
               ),
               32.heightBox,
@@ -413,7 +421,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'POPULAR',
+                          context.l10n.popularBadge,
                           style: AppWidget.bodyExtraSmall().copyWith(
                             color: ThemeColor.white,
                             fontWeight: FontWeight.bold,
@@ -425,7 +433,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
                 ),
                 4.heightBox,
                 Text(
-                  '$credits ${credits == 1 ? 'Credit' : 'Credits'}',
+                  context.l10n.creditsCountLabel(credits),
                   style: AppWidget.bodySmall().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -469,7 +477,7 @@ class _ParentWalletPageState extends ConsumerState<ParentWalletPage>
       if (context.mounted) {
         AppSnackBar.success(
           context,
-          'Payment successful! Added $creditsToAdd credits.',
+          context.l10n.paymentSuccessfulAddedCredits(creditsToAdd.toString()),
         );
       }
     } catch (e) {

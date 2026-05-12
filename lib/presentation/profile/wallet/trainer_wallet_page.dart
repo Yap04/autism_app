@@ -8,6 +8,7 @@ import '../../../application/providers/repository_providers.dart';
 import '../../../application/user/user_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/transaction_model.dart';
 import '../../../domain/models/user_model.dart';
@@ -26,7 +27,7 @@ class TrainerWalletPage extends ConsumerWidget {
     final authUser = ref.watch(authNotifierProvider).value;
 
     if (authUser == null) {
-      return const Scaffold(body: Center(child: Text('Please login first')));
+      return Scaffold(body: Center(child: Text(context.l10n.pleaseLoginFirst)));
     }
 
     final liveUserAsync = ref.watch(liveUserStreamProvider(authUser.id));
@@ -44,14 +45,16 @@ class TrainerWalletPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
-        title: Text('My Wallet', style: AppWidget.h2TextFieldStyle()),
+        title: Text(context.l10n.myWallet, style: AppWidget.h2TextFieldStyle()),
       ),
       body: transactionsAsync.when(
         loading:
             () => const Center(
               child: CircularProgressIndicator(color: ThemeColor.darkBlue),
             ),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error:
+            (err, _) =>
+                Center(child: Text(context.l10n.errorMessage(err.toString()))),
         data: (transactions) {
           final sortedList = List<TransactionModel>.from(transactions)
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -74,7 +77,7 @@ class TrainerWalletPage extends ConsumerWidget {
                   32.heightBox,
 
                   Text(
-                    'Recent Transactions',
+                    context.l10n.recentTransactions,
                     style: AppWidget.h3TextFieldStyle(),
                   ),
                   16.heightBox,
@@ -97,7 +100,7 @@ class TrainerWalletPage extends ConsumerWidget {
                           ),
                           8.heightBox,
                           Text(
-                            'No transactions yet.',
+                            context.l10n.noTransactionsYet,
                             style: AppWidget.bodyMedium().copyWith(
                               color: ThemeColor.grey100,
                             ),
@@ -164,7 +167,7 @@ class TrainerWalletPage extends ConsumerWidget {
               ),
               8.widthBox,
               Text(
-                'Available Balance',
+                context.l10n.availableBalance,
                 style: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.white.withValues(alpha: 0.8),
                 ),
@@ -173,7 +176,7 @@ class TrainerWalletPage extends ConsumerWidget {
           ),
           16.heightBox,
           Text(
-            'RM ${balance.toStringAsFixed(2)}',
+            context.l10n.rmPriceFormat(balance.toStringAsFixed(2)),
             style: AppWidget.h1TextFieldStyle().copyWith(
               color: ThemeColor.white,
             ),
@@ -190,7 +193,7 @@ class TrainerWalletPage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Withdraw Funds',
+                context.l10n.withdrawFunds,
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                   color: ThemeColor.darkBlue,
@@ -210,7 +213,7 @@ class TrainerWalletPage extends ConsumerWidget {
     double currentBalance,
   ) async {
     if (currentBalance <= 0) {
-      AppSnackBar.error(context, 'You have no balance to withdraw.');
+      AppSnackBar.error(context, context.l10n.noBalanceToWithdraw);
       return;
     }
 
@@ -247,16 +250,16 @@ class TrainerWalletPage extends ConsumerWidget {
         closeLoading();
 
         if (context.mounted) {
-          AppSnackBar.success(
-            context,
-            'Bank details saved! You can now proceed to withdraw funds.',
-          );
+          AppSnackBar.success(context, context.l10n.bankDetailsSaved);
         }
         return;
       } catch (e) {
         closeLoading();
         if (context.mounted) {
-          AppSnackBar.error(context, 'Failed to save bank details: $e');
+          AppSnackBar.error(
+            context,
+            context.l10n.failedToSaveBankDetails(e.toString()),
+          );
         }
         return;
       }
@@ -307,7 +310,9 @@ class TrainerWalletPage extends ConsumerWidget {
       if (context.mounted) {
         AppSnackBar.success(
           context,
-          'Withdrawal request for RM ${withdrawAmount.toStringAsFixed(2)} submitted! Pending admin approval.',
+          context.l10n.withdrawalRequestSubmitted(
+            withdrawAmount.toStringAsFixed(2),
+          ),
         );
       }
     } catch (e) {

@@ -6,6 +6,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../application/auth/auth_notifier.dart';
 import '../../../../core/constant/color_constant.dart';
 import '../../../../core/constant/textstyle_constant.dart';
+import '../../../../core/extension/localization_ext.dart';
+import '../../../../core/extension/sport_ext.dart';
 import '../../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/user_model.dart';
@@ -89,7 +91,10 @@ class TrainerDashboardPage extends ConsumerWidget {
                     ),
                   ),
                   24.heightBox,
-                  Text('Update Profile', style: AppWidget.h2TextFieldStyle()),
+                  Text(
+                    context.l10n.updateProfileTitle,
+                    style: AppWidget.h2TextFieldStyle(),
+                  ),
                   16.heightBox,
 
                   Flexible(
@@ -98,7 +103,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Location (City/Area)',
+                            context.l10n.locationCityAreaLabel,
                             style: AppWidget.bodyMedium().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -109,7 +114,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                               Expanded(
                                 child: AppTextField(
                                   controller: locationController,
-                                  hintText: 'e.g., Kuala Lumpur, Petaling Jaya',
+                                  hintText: context.l10n.locationCityAreaHint,
                                   fillColor: ThemeColor.white,
                                 ),
                               ),
@@ -166,7 +171,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                           24.heightBox,
 
                           Text(
-                            'About You (Bio)',
+                            context.l10n.aboutYouBioLabel,
                             style: AppWidget.bodyMedium().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -174,15 +179,14 @@ class TrainerDashboardPage extends ConsumerWidget {
                           8.heightBox,
                           AppTextField(
                             controller: bioController,
-                            hintText:
-                                'Tell parents about your experience and teaching style...',
+                            hintText: context.l10n.aboutYouBioHint,
                             fillColor: ThemeColor.white,
                             maxLines: 4,
                           ),
                           24.heightBox,
 
                           Text(
-                            'Sports You Teach',
+                            context.l10n.sportsYouTeachTitle,
                             style: AppWidget.bodyMedium().copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -196,7 +200,9 @@ class TrainerDashboardPage extends ConsumerWidget {
                                     sport,
                                   );
                                   return FilterChip(
-                                    label: Text(sport),
+                                    label: Text(
+                                      sport.toLocalizedSport(context),
+                                    ),
                                     selected: isSelected,
                                     selectedColor: ThemeColor.darkBlue,
                                     labelStyle: TextStyle(
@@ -255,14 +261,14 @@ class TrainerDashboardPage extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Offer Home-based Sessions?',
+                                    context.l10n.offerHomeBasedSessionsLabel,
                                     style: AppWidget.bodyMedium().copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   4.heightBox,
                                   Text(
-                                    'Parents can request sessions at their own homes.',
+                                    context.l10n.offerHomeBasedSessionsDesc,
                                     style: AppWidget.bodyExtraSmall().copyWith(
                                       color: ThemeColor.grey100,
                                     ),
@@ -298,7 +304,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                               12.widthBox,
                               Expanded(
                                 child: Text(
-                                  'Travel Surcharge (Per Session)',
+                                  context.l10n.travelSurchargeLabel,
                                   style: AppWidget.bodyMedium().copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -308,7 +314,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                                 width: 100,
                                 child: AppTextField(
                                   controller: transportFeeController,
-                                  hintText: 'RM0.00',
+                                  hintText: context.l10n.rmZeroHint,
                                   fillColor: ThemeColor.cream,
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
@@ -320,7 +326,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                           ),
                           4.heightBox,
                           Text(
-                            'This fee goes 100% to you to cover travel expenses.',
+                            context.l10n.travelSurchargeDesc,
                             style: AppWidget.bodyExtraSmall().copyWith(
                               color: ThemeColor.green,
                               fontStyle: FontStyle.italic,
@@ -334,7 +340,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                   24.heightBox,
 
                   BottomActionButton(
-                    label: 'Save Profile',
+                    label: context.l10n.saveProfileButton,
                     onPressed: () async {
                       try {
                         var parsedSurcharge = 0.0;
@@ -361,12 +367,15 @@ class TrainerDashboardPage extends ConsumerWidget {
                           Navigator.pop(context);
                           AppSnackBar.success(
                             context,
-                            'Profile updated successfully!',
+                            context.l10n.profileUpdatedSuccessfully,
                           );
                         }
                       } catch (e) {
                         if (context.mounted) {
-                          AppSnackBar.error(context, e.toString());
+                          AppSnackBar.error(
+                            context,
+                            context.l10n.errorMessage(e.toString()),
+                          );
                         }
                       }
                     },
@@ -392,10 +401,13 @@ class TrainerDashboardPage extends ConsumerWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: ThemeColor.black),
-          tooltip: 'Go Back',
+          tooltip: context.l10n.goBackTooltip,
           onPressed: () => context.router.pop(),
         ),
-        title: Text('Trainer Dashboard', style: AppWidget.h2TextFieldStyle()),
+        title: Text(
+          context.l10n.trainerDashboardTitle,
+          style: AppWidget.h2TextFieldStyle(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -418,15 +430,15 @@ class TrainerDashboardPage extends ConsumerWidget {
     final bioText =
         (currentUser.bio?.isNotEmpty ?? false)
             ? currentUser.bio!
-            : 'Tell parents about your experience...';
+            : context.l10n.bioNotSetFallback;
     final locationText =
         (currentUser.location?.isNotEmpty ?? false)
             ? currentUser.location!
-            : 'Location not set';
+            : context.l10n.locationNotSetFallback;
     final sportsList =
         currentUser.sports.isNotEmpty
             ? currentUser.sports
-            : ['No sports selected'];
+            : [context.l10n.noSportsSelectedFallback];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -448,7 +460,7 @@ class TrainerDashboardPage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Your Public Profile',
+                context.l10n.yourPublicProfileTitle,
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -501,7 +513,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      sport,
+                      sport.toLocalizedSport(context),
                       style: AppWidget.bodyExtraSmall().copyWith(
                         color: ThemeColor.black,
                         fontWeight: FontWeight.w600,
@@ -525,7 +537,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                 border: Border.all(color: ThemeColor.lightGrey, width: 1.5),
               ),
               child: Text(
-                'Update Profile',
+                context.l10n.updateProfileTitle,
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                 ),

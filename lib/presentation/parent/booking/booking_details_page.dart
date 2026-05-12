@@ -10,7 +10,10 @@ import '../../../application/providers/repository_providers.dart';
 import '../../../application/user/trainer_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/constant/weekdays_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
+import '../../../core/extension/weekdays_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/appointment_model.dart';
 import '../../../domain/models/child_model.dart';
@@ -89,16 +92,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       return true;
     }
 
-    final weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    final dayString = weekdays[day.weekday - 1];
+    final dayString = Weekdays.all[day.weekday - 1];
 
     final dayConfig = operatingHours.firstWhere(
       (e) => (e as Map)['day'] == dayString,
@@ -176,7 +170,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         final nowMinutes = now.hour * 60 + now.minute;
         if (pickedMinutes <= nowMinutes) {
           if (mounted) {
-            AppSnackBar.error(context, 'Please select a future time.');
+            AppSnackBar.error(context, context.l10n.selectFutureTime);
           }
           return;
         }
@@ -227,7 +221,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           if (mounted) {
             AppSnackBar.error(
               context,
-              'Please select a time between $startStr and $endStr.',
+              context.l10n.selectTimeBetween(startStr, endStr),
             );
           }
         }
@@ -239,11 +233,11 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
   Future<void> _openPaymentSheet() async {
     if (_selectedTime == null) {
-      AppSnackBar.error(context, 'Please select a time.');
+      AppSnackBar.error(context, context.l10n.selectTimePrompt);
       return;
     }
     if (_selectedChild == null) {
-      AppSnackBar.error(context, 'Please select a child profile.');
+      AppSnackBar.error(context, context.l10n.selectChildPrompt);
       return;
     }
 
@@ -286,7 +280,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
   Future<void> _submitBooking() async {
     if (_selectedTime == null) {
-      AppSnackBar.error(context, 'Please select a time.');
+      AppSnackBar.error(context, context.l10n.selectTimePrompt);
       return;
     }
 
@@ -303,10 +297,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
       if (finalDateTime.isBefore(DateTime.now())) {
         setState(() => _isLoading = false);
-        AppSnackBar.error(
-          context,
-          'Cannot book a session in the past. Please select a future time.',
-        );
+        AppSnackBar.error(context, context.l10n.cannotBookPast);
         return;
       }
 
@@ -330,7 +321,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
         if (stripePaymentId == null) {
           if (mounted) {
-            AppSnackBar.error(context, 'Payment cancelled or failed.');
+            AppSnackBar.error(context, context.l10n.paymentCancelled);
           }
           setState(() => _isLoading = false);
           return;
@@ -370,7 +361,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
       if (mounted) {
         context.router.maybePop();
-        AppSnackBar.success(context, '$_selectedWeeks Booking(s) Confirmed!');
+        AppSnackBar.success(
+          context,
+          context.l10n.bookingsConfirmed(_selectedWeeks.toString()),
+        );
       }
     } catch (e) {
       AppSnackBar.error(context, e.toString());
@@ -438,7 +432,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
       backgroundColor: ThemeColor.cream,
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
-        title: Text('Booking Details', style: AppWidget.h3TextFieldStyle()),
+        title: Text(
+          context.l10n.bookingDetailsTitle,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -454,10 +451,13 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
                     24.heightBox,
 
-                    Text('Book for Child', style: AppWidget.h3TextFieldStyle()),
+                    Text(
+                      context.l10n.bookForChildTitle,
+                      style: AppWidget.h3TextFieldStyle(),
+                    ),
                     8.heightBox,
                     Text(
-                      'Select the child profile for this session.',
+                      context.l10n.selectChildDescription,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -467,7 +467,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                       loading:
                           () =>
                               const Center(child: CircularProgressIndicator()),
-                      error: (e, stack) => Text('Error loading children: $e'),
+                      error:
+                          (e, stack) => Text(
+                            context.l10n.errorLoadingChildren(e.toString()),
+                          ),
                       data: (children) {
                         if (children.isEmpty) {
                           return Container(
@@ -491,7 +494,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                                 12.widthBox,
                                 Expanded(
                                   child: Text(
-                                    'Please add a child profile first in the "Manage Children" page before booking.',
+                                    context.l10n.addChildFirstPrompt,
                                     style: AppWidget.bodySmall().copyWith(
                                       color: ThemeColor.darkBlue,
                                       fontWeight: FontWeight.w600,
@@ -507,7 +510,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                           isExpanded: true,
                           initialValue: _selectedChild,
                           hint: Text(
-                            'Select your child',
+                            context.l10n.selectYourChildHint,
                             style: AppWidget.bodyMedium().copyWith(
                               color: ThemeColor.grey100,
                             ),
@@ -558,7 +561,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                                       ),
                                       8.widthBox,
                                       Text(
-                                        '(${child.age}y)',
+                                        context.l10n.childAgeFormat(
+                                          child.age.toString(),
+                                        ),
                                         style: AppWidget.bodySmall().copyWith(
                                           color: ThemeColor.grey100,
                                         ),
@@ -578,7 +583,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
                     32.heightBox,
 
-                    Text('Select Sport', style: AppWidget.h3TextFieldStyle()),
+                    Text(
+                      context.l10n.selectSportTitle,
+                      style: AppWidget.h3TextFieldStyle(),
+                    ),
                     16.heightBox,
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -623,7 +631,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                                         ),
                                         8.widthBox,
                                         Text(
-                                          sport,
+                                          sport.toLocalizedSport(context),
                                           style: AppWidget.bodyMedium()
                                               .copyWith(
                                                 color:
@@ -657,12 +665,15 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Duration', style: AppWidget.h3TextFieldStyle()),
+                        Text(
+                          context.l10n.durationTitle,
+                          style: AppWidget.h3TextFieldStyle(),
+                        ),
                       ],
                     ),
                     8.heightBox,
                     Text(
-                      'Select the length of each session.',
+                      context.l10n.durationDescription,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -670,14 +681,17 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                     16.heightBox,
                     Row(
                       children: [
-                        _buildDurationOption(60, '1 Hour'),
-                        _buildDurationOption(120, '2 Hours'),
+                        _buildDurationOption(60, context.l10n.oneHour),
+                        _buildDurationOption(120, context.l10n.twoHours),
                       ],
                     ),
 
                     32.heightBox,
 
-                    Text('Schedule', style: AppWidget.h3TextFieldStyle()),
+                    Text(
+                      context.l10n.scheduleTitle,
+                      style: AppWidget.h3TextFieldStyle(),
+                    ),
                     16.heightBox,
                     Row(
                       children: [
@@ -694,7 +708,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                           child: _buildSelectionContainer(
                             icon: Icons.access_time,
                             text:
-                                _selectedTime?.format(context) ?? 'Select Time',
+                                _selectedTime?.format(context) ??
+                                context.l10n.selectTimeHint,
                             onTap: _pickTime,
                           ),
                         ),
@@ -706,7 +721,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
-                          'This session will end at ${_getEndTimeString(context)}.',
+                          context.l10n.sessionEndsAt(
+                            _getEndTimeString(context),
+                          ),
                           style: AppWidget.bodyExtraSmall().copyWith(
                             color: ThemeColor.darkBlue,
                             fontWeight: FontWeight.w600,
@@ -722,11 +739,11 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Repeat Booking',
+                          context.l10n.repeatBookingTitle,
                           style: AppWidget.h3TextFieldStyle(),
                         ),
                         Text(
-                          'Max $_maxWeeks weeks',
+                          context.l10n.maxWeeksFormat(_maxWeeks.toString()),
                           style: AppWidget.bodySmall().copyWith(
                             color: ThemeColor.grey100,
                           ),
@@ -735,7 +752,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                     ),
                     8.heightBox,
                     Text(
-                      'Book this same time slot for consecutive weeks.',
+                      context.l10n.repeatBookingDescription,
                       style: AppWidget.bodySmall().copyWith(
                         color: ThemeColor.grey100,
                       ),
@@ -757,7 +774,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               color: ThemeColor.cream,
               child: BottomActionButton(
-                label: 'Review & Pay',
+                label: context.l10n.reviewAndPayAction,
                 isLoading: _isLoading,
                 onPressed: _openPaymentSheet,
               ),
@@ -778,10 +795,13 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Session Type', style: AppWidget.h3TextFieldStyle()),
+        Text(
+          context.l10n.sessionTypeTitle,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
         8.heightBox,
         Text(
-          'Choose how you want the session to be conducted.',
+          context.l10n.sessionTypeDescription,
           style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
         ),
         16.heightBox,
@@ -791,8 +811,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
               child: _buildSessionTypeOption(
                 type: SessionType.inPerson,
                 icon: Icons.place_outlined,
-                label: 'In-Person',
-                sublabel: "At trainer's location",
+                label: context.l10n.inPersonType,
+                sublabel: context.l10n.inPersonDesc,
               ),
             ),
             12.widthBox,
@@ -800,8 +820,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
               child: _buildSessionTypeOption(
                 type: SessionType.remote,
                 icon: Icons.videocam_outlined,
-                label: 'Remote',
-                sublabel: 'Online consultation',
+                label: context.l10n.remoteType,
+                sublabel: context.l10n.remoteDesc,
               ),
             ),
           ],
@@ -812,11 +832,11 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           _buildSessionTypeOption(
             type: SessionType.homeBased,
             icon: Icons.home_outlined,
-            label: 'Home-Based',
+            label: context.l10n.homeBasedType,
             sublabel:
                 travelSurcharge > 0
-                    ? 'Trainer comes to you (+RM $formattedFee Travel Fee)'
-                    : 'Trainer comes to you',
+                    ? context.l10n.homeBasedDescWithFee(formattedFee)
+                    : context.l10n.homeBasedDescFree,
           ),
         ],
 
@@ -842,7 +862,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 8.widthBox,
                 Expanded(
                   child: Text(
-                    'Join the video call from the Session Details page during the scheduled time.',
+                    context.l10n.remoteNotice,
                     style: AppWidget.bodyExtraSmall().copyWith(
                       color: ThemeColor.darkBlue,
                       fontWeight: FontWeight.w600,
@@ -877,8 +897,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                 Expanded(
                   child: Text(
                     travelSurcharge > 0
-                        ? 'A travel surcharge of RM $formattedFee applies. This session must be paid via Stripe.'
-                        : 'Trainer will travel to your location. This session must be paid via Stripe.',
+                        ? context.l10n.homeBasedFeeNotice(formattedFee)
+                        : context.l10n.homeBasedFreeNotice,
                     style: AppWidget.bodyExtraSmall().copyWith(
                       color: ThemeColor.orange,
                       fontWeight: FontWeight.w600,
@@ -966,7 +986,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
     final locationText =
         _sessionType == SessionType.remote
-            ? 'Online Session'
+            ? context.l10n.onlineSessionLoc
             : _sessionType == SessionType.homeBased
             ? (currentUser?.address ?? widget.location)
             : widget.location;
@@ -1030,7 +1050,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                           ),
                           4.widthBox,
                           Text(
-                            selectedSport,
+                            selectedSport.toLocalizedSport(context),
                             style: AppWidget.bodySmall().copyWith(
                               color: ThemeColor.darkBlue,
                               fontWeight: FontWeight.w600,
@@ -1162,7 +1182,9 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         ),
         child: Center(
           child: Text(
-            weeks == 1 ? '1 Wk' : '$weeks Wks',
+            weeks == 1
+                ? context.l10n.oneWeek
+                : context.l10n.nWeeks(weeks.toString()),
             style: AppWidget.bodyMedium().copyWith(
               color: isSelected ? ThemeColor.white : ThemeColor.black,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -1174,35 +1196,17 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
   }
 
   Widget _buildOperatingHoursSection(List<dynamic>? operatingHours) {
-    final defaultSchedule = <Map<String, dynamic>>[
-      {'day': 'Monday', 'isOpen': true, 'start': '08:00 AM', 'end': '10:00 PM'},
-      {
-        'day': 'Tuesday',
-        'isOpen': true,
-        'start': '08:00 AM',
-        'end': '10:00 PM',
-      },
-      {
-        'day': 'Wednesday',
-        'isOpen': true,
-        'start': '08:00 AM',
-        'end': '10:00 PM',
-      },
-      {
-        'day': 'Thursday',
-        'isOpen': true,
-        'start': '08:00 AM',
-        'end': '10:00 PM',
-      },
-      {'day': 'Friday', 'isOpen': true, 'start': '08:00 AM', 'end': '10:00 PM'},
-      {
-        'day': 'Saturday',
-        'isOpen': true,
-        'start': '08:00 AM',
-        'end': '10:00 PM',
-      },
-      {'day': 'Sunday', 'isOpen': true, 'start': '08:00 AM', 'end': '10:00 PM'},
-    ];
+    final defaultSchedule =
+        Weekdays.all
+            .map(
+              (day) => <String, dynamic>{
+                'day': day,
+                'isOpen': true,
+                'start': '08:00 AM',
+                'end': '10.00 PM',
+              },
+            )
+            .toList();
 
     final displayHours =
         (operatingHours != null && operatingHours.isNotEmpty)
@@ -1212,7 +1216,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Operating Hours', style: AppWidget.h3TextFieldStyle()),
+        Text(
+          context.l10n.operatingHoursTitle,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
         16.heightBox,
         Container(
           padding: const EdgeInsets.all(16),
@@ -1238,7 +1245,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                         SizedBox(
                           width: 90,
                           child: Text(
-                            day,
+                            day.localized(context),
                             style: AppWidget.bodySmall().copyWith(
                               fontWeight:
                                   isOpen ? FontWeight.w600 : FontWeight.normal,
@@ -1251,7 +1258,7 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
                         ),
                         Expanded(
                           child: Text(
-                            isOpen ? '$start - $end' : 'Rest Day',
+                            isOpen ? '$start - $end' : context.l10n.restDay,
                             textAlign: TextAlign.right,
                             style: AppWidget.bodySmall().copyWith(
                               fontWeight:

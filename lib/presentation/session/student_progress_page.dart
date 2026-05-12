@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../application/feedback/feedback_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/gender_ext.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/child_model.dart';
 import '../../../domain/models/feedback_model.dart';
@@ -27,7 +29,7 @@ class StudentProgressPage extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Performance Tracking',
+          context.l10n.performanceTrackingTitle,
           style: AppWidget.h3TextFieldStyle(),
         ),
       ),
@@ -36,10 +38,12 @@ class StudentProgressPage extends ConsumerWidget {
             () => const Center(
               child: CircularProgressIndicator(color: ThemeColor.darkBlue),
             ),
-        error: (err, _) => Center(child: Text('Error: $err')),
+        error:
+            (err, _) =>
+                Center(child: Text(context.l10n.errorMessage(err.toString()))),
         data: (feedbacks) {
           if (feedbacks.isEmpty) {
-            return _buildEmptyState();
+            return _buildEmptyState(context);
           }
 
           double totalFocus = 0;
@@ -56,16 +60,19 @@ class StudentProgressPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStudentHeader(),
+                _buildStudentHeader(context),
                 24.heightBox,
 
-                Text('Overall Average', style: AppWidget.h3TextFieldStyle()),
+                Text(
+                  context.l10n.overallAverageTitle,
+                  style: AppWidget.h3TextFieldStyle(),
+                ),
                 12.heightBox,
                 Row(
                   children: [
                     Expanded(
                       child: _buildStatCard(
-                        'Avg Focus',
+                        context.l10n.avgFocusLabel,
                         avgFocus,
                         Icons.psychology,
                       ),
@@ -73,7 +80,7 @@ class StudentProgressPage extends ConsumerWidget {
                     16.widthBox,
                     Expanded(
                       child: _buildStatCard(
-                        'Avg Energy',
+                        context.l10n.avgEnergyLabel,
                         avgEnergy,
                         Icons.bolt,
                       ),
@@ -82,7 +89,10 @@ class StudentProgressPage extends ConsumerWidget {
                 ),
                 32.heightBox,
 
-                Text('Session History', style: AppWidget.h3TextFieldStyle()),
+                Text(
+                  context.l10n.sessionHistoryTitle,
+                  style: AppWidget.h3TextFieldStyle(),
+                ),
                 12.heightBox,
                 ListView.separated(
                   shrinkWrap: true,
@@ -90,7 +100,7 @@ class StudentProgressPage extends ConsumerWidget {
                   itemCount: feedbacks.length,
                   separatorBuilder: (context, index) => 16.heightBox,
                   itemBuilder: (context, index) {
-                    return _buildFeedbackItem(feedbacks[index]);
+                    return _buildFeedbackItem(context, feedbacks[index]);
                   },
                 ),
                 40.heightBox,
@@ -102,12 +112,12 @@ class StudentProgressPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildStudentHeader(),
+          _buildStudentHeader(context),
           40.heightBox,
           const Icon(
             Icons.analytics_outlined,
@@ -116,12 +126,12 @@ class StudentProgressPage extends ConsumerWidget {
           ),
           16.heightBox,
           Text(
-            'No performance records yet.',
+            context.l10n.noPerformanceRecordsYet,
             style: AppWidget.bodyLarge().copyWith(color: ThemeColor.grey100),
           ),
           8.heightBox,
           Text(
-            'Complete a session to log feedback.',
+            context.l10n.completeSessionToLogFeedback,
             style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
           ),
         ],
@@ -129,11 +139,15 @@ class StudentProgressPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStudentHeader() {
-    final genderText =
-        (student.gender != null && student.gender!.isNotEmpty)
-            ? ', ${student.gender}'
-            : '';
+  Widget _buildStudentHeader(BuildContext context) {
+    final hasGender = student.gender != null && student.gender!.isNotEmpty;
+    final ageAndGenderText =
+        hasGender
+            ? context.l10n.yearsOldWithGender(
+              student.age.toString(),
+              student.gender!.toLocalized(context),
+            )
+            : context.l10n.yearsOld(student.age.toString());
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -168,7 +182,7 @@ class StudentProgressPage extends ConsumerWidget {
                 ),
                 4.heightBox,
                 Text(
-                  '${student.age} years old$genderText',
+                  ageAndGenderText,
                   style: AppWidget.bodyMedium().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -264,7 +278,7 @@ class StudentProgressPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFeedbackItem(FeedbackModel fb) {
+  Widget _buildFeedbackItem(BuildContext context, FeedbackModel fb) {
     final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(fb.createdAt);
 
     return Container(
@@ -293,9 +307,13 @@ class StudentProgressPage extends ConsumerWidget {
           12.heightBox,
           Row(
             children: [
-              _buildMiniScore('Focus', fb.focusLevel),
+              _buildMiniScore(context.l10n.focusLabel, fb.focusLevel, context),
               16.widthBox,
-              _buildMiniScore('Energy', fb.energyLevel),
+              _buildMiniScore(
+                context.l10n.energyLabel,
+                fb.energyLevel,
+                context,
+              ),
             ],
           ),
           12.heightBox,
@@ -316,7 +334,7 @@ class StudentProgressPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildMiniScore(String label, int score) {
+  Widget _buildMiniScore(String label, int score, BuildContext context) {
     return Row(
       children: [
         Text(
@@ -324,7 +342,7 @@ class StudentProgressPage extends ConsumerWidget {
           style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
         ),
         Text(
-          '$score/5',
+          context.l10n.scoreOutOfFive(score.toString()),
           style: AppWidget.bodySmall().copyWith(
             fontWeight: FontWeight.bold,
             color: ThemeColor.darkBlue,

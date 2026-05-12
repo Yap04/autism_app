@@ -10,7 +10,9 @@ import '../../../application/auth/auth_notifier.dart';
 import '../../../application/providers/repository_providers.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/sport_ext.dart';
+import '../../../core/extension/weekdays_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
 import '../../../domain/models/appointment_model.dart';
@@ -42,11 +44,14 @@ class _TrainerAppointmentsPageState
       context: context,
       builder:
           (context) => CupertinoActionSheet(
-            title: const Text('Pause Receiving Requests'),
-            message: const Text('When should we turn it back on for you?'),
+            title: Text(context.l10n.pauseReceivingRequestsTitle),
+            message: Text(context.l10n.pauseReceivingRequestsMessage),
             actions: [
               CupertinoActionSheetAction(
-                child: Text('For 1 Hour', style: AppWidget.bodyLarge()),
+                child: Text(
+                  context.l10n.pauseForOneHour,
+                  style: AppWidget.bodyLarge(),
+                ),
                 onPressed: () {
                   ref
                       .read(authNotifierProvider.notifier)
@@ -55,7 +60,10 @@ class _TrainerAppointmentsPageState
                 },
               ),
               CupertinoActionSheetAction(
-                child: Text('For 4 Hours', style: AppWidget.bodyLarge()),
+                child: Text(
+                  context.l10n.pauseForFourHours,
+                  style: AppWidget.bodyLarge(),
+                ),
                 onPressed: () {
                   ref
                       .read(authNotifierProvider.notifier)
@@ -64,7 +72,10 @@ class _TrainerAppointmentsPageState
                 },
               ),
               CupertinoActionSheetAction(
-                child: Text('Until Tomorrow', style: AppWidget.bodyLarge()),
+                child: Text(
+                  context.l10n.pauseUntilTomorrow,
+                  style: AppWidget.bodyLarge(),
+                ),
                 onPressed: () {
                   final now = DateTime.now();
                   final tomorrowEight = DateTime(
@@ -82,7 +93,7 @@ class _TrainerAppointmentsPageState
               CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 child: Text(
-                  'Until I turn it back on',
+                  context.l10n.pauseUntilTurnedBackOn,
                   style: AppWidget.bodyLarge().copyWith(color: ThemeColor.red),
                 ),
                 onPressed: () {
@@ -94,7 +105,10 @@ class _TrainerAppointmentsPageState
               ),
             ],
             cancelButton: CupertinoActionSheetAction(
-              child: Text('Cancel', style: AppWidget.bodyLarge()),
+              child: Text(
+                context.l10n.cancelAction,
+                style: AppWidget.bodyLarge(),
+              ),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -183,10 +197,13 @@ class _TrainerAppointmentsPageState
                   ),
                   24.heightBox,
 
-                  Text('Operating Hours', style: AppWidget.h2TextFieldStyle()),
+                  Text(
+                    context.l10n.operatingHoursTitle,
+                    style: AppWidget.h2TextFieldStyle(),
+                  ),
                   8.heightBox,
                   Text(
-                    'Set your weekly availability. Default is open all week. Turn off the days you are resting.',
+                    context.l10n.operatingHoursDesc,
                     style: AppWidget.bodySmall().copyWith(
                       color: ThemeColor.grey100,
                     ),
@@ -218,7 +235,7 @@ class _TrainerAppointmentsPageState
                               SizedBox(
                                 width: 90,
                                 child: Text(
-                                  schedule['day'].toString(),
+                                  schedule['day'].toString().localized(context),
                                   style: AppWidget.bodyMedium().copyWith(
                                     fontWeight: FontWeight.bold,
                                     color:
@@ -232,7 +249,7 @@ class _TrainerAppointmentsPageState
                                 child: Text(
                                   isOpen
                                       ? '${schedule['start']} - ${schedule['end']}'
-                                      : 'Rest Day',
+                                      : context.l10n.restDay,
                                   style: AppWidget.bodySmall().copyWith(
                                     color:
                                         isOpen
@@ -286,13 +303,18 @@ class _TrainerAppointmentsPageState
                         Navigator.pop(context);
                         AppSnackBar.success(
                           context,
-                          'Operating hours updated successfully.',
+                          context.l10n.operatingHoursUpdatedSuccess,
                         );
                       } catch (e) {
                         if (!context.mounted) {
                           return;
                         }
-                        AppSnackBar.error(context, 'Failed to update: $e');
+                        AppSnackBar.error(
+                          context,
+                          context.l10n.failedToUpdateOperatingHours(
+                            e.toString(),
+                          ),
+                        );
                       }
                     },
                     child: Container(
@@ -304,7 +326,7 @@ class _TrainerAppointmentsPageState
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        'Save Changes',
+                        context.l10n.saveChangesAction,
                         style: AppWidget.bodyMedium().copyWith(
                           color: ThemeColor.white,
                           fontWeight: FontWeight.bold,
@@ -415,7 +437,7 @@ class _TrainerAppointmentsPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Appointments',
+                      context.l10n.appointmentsTitle,
                       style: AppWidget.h2TextFieldStyle().copyWith(
                         color: ThemeColor.black,
                       ),
@@ -445,7 +467,7 @@ class _TrainerAppointmentsPageState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Accepting Requests',
+                                context.l10n.acceptingRequestsLabel,
                                 style: AppWidget.bodyMedium().copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -454,7 +476,9 @@ class _TrainerAppointmentsPageState
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
-                                    'Auto-resumes at ${DateFormat('hh:mm a').format(resumeAt)}',
+                                    context.l10n.autoResumesAtTime(
+                                      DateFormat('hh:mm a').format(resumeAt),
+                                    ),
                                     style: AppWidget.bodyExtraSmall().copyWith(
                                       color: ThemeColor.orange,
                                       fontWeight: FontWeight.bold,
@@ -473,7 +497,7 @@ class _TrainerAppointmentsPageState
                                     .resumeAcceptingRequests();
                                 AppSnackBar.success(
                                   context,
-                                  'You are now online!',
+                                  context.l10n.youAreNowOnline,
                                 );
                               } else {
                                 _showPauseOptions(context, ref);
@@ -649,12 +673,12 @@ class _TrainerAppointmentsPageState
           ),
           16.heightBox,
           Text(
-            'No appointments yet.',
+            context.l10n.noAppointmentsYet,
             style: AppWidget.bodyMedium().copyWith(fontWeight: FontWeight.bold),
           ),
           4.heightBox,
           Text(
-            'Parents can send you requests for this day.',
+            context.l10n.parentsCanSendRequestsDesc,
             style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
           ),
         ],
@@ -712,7 +736,7 @@ class _TrainerAppointmentsPageState
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Confirmed',
+                        context.l10n.statusConfirmed,
                         style: AppWidget.bodyExtraSmall().copyWith(
                           color: ThemeColor.darkBlue,
                           fontWeight: FontWeight.bold,
@@ -818,7 +842,7 @@ class _TrainerAppointmentsPageState
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Completed',
+                        context.l10n.statusCompleted,
                         style: AppWidget.bodyExtraSmall().copyWith(
                           color: ThemeColor.grey100,
                           fontWeight: FontWeight.bold,
@@ -906,7 +930,7 @@ class _TrainerAppointmentsPageState
                       ),
                     ),
                     Text(
-                      'Action Req.',
+                      context.l10n.actionRequiredShort,
                       style: AppWidget.bodyExtraSmall().copyWith(
                         color: ThemeColor.orange,
                         fontWeight: FontWeight.bold,
@@ -952,7 +976,7 @@ class _TrainerAppointmentsPageState
           const Icon(Icons.block, size: 32, color: ThemeColor.grey100),
           8.heightBox,
           Text(
-            'Not Accepting Requests',
+            context.l10n.notAcceptingRequestsTitle,
             style: AppWidget.bodyMedium().copyWith(
               fontWeight: FontWeight.bold,
               color: ThemeColor.grey100,

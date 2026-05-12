@@ -9,7 +9,10 @@ import '../../application/child/child_provider.dart';
 import '../../application/providers/repository_providers.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
+import '../../core/extension/gender_ext.dart';
+import '../../core/extension/localization_ext.dart';
 import '../../core/extension/sport_ext.dart';
+import '../../core/extension/status_ext.dart';
 import '../../core/extension/widget_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/appointment_model.dart';
@@ -81,7 +84,10 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
         backgroundColor: ThemeColor.cream,
         elevation: 0,
         centerTitle: true,
-        title: Text('Session Details', style: AppWidget.h3TextFieldStyle()),
+        title: Text(
+          context.l10n.sessionDetailsTitle,
+          style: AppWidget.h3TextFieldStyle(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -95,8 +101,8 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
               children: [
                 Expanded(
                   child: _buildInfoBox(
-                    title: 'Status',
-                    value: appt.status.name.toUpperCase(),
+                    title: context.l10n.statusLabel,
+                    value: appt.status.toLocalized(context).toUpperCase(),
                     valueColor: _getStatusColor(appt.status),
                     icon: Icons.info_outline,
                   ),
@@ -104,7 +110,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                 16.widthBox,
                 Expanded(
                   child: _buildInfoBox(
-                    title: 'Payment',
+                    title: context.l10n.paymentLabel,
                     value: appt.paymentStatus.name.toUpperCase(),
                     valueColor: ThemeColor.green,
                     icon: Icons.payment,
@@ -114,7 +120,10 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             ),
             24.heightBox,
 
-            Text('Schedule & Location', style: AppWidget.h3TextFieldStyle()),
+            Text(
+              context.l10n.scheduleLocationTitle,
+              style: AppWidget.h3TextFieldStyle(),
+            ),
             12.heightBox,
             Container(
               padding: const EdgeInsets.all(20),
@@ -127,40 +136,61 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
               ),
               child: Column(
                 children: [
-                  _buildDetailRow(Icons.calendar_today, 'Date', dateStr),
+                  _buildDetailRow(
+                    Icons.calendar_today,
+                    context.l10n.dateLabel,
+                    dateStr,
+                  ),
                   const Divider(height: 24, color: ThemeColor.lightGrey),
                   _buildDetailRow(
                     Icons.access_time,
-                    'Time',
-                    '$timeStr - $endTimeStr (${appt.duration} mins)',
+                    context.l10n.timeLabel,
+                    context.l10n.timeWithDuration(
+                      timeStr,
+                      endTimeStr,
+                      appt.duration.toString(),
+                    ),
                   ),
                   const Divider(height: 24, color: ThemeColor.lightGrey),
                   _buildDetailRow(
                     getSportIcon(appt.sport),
-                    'Sport',
-                    appt.sport,
+                    context.l10n.sportLabel,
+                    appt.sport.toLocalizedSport(context),
                   ),
                   const Divider(height: 24, color: ThemeColor.lightGrey),
-                  _buildDetailRow(Icons.location_on, 'Location', appt.location),
+                  _buildDetailRow(
+                    Icons.location_on,
+                    context.l10n.locationLabel,
+                    appt.location,
+                  ),
                 ],
               ),
             ),
             24.heightBox,
 
             if (appt.sessionType == SessionType.remote) ...[
-              Text('Remote Consultation', style: AppWidget.h3TextFieldStyle()),
+              Text(
+                context.l10n.remoteConsultationTitle,
+                style: AppWidget.h3TextFieldStyle(),
+              ),
               12.heightBox,
               _buildRemoteConsultationBox(context, appt, isParent: isParent),
               24.heightBox,
             ],
 
-            Text('Special Needs & Notes', style: AppWidget.h3TextFieldStyle()),
+            Text(
+              context.l10n.specialNeedsNotesTitle,
+              style: AppWidget.h3TextFieldStyle(),
+            ),
             12.heightBox,
-            _buildSpecialNeedsBox(childAsync),
+            _buildSpecialNeedsBox(context, childAsync),
             24.heightBox,
 
             if (appt.status == AppointmentStatus.completed) ...[
-              Text('Session Feedback', style: AppWidget.h3TextFieldStyle()),
+              Text(
+                context.l10n.sessionFeedbackTitle,
+                style: AppWidget.h3TextFieldStyle(),
+              ),
               12.heightBox,
               _buildFeedbackBox(context, ref, appt.id),
             ],
@@ -190,7 +220,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     if (childData != null) {
       final genderText =
           (childData.gender != null && childData.gender!.isNotEmpty)
-              ? ', ${childData.gender}'
+              ? ', ${childData.gender!.toLocalized(context)}'
               : '';
       subtitle = '(${childData.age}y$genderText)';
     }
@@ -240,7 +270,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                 4.heightBox,
 
                 Text(
-                  'Parent: ${appt.parentName}',
+                  context.l10n.parentNameLabel(appt.parentName),
                   style: AppWidget.bodyMedium().copyWith(
                     color: ThemeColor.white.withValues(alpha: 0.8),
                   ),
@@ -298,7 +328,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
               const Icon(Icons.videocam_rounded, color: ThemeColor.darkBlue),
               8.widthBox,
               Text(
-                'In-App Video Session',
+                context.l10n.inAppVideoSession,
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                   color: ThemeColor.darkBlue,
@@ -308,7 +338,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           ),
           8.heightBox,
           Text(
-            'This session will be conducted remotely. Please ensure you have a stable internet connection before joining.',
+            context.l10n.remoteSessionWarning,
             style: AppWidget.bodySmall().copyWith(color: ThemeColor.grey100),
           ),
 
@@ -325,7 +355,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
 
                 AppSnackBar.success(
                   context,
-                  'Navigating to Video Call Room...',
+                  context.l10n.navigatingToVideoCall,
                 );
               },
               child: Container(
@@ -353,7 +383,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     ),
                     8.widthBox,
                     Text(
-                      'Join Video Call',
+                      context.l10n.joinVideoCallAction,
                       style: AppWidget.bodyMedium().copyWith(
                         color: ThemeColor.white,
                         fontWeight: FontWeight.bold,
@@ -372,7 +402,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'Video session ended',
+                context.l10n.videoSessionEnded,
                 style: AppWidget.bodyExtraSmall().copyWith(
                   color: ThemeColor.green,
                 ),
@@ -409,7 +439,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           ),
         ),
         child: Text(
-          'No feedback provided yet.',
+          context.l10n.noFeedbackProvidedYet,
           style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
         ),
       );
@@ -431,13 +461,13 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Focus & Attention',
+                context.l10n.focusAttentionTitle,
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
-                '${feedback.focusLevel}/5',
+                context.l10n.scoreOutOfFive(feedback.focusLevel.toString()),
                 style: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.darkBlue,
                   fontWeight: FontWeight.bold,
@@ -459,13 +489,13 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Energy Level',
+                context.l10n.energyLevelTitle,
                 style: AppWidget.bodyMedium().copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
-                '${feedback.energyLevel}/5',
+                context.l10n.scoreOutOfFive(feedback.energyLevel.toString()),
                 style: AppWidget.bodyMedium().copyWith(
                   color: ThemeColor.darkBlue,
                   fontWeight: FontWeight.bold,
@@ -485,7 +515,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
 
           // Trainer Remarks
           Text(
-            'Trainer Remarks',
+            context.l10n.trainerRemarksTitle,
             style: AppWidget.bodyMedium().copyWith(fontWeight: FontWeight.bold),
           ),
           8.heightBox,
@@ -508,7 +538,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             const Divider(color: ThemeColor.lightGrey),
             24.heightBox,
             Text(
-              'Parent Review',
+              context.l10n.parentReviewTitle,
               style: AppWidget.bodyMedium().copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -548,7 +578,10 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     );
   }
 
-  Widget _buildSpecialNeedsBox(AsyncValue<ChildModel?> childAsync) {
+  Widget _buildSpecialNeedsBox(
+    BuildContext context,
+    AsyncValue<ChildModel?> childAsync,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -567,13 +600,13 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             ),
         error:
             (err, _) => Text(
-              'Error loading details.',
+              context.l10n.errorLoadingDetails,
               style: AppWidget.bodySmall().copyWith(color: ThemeColor.orange),
             ),
         data: (child) {
           if (child == null) {
             return Text(
-              'Child data not found.',
+              context.l10n.childDataNotFound,
               style: AppWidget.bodyMedium().copyWith(color: ThemeColor.grey100),
             );
           }
@@ -595,7 +628,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     ),
                     8.widthBox,
                     Text(
-                      'Notes',
+                      context.l10n.notesTitle,
                       style: AppWidget.bodyMedium().copyWith(
                         color: ThemeColor.orange,
                         fontWeight: FontWeight.bold,
@@ -605,7 +638,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                 ),
                 8.heightBox,
                 Text(
-                  'No specific special needs or remarks provided by the parent.',
+                  context.l10n.noSpecialNeedsOrRemarks,
                   style: AppWidget.bodyMedium().copyWith(
                     color: ThemeColor.grey100,
                   ),
@@ -627,7 +660,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     ),
                     8.widthBox,
                     Text(
-                      'Special Needs',
+                      context.l10n.specialNeedsTitle,
                       style: AppWidget.bodyMedium().copyWith(
                         color: ThemeColor.orange,
                         fontWeight: FontWeight.bold,
@@ -676,7 +709,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     const Icon(Icons.notes, color: ThemeColor.orange, size: 20),
                     8.widthBox,
                     Text(
-                      'Parent Remarks',
+                      context.l10n.parentRemarksTitle,
                       style: AppWidget.bodyMedium().copyWith(
                         color: ThemeColor.orange,
                         fontWeight: FontWeight.bold,
@@ -822,7 +855,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                           ),
                           8.widthBox,
                           Text(
-                            'Review Submitted',
+                            context.l10n.reviewSubmittedStatus,
                             style: AppWidget.h3TextFieldStyle().copyWith(
                               color: ThemeColor.green,
                             ),
@@ -830,7 +863,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                         ],
                       )
                       : BottomActionButton(
-                        label: 'Rate & Review Trainer',
+                        label: context.l10n.rateReviewTrainerAction,
                         isLoading: _isLoading,
                         backgroundColor: ThemeColor.orange,
                         onPressed: () => _handleRateReview(context, ref, appt),
@@ -841,7 +874,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                       const Icon(Icons.check_circle, color: ThemeColor.green),
                       8.widthBox,
                       Text(
-                        'Session Completed',
+                        context.l10n.sessionCompletedStatus,
                         style: AppWidget.h3TextFieldStyle().copyWith(
                           color: ThemeColor.green,
                         ),
@@ -867,7 +900,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
         ),
         child: SafeArea(
           child: BottomActionButton(
-            label: 'Cancel Session',
+            label: context.l10n.cancelSessionAction,
             isLoading: _isLoading,
             backgroundColor: ThemeColor.red,
             onPressed: () => _showCancellationPolicyDialog(context, ref, appt),
@@ -892,7 +925,9 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
         child: SafeArea(
           child: BottomActionButton(
             label:
-                canComplete ? 'Mark as Completed' : 'Waiting for Session Time',
+                canComplete
+                    ? context.l10n.markAsCompletedAction
+                    : context.l10n.waitingForSessionTime,
             isLoading: _isLoading,
             backgroundColor: ThemeColor.green,
             onPressed:
@@ -940,7 +975,10 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Cancel Session', style: AppWidget.h2TextFieldStyle()),
+                    Text(
+                      context.l10n.cancelSessionAction,
+                      style: AppWidget.h2TextFieldStyle(),
+                    ),
                     16.heightBox,
 
                     Container(
@@ -951,7 +989,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                       ),
                       child: Text(
                         useGrace
-                            ? 'Meltdown Grace applied: You will receive a full refund.'
+                            ? context.l10n.meltdownGraceApplied
                             : slaMessage,
                         style: AppWidget.bodyMedium().copyWith(
                           color: ThemeColor.darkBlue,
@@ -965,14 +1003,12 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                         value: useGrace,
                         activeColor: ThemeColor.darkBlue,
                         title: Text(
-                          'Sudden Meltdown? (Grace Period)',
+                          context.l10n.suddenMeltdownGrace,
                           style: AppWidget.bodyMedium().copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: const Text(
-                          "Use your monthly 1-time grace for a full refund due to child's condition.",
-                        ),
+                        subtitle: Text(context.l10n.meltdownGraceDescription),
                         onChanged: (val) {
                           setModalState(() => useGrace = val ?? false);
                         },
@@ -984,9 +1020,15 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Refund:', style: AppWidget.bodyMedium()),
                         Text(
-                          'RM ${useGrace ? appt.amount.toStringAsFixed(2) : refundAmount.toStringAsFixed(2)}',
+                          context.l10n.totalRefundLabel,
+                          style: AppWidget.bodyMedium(),
+                        ),
+                        Text(
+                          context.l10n.rmPriceFormat(
+                            (useGrace ? appt.amount : refundAmount)
+                                .toStringAsFixed(2),
+                          ),
                           style: AppWidget.h3TextFieldStyle().copyWith(
                             color: ThemeColor.green,
                           ),
@@ -996,7 +1038,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                     32.heightBox,
 
                     BottomActionButton(
-                      label: 'Confirm Cancellation',
+                      label: context.l10n.confirmCancellationAction,
                       backgroundColor: ThemeColor.red,
                       isLoading: _isLoading,
                       onPressed: () async {
@@ -1009,7 +1051,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: Text(
-                          'Keep Session',
+                          context.l10n.keepSessionAction,
                           style: AppWidget.bodyMedium().copyWith(
                             color: ThemeColor.grey100,
                           ),
@@ -1047,8 +1089,10 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
             isMeltdownGrace: useGrace,
           );
 
-      AppSnackBar.success(context, 'Appointment cancelled successfully.');
-      context.router.maybePop();
+      if (mounted) {
+        AppSnackBar.success(context, context.l10n.appointmentCancelledSuccess);
+        context.router.maybePop();
+      }
     } catch (e) {
       AppSnackBar.error(context, e.toString());
     } finally {
@@ -1077,7 +1121,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     try {
       final currentUser = ref.read(authNotifierProvider).value;
       if (currentUser == null) {
-        throw Exception('Please login first');
+        throw Exception(context.l10n.pleaseLoginFirst);
       }
 
       final feedbackId = 'fb_${DateTime.now().millisecondsSinceEpoch}';
@@ -1120,11 +1164,16 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       final amountToEarn = earningsData['trainerEarning'] as double;
       final takeRateStr = earningsData['takeRatePercentage'] as String;
 
-      AppSnackBar.success(
-        context,
-        'Session completed! RM ${amountToEarn.toStringAsFixed(2)} (after $takeRateStr platform fee) added to your wallet.',
-      );
-      context.router.maybePop();
+      if (mounted) {
+        AppSnackBar.success(
+          context,
+          context.l10n.sessionCompletedEarnings(
+            amountToEarn.toStringAsFixed(2),
+            takeRateStr,
+          ),
+        );
+        context.router.maybePop();
+      }
     } catch (e) {
       AppSnackBar.error(context, e.toString());
     } finally {
@@ -1160,7 +1209,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           );
 
       if (context.mounted) {
-        AppSnackBar.success(context, 'Thank you for your review!');
+        AppSnackBar.success(context, context.l10n.thankYouForReview);
         setState(() {
           _cachedFeedback = _cachedFeedback?.copyWith(
             rating: result['rating'] as int,
