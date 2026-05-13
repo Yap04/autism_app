@@ -260,17 +260,10 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
                         _buildSettingItem(
                           icon: Icons.logout_outlined,
                           title: context.l10n.logOut,
-                          onTap: () async {
-                            await ref
-                                .read(authNotifierProvider.notifier)
-                                .signOut();
-
-                            context.router.replaceAll([const LoginRoute()]);
-                          },
+                          onTap: _handleLogout,
                         ),
                       ],
                     ),
-
                     8.heightBox,
                   ],
                 ),
@@ -280,6 +273,64 @@ class _ParentProfilePageState extends ConsumerState<ProfilePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (dialogContext) => AlertDialog(
+            backgroundColor: ThemeColor.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              context.l10n.logOut,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: ThemeColor.darkBlue,
+              ),
+            ),
+            content: Text(
+              context.l10n.logOutConfirmation,
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  context.l10n.cancel,
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pop(dialogContext, true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red[400],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    context.l10n.logOut,
+                    style: AppWidget.bodyMedium().copyWith(
+                      color: ThemeColor.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed ?? false) {
+      await ref.read(authNotifierProvider.notifier).signOut();
+      context.router.replaceAll([const LoginRoute()]);
+    }
   }
 
   void _showLanguageBottomSheet(BuildContext context) {

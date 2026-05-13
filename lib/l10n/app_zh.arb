@@ -751,5 +751,6 @@
   "forgotPasswordDescription": "输入您的邮箱，我们将向您发送重置链接。",
   "sendResetLink": "发送重置链接",
   "resetLinkSent": "密码重置链接已发送至您的邮箱。",
-  "cancel": "取消"
+  "cancel": "取消",
+  "logOutConfirmation": "您确定要退出登录吗？"
 }

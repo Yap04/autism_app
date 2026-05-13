@@ -754,6 +754,6 @@
   "forgotPasswordDescription": "Enter your email and we'll send you a reset link.",
   "sendResetLink": "Send Reset Link",
   "resetLinkSent": "Password reset link sent to your email.",
-  "cancel": "Cancel"
-
+  "cancel": "Cancel",
+  "logOutConfirmation": "Are you sure you want to log out?"
 }
