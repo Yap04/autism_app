@@ -230,6 +230,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              backgroundColor: ThemeColor.cream,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
