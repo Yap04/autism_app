@@ -749,5 +749,11 @@
   "accountNumberHint": "Account Number",
   "accountHolderNameLabel": "Account Holder Name",
   "accountHolderNameHint": "Name as per bank account",
-  "saveDetailsAction": "Save Details"
+  "saveDetailsAction": "Save Details",
+  "forgotPassword": "Forgot Password?",
+  "forgotPasswordDescription": "Enter your email and we'll send you a reset link.",
+  "sendResetLink": "Send Reset Link",
+  "resetLinkSent": "Password reset link sent to your email.",
+  "cancel": "Cancel"
+
 }

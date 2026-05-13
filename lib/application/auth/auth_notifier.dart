@@ -211,4 +211,14 @@ class AuthNotifier extends _$AuthNotifier {
       throw Exception('Failed to update profile to server: $e');
     }
   }
+
+  Future<void> forgotPassword({required String email}) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref
+          .read(authRepositoryProvider)
+          .sendPasswordResetEmail(email: email);
+      return state.value;
+    });
+  }
 }

@@ -1,5 +1,4 @@
 abstract class AuthRepository {
-  
   Future<String> loginWithEmailAndPassword({
     required String email,
     required String password,
@@ -13,4 +12,6 @@ abstract class AuthRepository {
   Future<void> signOut();
 
   Future<String?> getCurrentUserId();
+
+  Future<void> sendPasswordResetEmail({required String email});
 }

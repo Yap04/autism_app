@@ -1690,4 +1690,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get saveDetailsAction => '保存信息';
+
+  @override
+  String get forgotPassword => '忘记密码?';
+
+  @override
+  String get forgotPasswordDescription => '输入您的邮箱，我们将向您发送重置链接。';
+
+  @override
+  String get sendResetLink => '发送重置链接';
+
+  @override
+  String get resetLinkSent => '密码重置链接已发送至您的邮箱。';
+
+  @override
+  String get cancel => '取消';
 }

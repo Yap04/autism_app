@@ -67,4 +67,9 @@ class FirebaseAuthRepository implements AuthRepository {
         return 'Authentication failed with error code: $errorCode';
     }
   }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  }
 }

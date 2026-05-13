@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
-import '../../core/extension/widget_ext.dart';
 import '../../core/extension/localization_ext.dart';
+import '../../core/extension/widget_ext.dart';
 import '../../core/routes/app_router.dart';
 import '../../domain/models/user_model.dart';
 import '../shared/snack_bar.dart';
@@ -22,12 +22,15 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _forgotEmailController = TextEditingController();
+
   bool isObscure = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _forgotEmailController.dispose();
     super.dispose();
   }
 
@@ -119,7 +122,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         onToggleObscure:
                             () => setState(() => isObscure = !isObscure),
                       ),
-                      32.heightBox,
+
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: _showForgotPasswordDialog,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 4,
+                            ),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            context.l10n.forgotPassword,
+                            style: AppWidget.bodySmall().copyWith(
+                              color: ThemeColor.darkBlue,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // ─────────────────────────────────────────────────────
+                      20.heightBox,
 
                       SizedBox(
                         width: double.infinity,
@@ -190,6 +217,129 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _showForgotPasswordDialog() {
+    _forgotEmailController.clear();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        var isSending = false;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                context.l10n.forgotPassword,
+                style: AppWidget.h3TextFieldStyle().copyWith(
+                  color: ThemeColor.darkBlue,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.forgotPasswordDescription,
+                    style: AppWidget.bodySmall().copyWith(
+                      color: ThemeColor.grey100,
+                    ),
+                  ),
+                  16.heightBox,
+                  _buildTextField(
+                    controller: _forgotEmailController,
+                    hint: context.l10n.emailHint,
+                    icon: Icons.mail_outline_rounded,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      isSending ? null : () => Navigator.pop(dialogContext),
+                  child: Text(
+                    context.l10n.cancel,
+                    style: AppWidget.bodyMedium().copyWith(
+                      color: ThemeColor.grey100,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap:
+                      isSending
+                          ? null
+                          : () async {
+                            final email = _forgotEmailController.text.trim();
+                            if (email.isEmpty) {
+                              AppSnackBar.error(
+                                context,
+                                context.l10n.fillAllFieldsError,
+                              );
+                              return;
+                            }
+                            setDialogState(() => isSending = true);
+                            await _handleForgotPassword(email, dialogContext);
+                            setDialogState(() => isSending = false);
+                          },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ThemeColor.darkBlue,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child:
+                        isSending
+                            ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                color: ThemeColor.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text(
+                              context.l10n.sendResetLink,
+                              style: AppWidget.bodyMedium().copyWith(
+                                color: ThemeColor.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _handleForgotPassword(
+    String email,
+    BuildContext dialogContext,
+  ) async {
+    await ref.read(authNotifierProvider.notifier).forgotPassword(email: email);
+
+    if (!dialogContext.mounted) return;
+    Navigator.pop(dialogContext);
+
+    final authState = ref.read(authNotifierProvider);
+    if (authState.hasError) {
+      final errorMessage = authState.error.toString().replaceAll(
+        'Exception: ',
+        '',
+      );
+      AppSnackBar.error(context, errorMessage);
+    } else {
+      AppSnackBar.success(context, context.l10n.resetLinkSent);
+    }
   }
 
   Widget _buildLabel(String text) {
