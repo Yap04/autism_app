@@ -23,6 +23,7 @@ class TrainerVerificationNotifier extends _$TrainerVerificationNotifier {
 
   Future<void> submitApplication({
     required List<File> certificateImages,
+    required List<String> existingUrls,
     required List<String> selectedSports,
     required String bio,
   }) async {
@@ -38,7 +39,8 @@ class TrainerVerificationNotifier extends _$TrainerVerificationNotifier {
 
       final userId = currentUser?.id ?? firebaseAuthUser!.uid;
 
-      final uploadedUrls = <String>[];
+      final uploadedUrls = <String>[...existingUrls];
+
       for (final file in certificateImages) {
         final url = await ImageService.uploadToImgBB(file);
         if (url == null) {
@@ -54,24 +56,6 @@ class TrainerVerificationNotifier extends _$TrainerVerificationNotifier {
             certificateUrls: uploadedUrls,
             sports: selectedSports,
             bio: bio,
-          );
-    });
-  }
-
-  Future<void> reviewApplication({
-    required String userId,
-    required bool isApproved,
-    String? reason,
-  }) async {
-    state = const AsyncLoading();
-
-    state = await AsyncValue.guard(() async {
-      await ref
-          .read(trainerRepositoryProvider)
-          .reviewApplication(
-            userId: userId,
-            isApproved: isApproved,
-            reason: reason,
           );
     });
   }
