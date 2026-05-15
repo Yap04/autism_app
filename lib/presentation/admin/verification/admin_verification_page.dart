@@ -2,11 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../application/providers/repository_providers.dart';
 import '../../../application/user/trainer_verification_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/user_model.dart';
+import '../../../infrastructure/services/remote_notification_service.dart';
 import '../../shared/snack_bar.dart';
 import '../../shared/user_avatar.dart';
 
@@ -640,12 +642,31 @@ class AdminVerificationPage extends ConsumerWidget {
 
     try {
       await ref
-          .read(trainerVerificationNotifierProvider.notifier)
+          .read(trainerRepositoryProvider)
           .reviewApplication(
             userId: userId,
             isApproved: isApproved,
             reason: reason,
           );
+
+      final fcmToken = await ref
+          .read(userRepositoryProvider)
+          .getUserFcmToken(userId);
+
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        final notifyTitle =
+            isApproved ? 'Application Approved 🎉' : 'Application Update';
+        final notifyBody =
+            isApproved
+                ? 'Congratulations! Your trainer application has been approved.'
+                : 'Your trainer application has been rejected. Reason: $reason';
+
+        await RemoteNotificationService.notifyOtherUser(
+          targetFcmToken: fcmToken,
+          title: notifyTitle,
+          body: notifyBody,
+        );
+      }
 
       if (context.mounted) {
         if (isApproved) {
