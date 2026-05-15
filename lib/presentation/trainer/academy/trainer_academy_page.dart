@@ -11,6 +11,7 @@ import '../../../../core/extension/localization_ext.dart';
 import '../../../../core/extension/widget_ext.dart';
 import '../../../application/content/content_provider.dart';
 import '../../../core/constant/badge_constant.dart';
+import '../../../core/routes/app_router.dart';
 import '../../../domain/models/content_model.dart';
 import '../../../domain/models/user_model.dart';
 import '../../parent/home/content/shared/content_card.dart';
@@ -41,6 +42,15 @@ class _TrainerAcademyPageState extends ConsumerState<TrainerAcademyPage> {
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
+        leading:
+            isPendingTrainer
+                ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: ThemeColor.black),
+                  onPressed: () {
+                    context.router.replaceAll([const LoginRoute()]);
+                  },
+                )
+                : null,
         title: Text(
           context.l10n.academyTitle,
           style: AppWidget.h2TextFieldStyle(),

@@ -126,6 +126,15 @@ class _TrainerVerificationPageState
       appBar: AppBar(
         backgroundColor: ThemeColor.cream,
         centerTitle: true,
+        leading:
+            isPending || isRejected
+                ? IconButton(
+                  icon: const Icon(Icons.arrow_back, color: ThemeColor.black),
+                  onPressed: () {
+                    context.router.replaceAll([const LoginRoute()]);
+                  },
+                )
+                : null,
         title: Text(
           context.l10n.becomeTrainerTitle,
           style: AppWidget.h2TextFieldStyle(),
