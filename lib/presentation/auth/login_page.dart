@@ -328,7 +328,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   ) async {
     await ref.read(authNotifierProvider.notifier).forgotPassword(email: email);
 
-    if (!dialogContext.mounted) return;
+    if (!dialogContext.mounted) {
+      return;
+    }
     Navigator.pop(dialogContext);
 
     final authState = ref.read(authNotifierProvider);

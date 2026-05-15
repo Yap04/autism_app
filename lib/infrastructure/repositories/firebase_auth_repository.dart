@@ -53,6 +53,8 @@ class FirebaseAuthRepository implements AuthRepository {
 
   String _handleAuthError(String errorCode) {
     switch (errorCode) {
+      case 'invalid-credential':
+        return 'Invalid email or password. Please try again.';
       case 'user-not-found':
         return 'Account with this email does not exist. Please sign up first.';
       case 'wrong-password':
