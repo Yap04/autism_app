@@ -1764,4 +1764,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logOutConfirmation => 'Are you sure you want to log out?';
+
+  @override
+  String get pendingSessionFreeCancellation =>
+      'This session is still pending. Cancelling now is free and provides a full refund';
 }

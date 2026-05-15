@@ -755,5 +755,6 @@
   "sendResetLink": "Send Reset Link",
   "resetLinkSent": "Password reset link sent to your email.",
   "cancel": "Cancel",
-  "logOutConfirmation": "Are you sure you want to log out?"
+  "logOutConfirmation": "Are you sure you want to log out?",
+  "pendingSessionFreeCancellation": "This session is still pending. Cancelling now is free and provides a full refund"
 }

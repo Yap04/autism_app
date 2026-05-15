@@ -1708,4 +1708,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logOutConfirmation => '您确定要退出登录吗？';
+
+  @override
+  String get pendingSessionFreeCancellation => '此课程仍在待定中。现在取消是免费的，并可获得全额退款。';
 }

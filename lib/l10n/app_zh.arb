@@ -752,5 +752,6 @@
   "sendResetLink": "发送重置链接",
   "resetLinkSent": "密码重置链接已发送至您的邮箱。",
   "cancel": "取消",
-  "logOutConfirmation": "您确定要退出登录吗？"
+  "logOutConfirmation": "您确定要退出登录吗？",
+  "pendingSessionFreeCancellation": "此课程仍在待定中。现在取消是免费的，并可获得全额退款。"
 }

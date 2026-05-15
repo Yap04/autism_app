@@ -988,9 +988,11 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        useGrace
+                        isPending
+                            ? context.l10n.pendingSessionFreeCancellation
+                            : (useGrace
                             ? context.l10n.meltdownGraceApplied
-                            : slaMessage,
+                                : slaMessage),
                         style: AppWidget.bodyMedium().copyWith(
                           color: ThemeColor.darkBlue,
                         ),

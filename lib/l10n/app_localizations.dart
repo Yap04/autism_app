@@ -3187,6 +3187,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to log out?'**
   String get logOutConfirmation;
+
+  /// No description provided for @pendingSessionFreeCancellation.
+  ///
+  /// In en, this message translates to:
+  /// **'This session is still pending. Cancelling now is free and provides a full refund'**
+  String get pendingSessionFreeCancellation;
 }
 
 class _AppLocalizationsDelegate
