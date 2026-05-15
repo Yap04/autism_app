@@ -15,7 +15,21 @@ class SlaService {
 
     final creditsUsed = appt.duration ~/ 60;
 
-    // 1. Cancel before 24 hours
+    // 1. Handle pending sessions: Full refund, no penalty
+    if (appt.status == AppointmentStatus.pending) {
+      return {
+        'isFree': true,
+        'refundAmount':
+            isCredit ? creditsUsed.toDouble() : (totalPaid + transportFee),
+        'trainerCompensation': 0.0,
+        'message':
+            isCredit
+                ? 'Request cancelled: $creditsUsed Session Credit(s) refunded.'
+                : 'Request cancelled: Full refund (RM ${(totalPaid + transportFee).toStringAsFixed(2)}) initiated.',
+      };
+    }
+
+    // 2. Cancel before 24 hours
     if (hoursUntilSession >= 24) {
       return {
         'isFree': true,
@@ -29,11 +43,11 @@ class SlaService {
       };
     }
 
-    // 2. Cancel within 24 hours
+    // 3. Cancel within 24 hours
     final penalty = totalPaid * penaltyRate;
 
     if (isCredit) {
-      // 🚀 Credit Logic: Forfeit credit, refund 0, but platform compensate the trainer
+      // Credit Logic: Forfeit credit, refund 0, but platform compensate the trainer
       return {
         'isFree': false,
         'refundAmount': 0.0,
