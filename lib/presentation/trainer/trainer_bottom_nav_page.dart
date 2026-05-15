@@ -50,6 +50,13 @@ class _TrainerBottomNavPageState extends ConsumerState<TrainerBottomNavPage> {
     final isPendingTrainer =
         currentUser.verificationStatus == VerificationStatus.pending;
 
+    final isRejectedTrainer =
+        currentUser.verificationStatus == VerificationStatus.rejected;
+
+    if (isRejectedTrainer) {
+      return const Scaffold(body: TrainerVerificationPage());
+    }
+
     if (isPendingTrainer) {
       final hasSubmittedDocs =
           currentUser.certificateUrls != null &&
