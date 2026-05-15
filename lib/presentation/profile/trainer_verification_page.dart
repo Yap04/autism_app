@@ -14,8 +14,10 @@ import '../../application/user/trainer_verification_provider.dart';
 import '../../core/constant/sport_constant.dart';
 import '../../core/extension/sport_ext.dart';
 import '../../core/routes/app_router.dart';
+import '../../domain/models/user_model.dart';
 import '../shared/app_text_field.dart';
 import '../shared/bottom_action_button.dart';
+import '../shared/cached_image.dart';
 import '../shared/snack_bar.dart';
 
 @RoutePage()
@@ -34,8 +36,32 @@ class _TrainerVerificationPageState
 
   final List<String> _selectedSports = [];
 
-  final List<File> _selectedImages = [];
+  final List<File> _selectedLocalImages = [];
+  final List<String> _existingImagesUrls = [];
+
   final ImagePicker _picker = ImagePicker();
+
+  bool _isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final user = ref.read(authNotifierProvider).value;
+      if (user != null) {
+        if (user.bio != null) {
+          _bioController.text = user.bio!;
+        }
+        if (user.sports.isNotEmpty) {
+          _selectedSports.addAll(user.sports);
+        }
+        if (user.certificateUrls != null && user.certificateUrls!.isNotEmpty) {
+          _existingImagesUrls.addAll(user.certificateUrls!);
+        }
+      }
+      _isInitialized = true;
+    }
+  }
 
   @override
   void dispose() {
@@ -48,14 +74,16 @@ class _TrainerVerificationPageState
 
     if (pickedFiles.isNotEmpty) {
       setState(() {
-        _selectedImages.addAll(pickedFiles.map((xFile) => File(xFile.path)));
+        _selectedLocalImages.addAll(
+          pickedFiles.map((xFile) => File(xFile.path)),
+        );
       });
     }
   }
 
   void _removeImage(int index) {
     setState(() {
-      _selectedImages.removeAt(index);
+      _selectedLocalImages.removeAt(index);
     });
   }
 
@@ -68,7 +96,7 @@ class _TrainerVerificationPageState
       AppSnackBar.error(context, context.l10n.pleaseSelectAtLeastOneSport);
       return;
     }
-    if (_selectedImages.isEmpty) {
+    if (_selectedLocalImages.isEmpty && _existingImagesUrls.isEmpty) {
       AppSnackBar.error(context, context.l10n.pleaseUploadCertificate);
       return;
     }
@@ -81,7 +109,8 @@ class _TrainerVerificationPageState
       await ref
           .read(trainerVerificationNotifierProvider.notifier)
           .submitApplication(
-            certificateImages: _selectedImages,
+            certificateImages: _selectedLocalImages,
+            existingUrls: _existingImagesUrls,
             selectedSports: _selectedSports,
             bio: _bioController.text.trim(),
           );
@@ -95,6 +124,7 @@ class _TrainerVerificationPageState
       if (currentUser != null) {
         final updatedUser = currentUser.copyWith(
           certificateUrls: ['submitted'],
+          verificationStatus: VerificationStatus.pending,
         );
         ref.read(authNotifierProvider.notifier).updateLocalUser(updatedUser);
       }
@@ -120,6 +150,15 @@ class _TrainerVerificationPageState
   Widget build(BuildContext context) {
     final verificationState = ref.watch(trainerVerificationNotifierProvider);
     final isLoading = verificationState.isLoading;
+
+    final currentUser = ref.watch(authNotifierProvider).value;
+    final isPending =
+        currentUser?.verificationStatus == VerificationStatus.pending;
+    final isRejected =
+        currentUser?.verificationStatus == VerificationStatus.rejected;
+
+    final totalImagesCount =
+        _existingImagesUrls.length + _selectedLocalImages.length;
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -147,6 +186,52 @@ class _TrainerVerificationPageState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (isRejected) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ThemeColor.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ThemeColor.red.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: ThemeColor.red,
+                            size: 20,
+                          ),
+                          8.widthBox,
+                          Text(
+                            'Application Rejected',
+                            style: AppWidget.bodyMedium().copyWith(
+                              color: ThemeColor.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      8.heightBox,
+                      Text(
+                        currentUser?.rejectReason ??
+                            'Your application was rejected. Please update your details and resubmit.',
+                        style: AppWidget.bodySmall().copyWith(
+                          color: ThemeColor.red,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                24.heightBox,
+              ],
+
               Text(
                 context.l10n.joinTrainerCommunityDescription,
                 style: AppWidget.bodyMedium().copyWith(
@@ -266,7 +351,7 @@ class _TrainerVerificationPageState
               ),
               16.heightBox,
 
-              if (_selectedImages.isEmpty)
+              if (totalImagesCount == 0)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 40),
@@ -301,18 +386,29 @@ class _TrainerVerificationPageState
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
-                  itemCount: _selectedImages.length,
+                  itemCount: totalImagesCount,
                   itemBuilder: (context, index) {
+                    final isExistingImage = index < _existingImagesUrls.length;
+
                     return Stack(
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            _selectedImages[index],
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
+                          child:
+                              isExistingImage
+                                  ? CachedImage(
+                                    imageUrl: _existingImagesUrls[index],
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    borderRadius: 0,
+                                  )
+                                  : Image.file(
+                                    _selectedLocalImages[index -
+                                        _existingImagesUrls.length],
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
                         ),
                         Positioned(
                           top: 4,
@@ -328,7 +424,7 @@ class _TrainerVerificationPageState
                               child: const Icon(
                                 Icons.close,
                                 size: 14,
-                                color: Colors.white,
+                                color: ThemeColor.white,
                               ),
                             ),
                           ),
@@ -340,7 +436,10 @@ class _TrainerVerificationPageState
 
               40.heightBox,
               BottomActionButton(
-                label: context.l10n.submitApplicationAction,
+                label:
+                    isRejected
+                        ? 'Resubmit Application'
+                        : context.l10n.submitApplicationAction,
                 isLoading: isLoading,
                 onPressed: isLoading ? null : _submitApplication,
               ),
