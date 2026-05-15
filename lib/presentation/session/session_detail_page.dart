@@ -885,7 +885,9 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       );
     }
 
-    if (appt.status == AppointmentStatus.accepted && isParent) {
+    if ((appt.status == AppointmentStatus.accepted ||
+            appt.status == AppointmentStatus.pending) &&
+        isParent) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
@@ -947,15 +949,23 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     WidgetRef ref,
     AppointmentModel appt,
   ) async {
+    final isPending = appt.status == AppointmentStatus.pending;
     final sla = SlaService.calculateCancellation(appt);
     final currentUser = ref.read(authNotifierProvider).value;
 
-    final isFree = sla['isFree'] as bool;
+    final isFree = isPending || sla['isFree'] as bool;
     final slaMessage = sla['message'] as String;
     final refundAmount = sla['refundAmount'] as double;
 
-    final hasGrace = (currentUser?.meltdownGraceUsedThisMonth ?? 0) < 1;
+    final hasGrace =
+        !isPending && (currentUser?.meltdownGraceUsedThisMonth ?? 0) < 1;
     var useGrace = false;
+
+    final isCredit = appt.paymentMethod == PaymentMethod.credit;
+    final creditsUsed = appt.duration ~/ 60;
+
+    final fullRefundValue =
+        isCredit ? creditsUsed.toDouble() : (appt.amount + (appt.transportFee));
 
     await showModalBottomSheet(
       context: context,
@@ -964,6 +974,8 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final displayRefund = useGrace ? fullRefundValue : refundAmount;
+
             return Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
@@ -991,7 +1003,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                         isPending
                             ? context.l10n.pendingSessionFreeCancellation
                             : (useGrace
-                            ? context.l10n.meltdownGraceApplied
+                                ? context.l10n.meltdownGraceApplied
                                 : slaMessage),
                         style: AppWidget.bodyMedium().copyWith(
                           color: ThemeColor.darkBlue,
@@ -1027,10 +1039,11 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
                           style: AppWidget.bodyMedium(),
                         ),
                         Text(
-                          context.l10n.rmPriceFormat(
-                            (useGrace ? appt.amount : refundAmount)
-                                .toStringAsFixed(2),
-                          ),
+                          isCredit
+                              ? '${displayRefund.toInt()} ${displayRefund.toInt() <= 1 ? context.l10n.creditSingular : context.l10n.creditsPlural}'
+                              : context.l10n.rmPriceFormat(
+                                displayRefund.toStringAsFixed(2),
+                              ),
                           style: AppWidget.h3TextFieldStyle().copyWith(
                             color: ThemeColor.green,
                           ),
@@ -1078,7 +1091,15 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     setState(() => _isLoading = true);
 
     try {
-      final refund = useGrace ? appt.amount : (sla['refundAmount'] as double);
+      final isCredit = appt.paymentMethod == PaymentMethod.credit;
+      final creditsUsed = appt.duration ~/ 60;
+      final fullRefundAmount =
+          isCredit
+              ? creditsUsed.toDouble()
+              : (appt.amount + (appt.transportFee));
+
+      final refund =
+          useGrace ? fullRefundAmount : (sla['refundAmount'] as double);
       final compensation =
           useGrace ? 0.0 : (sla['trainerCompensation'] as double);
 
