@@ -61,12 +61,15 @@ class FirebaseTrainerRepository implements TrainerRepository {
   }) async {
     try {
       final updates = <String, dynamic>{
-        'role': isApproved ? UserRole.trainer.name : UserRole.parent.name,
         'verificationStatus':
             isApproved
                 ? VerificationStatus.approved.name
                 : VerificationStatus.rejected.name,
       };
+
+      if (isApproved) {
+        updates['role'] = UserRole.trainer.name;
+      }
 
       if (!isApproved && reason != null) {
         updates['rejectReason'] = reason;
