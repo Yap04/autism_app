@@ -70,7 +70,7 @@ class TrainerDashboardPage extends ConsumerWidget {
                 top: 24,
                 left: 24,
                 right: 24,
-                bottom: keyboardHeight + 24,
+                bottom: keyboardHeight > 0 ? keyboardHeight + 16 : 24,
               ),
               decoration: const BoxDecoration(
                 color: ThemeColor.cream,
@@ -238,106 +238,116 @@ class TrainerDashboardPage extends ConsumerWidget {
                                   );
                                 }).toList(),
                           ),
-                          10.heightBox,
+
+                          24.heightBox,
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: ThemeColor.lightGrey),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            context
+                                                .l10n
+                                                .offerHomeBasedSessionsLabel,
+                                            style: AppWidget.bodyMedium()
+                                                .copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                          4.heightBox,
+                                          Text(
+                                            context
+                                                .l10n
+                                                .offerHomeBasedSessionsDesc,
+                                            style: AppWidget.bodyExtraSmall()
+                                                .copyWith(
+                                                  color: ThemeColor.grey100,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: tempAcceptsHomeBased,
+                                      activeThumbColor: ThemeColor.darkBlue,
+                                      onChanged: (v) {
+                                        setModalState(() {
+                                          tempAcceptsHomeBased = v;
+                                          if (!v) {
+                                            transportFeeController.clear();
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                if (tempAcceptsHomeBased) ...[
+                                  16.heightBox,
+                                  const Divider(color: ThemeColor.lightGrey),
+                                  12.heightBox,
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.directions_car,
+                                        color: ThemeColor.grey100,
+                                        size: 20,
+                                      ),
+                                      12.widthBox,
+                                      Expanded(
+                                        child: Text(
+                                          context.l10n.travelSurchargeLabel,
+                                          style: AppWidget.bodyMedium()
+                                              .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 100,
+                                        child: AppTextField(
+                                          controller: transportFeeController,
+                                          hintText: context.l10n.rmZeroHint,
+                                          fillColor: ThemeColor.cream,
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                decimal: true,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  4.heightBox,
+                                  Text(
+                                    context.l10n.travelSurchargeDesc,
+                                    style: AppWidget.bodyExtraSmall().copyWith(
+                                      color: ThemeColor.green,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          16.heightBox,
                         ],
                       ),
                     ),
                   ),
 
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: ThemeColor.lightGrey),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    context.l10n.offerHomeBasedSessionsLabel,
-                                    style: AppWidget.bodyMedium().copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  4.heightBox,
-                                  Text(
-                                    context.l10n.offerHomeBasedSessionsDesc,
-                                    style: AppWidget.bodyExtraSmall().copyWith(
-                                      color: ThemeColor.grey100,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Switch(
-                              value: tempAcceptsHomeBased,
-                              activeThumbColor: ThemeColor.darkBlue,
-                              onChanged: (v) {
-                                setModalState(() {
-                                  tempAcceptsHomeBased = v;
-                                  if (!v) {
-                                    transportFeeController.clear();
-                                  }
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        if (tempAcceptsHomeBased) ...[
-                          16.heightBox,
-                          const Divider(color: ThemeColor.lightGrey),
-                          12.heightBox,
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.directions_car,
-                                color: ThemeColor.grey100,
-                                size: 20,
-                              ),
-                              12.widthBox,
-                              Expanded(
-                                child: Text(
-                                  context.l10n.travelSurchargeLabel,
-                                  style: AppWidget.bodyMedium().copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 100,
-                                child: AppTextField(
-                                  controller: transportFeeController,
-                                  hintText: context.l10n.rmZeroHint,
-                                  fillColor: ThemeColor.cream,
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          4.heightBox,
-                          Text(
-                            context.l10n.travelSurchargeDesc,
-                            style: AppWidget.bodyExtraSmall().copyWith(
-                              color: ThemeColor.green,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-
-                  24.heightBox,
+                  16.heightBox,
 
                   BottomActionButton(
                     label: context.l10n.saveProfileButton,
