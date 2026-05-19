@@ -88,6 +88,11 @@ class AdminSideMenu extends ConsumerWidget {
                   title: 'Support',
                   index: 6,
                 ),
+                _buildMenuItem(
+                  icon: Icons.attach_money_rounded,
+                  title: 'Fees',
+                  index: 7,
+                ),
               ],
             ),
           ),

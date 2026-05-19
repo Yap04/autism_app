@@ -10,6 +10,7 @@ import '../../presentation/admin/content/admin_content_editor_page.dart';
 import '../../presentation/admin/content/admin_content_page.dart';
 import '../../presentation/admin/content/admin_grant_cpd_page.dart';
 import '../../presentation/admin/dashboard/admin_dashboard_page.dart';
+import '../../presentation/admin/fees/admin_fees_page.dart';
 import '../../presentation/admin/layout/admin_layout_page.dart';
 import '../../presentation/admin/support/admin_support_page.dart';
 import '../../presentation/admin/transactions/admin_transactions_page.dart';
@@ -89,6 +90,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: AdminUsersRoute.page),
         AutoRoute(page: AdminContentRoute.page),
         AutoRoute(page: AdminSupportRoute.page),
+        AutoRoute(page: AdminFeesRoute.page),
       ],
     ),
     AutoRoute(page: AdminGrantCpdRoute.page),

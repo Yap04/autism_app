@@ -21,6 +21,7 @@ class AdminLayoutPage extends ConsumerWidget {
         AdminUsersRoute(),
         AdminContentRoute(),
         AdminSupportRoute(),
+        AdminFeesRoute(),
       ],
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
