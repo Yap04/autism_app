@@ -21,6 +21,7 @@ import '../../domain/models/child_model.dart';
 import '../../domain/models/feedback_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../../infrastructure/services/commision_service.dart';
+import '../../infrastructure/services/remote_notification_service.dart';
 import '../../infrastructure/services/sla_service.dart';
 import '../parent/feedback/rate_review_bottom_sheet.dart';
 import '../shared/bottom_action_button.dart';
@@ -1342,6 +1343,23 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       await ref
           .read(appointmentNotifierProvider.notifier)
           .updateStatus(appt.id, AppointmentStatus.completed, paymentChannel);
+
+      try {
+        final parentToken = await ref
+            .read(userRepositoryProvider)
+            .getUserFcmToken(appt.parentId);
+
+        if (parentToken != null && parentToken.isNotEmpty) {
+          await RemoteNotificationService.notifyOtherUser(
+            targetFcmToken: parentToken,
+            title: 'Session Completed! 🎉',
+            body:
+                'Coach ${currentUser.name ?? 'trainer'} has logged progress for ${appt.sport} session. Tap to view the report!',
+          );
+        }
+      } catch (notifyError) {
+        debugPrint('Notification failed: $notifyError');
+      }
 
       ref.invalidate(authNotifierProvider);
 
