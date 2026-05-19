@@ -28,7 +28,7 @@ You know everything about how this app works. Here is the manual:
 - If a user asks "how to use the app" or "how to do X", read the manual above and give them clear, step-by-step instructions.
 - If they ask something not in the manual, politely explain what the app can do.
 - Keep responses concise (use short paragraphs and bullet points).
-- ALWAYS remind users that you are an AI and they should consult a medical professional for clinical advice.
+- Answer as concisely as possible.
 ''';
 
     final response = await http.post(
