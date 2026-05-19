@@ -245,15 +245,44 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
     final sportIcon = getSportIcon(sport);
 
     String primaryButtonText;
+    String secondaryButtonText;
+    VoidCallback onPrimaryTap;
+    VoidCallback onSecondaryTap;
+
     if (status == 'pending') {
       primaryButtonText = context.l10n.acceptRequestAction;
+      secondaryButtonText = context.l10n.messageParentAction;
+      onPrimaryTap =
+          () => context.pushRoute(SessionDetailRoute(appointment: booking));
+      onSecondaryTap =
+          () => context.pushRoute(
+            ChatRoute(trainerId: booking.parentId, trainerName: parentName),
+          );
     } else if (status == 'active') {
-      primaryButtonText =
-          hasPendingBooking
-              ? context.l10n.reviewNewRequestAction
-              : context.l10n.logProgressAction;
+      secondaryButtonText = context.l10n.messageParentAction;
+      onSecondaryTap =
+          () => context.pushRoute(
+            ChatRoute(trainerId: booking.parentId, trainerName: parentName),
+          );
+      if (hasPendingBooking) {
+        primaryButtonText = context.l10n.reviewNewRequestAction;
+        onPrimaryTap =
+            () => context.pushRoute(SessionDetailRoute(appointment: booking));
+      } else {
+        primaryButtonText = context.l10n.viewPerformanceAction;
+        onPrimaryTap =
+            () => context.pushRoute(StudentProgressRoute(student: child));
+      }
     } else {
       primaryButtonText = context.l10n.viewHistoryAction;
+      secondaryButtonText = context.l10n.messageParentAction;
+
+      onPrimaryTap =
+          () => context.pushRoute(StudentProgressRoute(student: child));
+      onSecondaryTap =
+          () => context.pushRoute(
+            ChatRoute(trainerId: booking.parentId, trainerName: parentName),
+          );
     }
 
     return Container(
@@ -398,9 +427,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    context.pushRoute(StudentProgressRoute(student: child));
-                  },
+                  onTap: onSecondaryTap,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
@@ -413,9 +440,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                       ),
                     ),
                     child: Text(
-                      status == 'pending'
-                          ? context.l10n.messageParentAction
-                          : context.l10n.viewPerformanceAction,
+                      secondaryButtonText,
                       style: AppWidget.bodySmall().copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -429,7 +454,7 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                   clipBehavior: Clip.none,
                   children: [
                     GestureDetector(
-                      onTap: () {},
+                      onTap: onPrimaryTap,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         alignment: Alignment.center,
