@@ -9,6 +9,7 @@ import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../domain/models/appointment_model.dart';
+import '../../../infrastructure/services/remote_notification_service.dart';
 import '../../shared/snack_bar.dart';
 
 @RoutePage()
@@ -372,6 +373,38 @@ class AdminAppointmentsPage extends ConsumerWidget {
                             app.id,
                             AppointmentStatus.cancelled,
                           );
+
+                      try {
+                        final userRepo = ref.read(userRepositoryProvider);
+
+                        final parentToken = await userRepo.getUserFcmToken(
+                          app.parentId,
+                        );
+                        if (parentToken != null && parentToken.isNotEmpty) {
+                          await RemoteNotificationService.notifyOtherUser(
+                            targetFcmToken: parentToken,
+                            title: 'Session Cancelled ⚠️',
+                            body:
+                                'Your ${app.sport} session has been cancelled by the system administrator.',
+                          );
+                        }
+
+                        final trainerToken = await userRepo.getUserFcmToken(
+                          app.trainerId,
+                        );
+                        if (trainerToken != null && trainerToken.isNotEmpty) {
+                          await RemoteNotificationService.notifyOtherUser(
+                            targetFcmToken: trainerToken,
+                            title: 'Session Cancelled ⚠️',
+                            body:
+                                'The ${app.sport} session with ${app.parentName} has been cancelled by the system administrator.',
+                          );
+                        }
+                      } catch (notifyError) {
+                        debugPrint(
+                          'Failed to send admin intervention notification: $notifyError',
+                        );
+                      }
 
                       if (context.mounted) {
                         Navigator.pop(context);
