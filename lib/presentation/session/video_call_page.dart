@@ -76,6 +76,10 @@ class _VideoCallPageState extends State<VideoCallPage> {
     _agoraService.toggleVideo(_videoDisabled);
   }
 
+  void _onSwitchCamera() {
+    _agoraService.engine.switchCamera();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +122,25 @@ class _VideoCallPageState extends State<VideoCallPage> {
                                 ),
                               ),
                     ),
+                  ),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: RawMaterialButton(
+                  onPressed: _onSwitchCamera,
+                  shape: const CircleBorder(),
+                  fillColor: Colors.white.withValues(
+                    alpha: 0.5,
+                  ), // 这里我加了一点透明度，看起来不那么突兀
+                  padding: const EdgeInsets.all(12), // 稍微减小一点 padding
+                  child: const Icon(
+                    Icons.switch_camera,
+                    color: Colors.white, // 改为白色图标
+                    size: 24,
                   ),
                 ),
               ),
