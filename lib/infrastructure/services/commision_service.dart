@@ -1,15 +1,17 @@
-class CommissionService {
-  static const int masterCoachThreshold =
-      30; // Complete 30 Sessions to become master coach
-  static const double standardRate = 0.20; // Standard commission: 20%
-  static const double masterRate = 0.10; // Master commission: 10%
+import '../../domain/models/fees_config_model.dart';
 
-  /// Calculates the commission and trainer's net earnings for a single session
+class CommissionService {
+  // Calculates the commission and trainer's net earnings for a single session
   static Map<String, dynamic> calculateEarnings({
     required double sessionAmount,
     required double transportFee,
     required int completedSessions,
+    required FeesConfigModel config,
   }) {
+    final masterCoachThreshold = config.commThreshold;
+    final standardRate = config.commStandardRate;
+    final masterRate = config.commMasterRate;
+
     // Determine if the user is a Master Coach
     final isMasterCoach = completedSessions >= masterCoachThreshold;
 
@@ -19,6 +21,7 @@ class CommissionService {
     // Calculate platform fee and trainer's actual earnings
     final platformFee = sessionAmount * takeRate;
     final trainerEarning = (sessionAmount - platformFee) + transportFee;
+
     return {
       'isMasterCoach': isMasterCoach,
       'takeRate': takeRate,

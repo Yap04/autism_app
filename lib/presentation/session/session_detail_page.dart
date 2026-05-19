@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../application/admin/fees/fees_provider.dart';
 import '../../application/appointment/appointment_notifier.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../application/child/child_provider.dart';
@@ -19,6 +20,7 @@ import '../../core/routes/app_router.dart';
 import '../../domain/models/appointment_model.dart';
 import '../../domain/models/child_model.dart';
 import '../../domain/models/feedback_model.dart';
+import '../../domain/models/fees_config_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../../infrastructure/services/commision_service.dart';
 import '../../infrastructure/services/remote_notification_service.dart';
@@ -1069,8 +1071,24 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     WidgetRef ref,
     AppointmentModel appt,
   ) async {
+    setState(() => _isLoading = true);
+
+    FeesConfigModel config;
+    try {
+      config = await ref.read(feesRepositoryProvider).getFeesConfig();
+      ref.read(feesConfigProvider.notifier).forceUpdateLocalState(config);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (context.mounted) {
+        AppSnackBar.error(context, 'Failed to load cancellation policies.');
+      }
+      return;
+    }
+
+    setState(() => _isLoading = false);
+
     final isPending = appt.status == AppointmentStatus.pending;
-    final sla = SlaService.calculateCancellation(appt);
+    final sla = SlaService.calculateCancellation(appt, config);
     final currentUser = ref.read(authNotifierProvider).value;
 
     final isFree = isPending || sla['isFree'] as bool;
@@ -1369,10 +1387,13 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
 
       final transportFee = appt.transportFee;
 
+      final config = await ref.read(feesConfigProvider.future);
+
       final earningsData = CommissionService.calculateEarnings(
         sessionAmount: baseSessionAmount,
         transportFee: transportFee,
         completedSessions: currentCompletedCount,
+        config: config,
       );
 
       final amountToEarn = earningsData['trainerEarning'] as double;

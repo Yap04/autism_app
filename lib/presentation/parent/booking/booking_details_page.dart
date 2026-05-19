@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../application/admin/fees/fees_provider.dart';
 import '../../../application/appointment/appointment_notifier.dart';
 import '../../../application/auth/auth_notifier.dart';
 import '../../../application/child/child_provider.dart';
@@ -51,7 +52,6 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
   int _selectedDuration = 60;
 
-  final double _hourlyPrice = 80;
   late PaymentMethod _selectedPaymentMethod;
 
   String? _selectedSport;
@@ -69,6 +69,18 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
         initialCredits >= _selectedWeeks
             ? PaymentMethod.credit
             : PaymentMethod.singlePay;
+  }
+
+  double _calculateHourlyPrice() {
+    final config = ref.read(feesConfigProvider).value;
+    final basePrice = config?.baseHourlyRate ?? 80.0;
+
+    final discount =
+        _sessionType == SessionType.remote
+            ? (config?.remoteDiscountAmount ?? 0.0)
+            : 0.0;
+
+    return basePrice - discount;
   }
 
   String _getEndTimeString(BuildContext context) {
@@ -250,9 +262,25 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
 
     final user = ref.read(authNotifierProvider).value;
     final credits = user?.sessionCredits ?? 0;
+
     final durationInHours = _selectedDuration / 60.0;
+    final config = ref.read(feesConfigProvider).value;
+
+    final baseHourlyPrice = config?.baseHourlyRate ?? 80.0;
+    final singleSessionBaseFee = baseHourlyPrice * durationInHours;
+
+    final remoteDiscountAmount =
+        _sessionType == SessionType.remote
+            ? (config?.remoteDiscountAmount ?? 0.0)
+            : 0.0;
+
+    final remoteDiscountTotal =
+        (remoteDiscountAmount * durationInHours) * _selectedWeeks;
+
+    final totalPrice =
+        (singleSessionBaseFee * _selectedWeeks) - remoteDiscountTotal;
+
     final requiredCredits = (_selectedDuration ~/ 60) * _selectedWeeks;
-    final totalPrice = _hourlyPrice * durationInHours * _selectedWeeks;
     final hasEnoughCredits = credits >= requiredCredits;
 
     if (isHomeBased) {
@@ -265,6 +293,10 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
     await PaymentBottomSheet.show(
       context: context,
       totalPrice: totalPrice,
+      singleSessionBaseFee: singleSessionBaseFee,
+      durationMinutes: _selectedDuration,
+      weeks: _selectedWeeks,
+      remoteDiscountTotal: remoteDiscountTotal,
       requiredCredits: requiredCredits,
       availableCredits: credits,
       hasEnoughCredits: hasEnoughCredits,
@@ -308,7 +340,8 @@ class _BookingDetailsPageState extends ConsumerState<BookingDetailsPage> {
           isHomeBased ? (trainer?.travelSurcharge ?? 0.0) : 0.0;
 
       final durationInHours = _selectedDuration / 60.0;
-      final sessionAmount = _hourlyPrice * durationInHours;
+      final currentHourlyPrice = _calculateHourlyPrice();
+      final sessionAmount = currentHourlyPrice * durationInHours;
 
       final singleSessionTotal = sessionAmount + transportFeePerSession;
       final totalPrice = singleSessionTotal * _selectedWeeks;

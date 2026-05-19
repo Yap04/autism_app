@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/models/appointment_model.dart';
+import '../../domain/models/fees_config_model.dart';
 import '../../domain/models/transaction_model.dart';
 import '../../domain/repositories/appointment_repository.dart';
 import '../services/commision_service.dart';
@@ -118,9 +119,28 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
         final duration = (appData['duration'] as num?)?.toInt() ?? 60;
 
         DocumentSnapshot? trainerDoc;
+        FeesConfigModel? feesConfig;
+
         final trainerRef = _firestore.collection('users').doc(trainerId);
         if (status == AppointmentStatus.completed) {
           trainerDoc = await transaction.get(trainerRef);
+
+          final feesRef = _firestore.collection('settings').doc('fees');
+          final feesSnapshot = await transaction.get(feesRef);
+
+          if (feesSnapshot.exists && feesSnapshot.data() != null) {
+            feesConfig = FeesConfigModel.fromJson(feesSnapshot.data()!);
+          } else {
+            feesConfig = const FeesConfigModel(
+              slaPenaltyRate: 0.3,
+              slaTravelPenaltyHours: 4,
+              commStandardRate: 0.2,
+              commMasterRate: 0.1,
+              commThreshold: 30,
+              baseHourlyRate: 80,
+              remoteDiscountAmount: 10,
+            );
+          }
         }
 
         final transactionsQuery =
@@ -181,15 +201,21 @@ class FirebaseAppointmentRepository implements AppointmentRepository {
                   as int? ??
               0;
 
+          final sessionType = appData['sessionType'] as String? ?? '';
+          final baseHourlyRate = feesConfig!.baseHourlyRate;
+          final remoteDiscount =
+              sessionType == 'remote' ? feesConfig.remoteDiscountAmount : 0.0;
+          final actualHourlyRate = baseHourlyRate - remoteDiscount;
           final baseSessionAmount =
               singleSessionAmount > 0
                   ? singleSessionAmount
-                  : (duration / 60) * 80.0;
+                  : (duration / 60) * actualHourlyRate;
 
           final earningsData = CommissionService.calculateEarnings(
             sessionAmount: baseSessionAmount,
             transportFee: transportFee,
             completedSessions: currentCompletedCount,
+            config: feesConfig,
           );
 
           final amountToEarn = earningsData['trainerEarning'] as double;

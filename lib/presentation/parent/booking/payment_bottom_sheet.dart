@@ -10,6 +10,10 @@ import '../../shared/bottom_action_button.dart';
 class PaymentBottomSheet extends StatefulWidget {
   const PaymentBottomSheet({
     required this.totalPrice,
+    required this.singleSessionBaseFee,
+    required this.durationMinutes,
+    required this.weeks,
+    required this.remoteDiscountTotal,
     required this.requiredCredits,
     required this.availableCredits,
     required this.hasEnoughCredits,
@@ -21,6 +25,11 @@ class PaymentBottomSheet extends StatefulWidget {
   });
 
   final double totalPrice;
+  final double singleSessionBaseFee;
+  final int durationMinutes;
+  final int weeks;
+  final double remoteDiscountTotal;
+
   final int requiredCredits;
   final int availableCredits;
   final bool hasEnoughCredits;
@@ -32,6 +41,10 @@ class PaymentBottomSheet extends StatefulWidget {
   static Future<void> show({
     required BuildContext context,
     required double totalPrice,
+    required double singleSessionBaseFee,
+    required int durationMinutes,
+    required int weeks,
+    required double remoteDiscountTotal,
     required int requiredCredits,
     required int availableCredits,
     required bool hasEnoughCredits,
@@ -47,6 +60,10 @@ class PaymentBottomSheet extends StatefulWidget {
       builder:
           (_) => PaymentBottomSheet(
             totalPrice: totalPrice,
+            singleSessionBaseFee: singleSessionBaseFee,
+            durationMinutes: durationMinutes,
+            weeks: weeks,
+            remoteDiscountTotal: remoteDiscountTotal,
             requiredCredits: requiredCredits,
             availableCredits: availableCredits,
             hasEnoughCredits: hasEnoughCredits,
@@ -110,8 +127,33 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
 
           _buildPriceRow(
             context.l10n.sessionFeeLabel,
-            context.l10n.rmPriceFormat(widget.totalPrice.toStringAsFixed(2)),
+            context.l10n.rmPriceFormat(
+              widget.singleSessionBaseFee.toStringAsFixed(2),
+            ),
           ),
+          8.heightBox,
+
+          _buildPriceRow(
+            'Duration', // TODO: 建议加入 l10n 翻译
+            '${widget.durationMinutes} mins',
+          ),
+          8.heightBox,
+
+          // 3. 显示周数 (Weeks)
+          _buildPriceRow(
+            'Repeats', // TODO: 建议加入 l10n 翻译
+            'x ${widget.weeks} Weeks',
+          ),
+
+          // 4. 如果有 Remote Discount，用绿色负数显示
+          if (widget.remoteDiscountTotal > 0) ...[
+            8.heightBox,
+            _buildPriceRow(
+              'Remote Discount', // TODO: 建议加入 l10n 翻译
+              '- ${context.l10n.rmPriceFormat(widget.remoteDiscountTotal.toStringAsFixed(2))}',
+              valueColor: ThemeColor.green, // 绿色代表省钱
+            ),
+          ],
 
           if (widget.transportFee > 0) ...[
             8.heightBox,
@@ -189,7 +231,12 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
     );
   }
 
-  Widget _buildPriceRow(String label, String value, {bool isBold = false}) {
+  Widget _buildPriceRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? valueColor,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -203,7 +250,7 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
         Text(
           value,
           style: AppWidget.bodyMedium().copyWith(
-            color: isBold ? ThemeColor.darkBlue : ThemeColor.black,
+            color: valueColor,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
           ),
         ),

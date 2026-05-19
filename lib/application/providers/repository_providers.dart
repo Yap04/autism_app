@@ -9,6 +9,7 @@ import '../../domain/repositories/child_repository.dart';
 import '../../domain/repositories/content_repository.dart';
 import '../../domain/repositories/dashboard_repository.dart';
 import '../../domain/repositories/feedback_repository.dart';
+import '../../domain/repositories/fees_repository.dart';
 import '../../domain/repositories/ticket_repository.dart';
 import '../../domain/repositories/trainer_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
@@ -20,6 +21,7 @@ import '../../infrastructure/repositories/firebase_child_repository.dart';
 import '../../infrastructure/repositories/firebase_content_repository.dart';
 import '../../infrastructure/repositories/firebase_dashboard_repository.dart';
 import '../../infrastructure/repositories/firebase_feedback_repository.dart';
+import '../../infrastructure/repositories/firebase_fees_repository.dart';
 import '../../infrastructure/repositories/firebase_ticket_repository.dart';
 import '../../infrastructure/repositories/firebase_trainer_repository.dart';
 import '../../infrastructure/repositories/firebase_transaction_repository.dart';
@@ -91,6 +93,11 @@ final trainerRepositoryProvider = Provider<TrainerRepository>((ref) {
 final feedbackRepositoryProvider = Provider<FeedbackRepository>((ref) {
   final firestore = ref.watch(firestoreProvider);
   return FirebaseFeedbackRepository(firestore);
+});
+
+final feesRepositoryProvider = Provider<FeesRepository>((ref) {
+  final firestore = ref.watch(firestoreProvider);
+  return FirebaseFeesRepository(firestore);
 });
 
 // Service Providers

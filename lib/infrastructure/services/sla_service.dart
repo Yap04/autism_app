@@ -1,10 +1,11 @@
 import '../../domain/models/appointment_model.dart';
+import '../../domain/models/fees_config_model.dart';
 
 class SlaService {
-  static const double penaltyRate = 0.3;
-  static const int travelPenaltyHours = 4;
-
-  static Map<String, dynamic> calculateCancellation(AppointmentModel appt) {
+  static Map<String, dynamic> calculateCancellation(
+    AppointmentModel appt,
+    FeesConfigModel config,
+  ) {
     final now = DateTime.now();
     final hoursUntilSession = appt.dateTime.difference(now).inHours;
 
@@ -12,8 +13,11 @@ class SlaService {
     final transportFee = appt.transportFee;
 
     final isCredit = appt.paymentMethod == PaymentMethod.credit;
-
     final creditsUsed = appt.duration ~/ 60;
+
+    final penaltyRate = config.slaPenaltyRate;
+    final travelPenaltyHours = config.slaTravelPenaltyHours;
+    final penaltyPercentageStr = '${(penaltyRate * 100).toInt()}%';
 
     // 1. Handle pending sessions: Full refund, no penalty
     if (appt.status == AppointmentStatus.pending) {
@@ -66,7 +70,7 @@ class SlaService {
           'refundAmount': refund,
           'trainerCompensation': trainerComp,
           'message':
-              "Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) will be deducted to compensate the coach's time.",
+              "Less than 24h notice: $penaltyPercentageStr (RM ${penalty.toStringAsFixed(2)}) will be deducted to compensate the coach's time.",
         };
       } else {
         // Cancel before 4 hours before the session starts
@@ -78,8 +82,8 @@ class SlaService {
           'trainerCompensation': penalty,
           'message':
               transportFee > 0
-                  ? 'Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) deducted. Travel Fee is fully refunded.'
-                  : 'Less than 24h notice: 30% (RM ${penalty.toStringAsFixed(2)}) will be deducted.',
+                  ? 'Less than 24h notice: $penaltyPercentageStr (RM ${penalty.toStringAsFixed(2)}) deducted. Travel Fee is fully refunded.'
+                  : 'Less than 24h notice: $penaltyPercentageStr (RM ${penalty.toStringAsFixed(2)}) will be deducted.',
         };
       }
     }
