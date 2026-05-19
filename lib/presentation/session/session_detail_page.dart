@@ -7,6 +7,7 @@ import '../../application/appointment/appointment_notifier.dart';
 import '../../application/auth/auth_notifier.dart';
 import '../../application/child/child_provider.dart';
 import '../../application/providers/repository_providers.dart';
+import '../../application/user/trainer_provider.dart';
 import '../../core/constant/color_constant.dart';
 import '../../core/constant/textstyle_constant.dart';
 import '../../core/extension/gender_ext.dart';
@@ -76,6 +77,7 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
     final childAsync = ref.watch(childDetailsProvider(appt.childId));
 
     final currentUser = ref.watch(authNotifierProvider).value;
+
     final isParent = currentUser?.id == appt.parentId;
 
     return Scaffold(
@@ -911,6 +913,123 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
       );
     }
 
+    if (appt.status == AppointmentStatus.pending && !isParent) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap:
+                      _isLoading
+                          ? null
+                          : () => _updateStatus(
+                            context,
+                            ref,
+                            appt,
+                            AppointmentStatus.rejected,
+                          ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color:
+                            _isLoading
+                                ? ThemeColor.lightGrey.withValues(alpha: 0.5)
+                                : ThemeColor.lightGrey,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_isLoading)
+                          const SizedBox(
+                            height: 14,
+                            width: 14,
+                            child: CircularProgressIndicator(
+                              color: ThemeColor.grey100,
+                              strokeWidth: 1.5,
+                            ),
+                          )
+                        else
+                          Text(
+                            context.l10n.rejectAction,
+                            style: AppWidget.bodySmall().copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: ThemeColor.black,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              12.widthBox,
+              Expanded(
+                child: GestureDetector(
+                  onTap:
+                      _isLoading
+                          ? null
+                          : () => _updateStatus(
+                            context,
+                            ref,
+                            appt,
+                            AppointmentStatus.accepted,
+                          ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color:
+                          _isLoading
+                              ? ThemeColor.green.withValues(alpha: 0.5)
+                              : ThemeColor.green,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_isLoading)
+                          const SizedBox(
+                            height: 14,
+                            width: 14,
+                            child: CircularProgressIndicator(
+                              color: ThemeColor.white,
+                              strokeWidth: 1.5,
+                            ),
+                          )
+                        else
+                          Text(
+                            context.l10n.acceptRequestAction,
+                            style: AppWidget.bodySmall().copyWith(
+                              color: ThemeColor.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (appt.status == AppointmentStatus.accepted && !isParent) {
       return Container(
         padding: const EdgeInsets.all(24),
@@ -1081,6 +1200,60 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
         );
       },
     );
+  }
+
+  Future<void> _updateStatus(
+    BuildContext context,
+    WidgetRef ref,
+    AppointmentModel appointment,
+    AppointmentStatus status,
+  ) async {
+    setState(() => _isLoading = true);
+
+    try {
+      if (status == AppointmentStatus.accepted) {
+        final currentUser = ref.read(authNotifierProvider).value;
+        if (currentUser?.latitude == null || currentUser?.longitude == null) {
+          if (context.mounted) {
+            AppSnackBar.error(
+              context,
+              'Action Required: Please set your Service Base Location in your Dashboard before accepting requests.',
+            );
+          }
+          return;
+        }
+      }
+
+      final paymentChannel =
+          appointment.paymentMethod == PaymentMethod.credit
+              ? PaymentChannel.credit
+              : PaymentChannel.stripe;
+
+      await ref
+          .read(appointmentNotifierProvider.notifier)
+          .updateStatus(appointment.id, status, paymentChannel);
+
+      ref
+        ..invalidate(trainerStudentsProvider)
+        ..invalidate(appointmentNotifierProvider);
+
+      if (context.mounted) {
+        if (status == AppointmentStatus.accepted) {
+          AppSnackBar.success(context, 'Appointment Accepted!');
+        } else {
+          AppSnackBar.info(context, 'Appointment Rejected!');
+        }
+        context.router.pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackBar.error(context, e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _handleCancelAppointment(
