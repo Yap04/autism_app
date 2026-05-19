@@ -302,7 +302,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   ),
             ),
 
-            isSuspended ? _buildSuspendedBanner() : _buildBottomInputArea(),
+            isSuspended
+                ? _buildSuspendedBanner()
+                : _buildBottomInputArea(isAiAssistant),
           ],
         ),
       ),
@@ -424,7 +426,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     );
   }
 
-  Widget _buildBottomInputArea() {
+  Widget _buildBottomInputArea(bool isAiAssistant) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
@@ -433,22 +435,26 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       ),
       child: Row(
         children: [
-          _isUploadingImage
-              ? const Padding(
-                padding: EdgeInsets.all(12),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: ThemeColor.darkBlue,
+          if (!isAiAssistant)
+            _isUploadingImage
+                ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: ThemeColor.darkBlue,
+                    ),
                   ),
+                )
+                : IconButton(
+                  icon: const Icon(
+                    Icons.attach_file,
+                    color: ThemeColor.grey100,
+                  ),
+                  onPressed: _showImageSourceSheet,
                 ),
-              )
-              : IconButton(
-                icon: const Icon(Icons.attach_file, color: ThemeColor.grey100),
-                onPressed: _showImageSourceSheet,
-              ),
 
           Expanded(
             child: TextField(

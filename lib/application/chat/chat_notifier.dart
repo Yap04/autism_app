@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/models/chat_room_model.dart';
 import '../../domain/models/message_model.dart';
+import '../../infrastructure/services/remote_notification_service.dart';
 import '../auth/auth_notifier.dart';
 import '../providers/repository_providers.dart';
 
@@ -47,7 +48,9 @@ class ChatNotifier extends _$ChatNotifier {
 
     state = await AsyncValue.guard(() async {
       final user = ref.read(authNotifierProvider).value;
-      if (user == null) throw Exception('Sila log masuk dahulu.');
+      if (user == null) {
+        throw Exception('Please log in first.');
+      }
 
       final ids = [user.id, receiverId]..sort();
       final roomId = '${ids[0]}_${ids[1]}';
@@ -64,6 +67,27 @@ class ChatNotifier extends _$ChatNotifier {
       await ref
           .read(chatRepositoryProvider)
           .sendMessage(roomId: roomId, message: myMessage);
+
+      if (receiverId != 'chatbot_ai') {
+        try {
+          final targetToken = await ref
+              .read(userRepositoryProvider)
+              .getUserFcmToken(receiverId);
+
+          if (targetToken != null && targetToken.isNotEmpty) {
+            final senderName = user.name ?? user.nickname ?? 'New Message';
+            final notificationBody = isImage ? 'Sent a photo 📷' : text.trim();
+
+            await RemoteNotificationService.notifyOtherUser(
+              targetFcmToken: targetToken,
+              title: senderName,
+              body: notificationBody,
+            );
+          }
+        } catch (e) {
+          print('Push notification failed to send: $e');
+        }
+      }
 
       if (receiverId == 'chatbot_ai') {
         try {
