@@ -55,3 +55,4 @@ app.*.map.json
 # Custom ignores
 package.json
 settings.json
+.env
