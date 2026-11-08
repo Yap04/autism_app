@@ -31,14 +31,12 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
-      // 🚀 2. 处理异步数据的不同状态
       body: studentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error:
             (err, stack) =>
                 Center(child: Text(context.l10n.errorMessage(err.toString()))),
         data: (allStudents) {
-          // 🚀 3. 动态计算 Summary 卡片的数据
           final activeStudents =
               allStudents.where((s) => s.status == 'active').toList();
           final pendingStudents =
@@ -46,7 +44,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
           final pastStudents =
               allStudents.where((s) => s.status == 'past').toList();
 
-          // 🚀 4. 根据当前选中的 Tab 获取要在列表里渲染的学生
           final List<TrainerStudentUIModel> filteredStudents;
           if (_currentTabIndex == 0) {
             filteredStudents = activeStudents.cast<TrainerStudentUIModel>();
@@ -74,7 +71,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                         ),
                         24.heightBox,
 
-                        // 🚀 5. 使用真实数据渲染 Summary 卡片
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -239,8 +235,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
 
     final hasPendingBooking = data.hasPendingBooking;
 
-    final lastSession = '-'; // 你可以之后从 booking.dateTime 转换格式
-    final progressPercent = 0.5; // TODO: 你的进度条逻辑
     final hasNotification = hasPendingBooking;
     final sportIcon = getSportIcon(sport);
 
@@ -353,13 +347,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                             ),
                           ],
                         ),
-                        if (status == 'active')
-                          Text(
-                            context.l10n.lastSessionLabel(lastSession),
-                            style: AppWidget.bodySmall().copyWith(
-                              color: ThemeColor.grey100,
-                            ),
-                          ),
                       ],
                     ),
                   ],
@@ -395,33 +382,6 @@ class _TrainerMyStudentsPageState extends ConsumerState<TrainerMyStudentsPage> {
                   }).toList(),
             ),
 
-          if (status == 'active') ...[
-            16.heightBox,
-            Stack(
-              children: [
-                Container(
-                  height: 6,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: ThemeColor.lightGrey,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                FractionallySizedBox(
-                  widthFactor: progressPercent,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.darkBlue,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          //TODO: 有新的request时，active student 的sport会变成最新的
           20.heightBox,
           Row(
             children: [

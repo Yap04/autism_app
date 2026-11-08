@@ -62,8 +62,8 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
     );
     final slotProgress = availableSlots / maxSlotsPerDay;
 
-    final uniqueParentsCount =
-        acceptedAppointments.map((a) => a.parentId).toSet().length;
+    final uniqueChildrenCount =
+        acceptedAppointments.map((a) => a.childId).toSet().length;
 
     return Scaffold(
       backgroundColor: ThemeColor.cream,
@@ -155,7 +155,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage> {
                                     Expanded(
                                       child: StatItem(
                                         label: context.l10n.totalMembersLabel,
-                                        value: '$uniqueParentsCount',
+                                        value: '$uniqueChildrenCount',
                                       ),
                                     ),
                                   ],

@@ -6,9 +6,9 @@ import 'package:intl/intl.dart';
 import '../../../application/support/ticket_provider.dart';
 import '../../../core/constant/color_constant.dart';
 import '../../../core/constant/textstyle_constant.dart';
+import '../../../core/extension/localization_ext.dart';
 import '../../../core/extension/widget_ext.dart';
 import '../../../core/routes/app_router.dart';
-import '../../../core/extension/localization_ext.dart';
 import '../../../domain/models/ticket_model.dart';
 import '../../shared/ticket_status_color.dart';
 

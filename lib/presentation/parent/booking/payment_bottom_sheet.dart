@@ -134,24 +134,22 @@ class _PaymentBottomSheetState extends State<PaymentBottomSheet> {
           8.heightBox,
 
           _buildPriceRow(
-            'Duration', // TODO: 建议加入 l10n 翻译
+            'Duration',
             '${widget.durationMinutes} mins',
           ),
           8.heightBox,
 
-          // 3. 显示周数 (Weeks)
           _buildPriceRow(
-            'Repeats', // TODO: 建议加入 l10n 翻译
+            'Repeats',
             'x ${widget.weeks} Weeks',
           ),
 
-          // 4. 如果有 Remote Discount，用绿色负数显示
           if (widget.remoteDiscountTotal > 0) ...[
             8.heightBox,
             _buildPriceRow(
-              'Remote Discount', // TODO: 建议加入 l10n 翻译
+              'Remote Discount',
               '- ${context.l10n.rmPriceFormat(widget.remoteDiscountTotal.toStringAsFixed(2))}',
-              valueColor: ThemeColor.green, // 绿色代表省钱
+              valueColor: ThemeColor.green,
             ),
           ],
 
