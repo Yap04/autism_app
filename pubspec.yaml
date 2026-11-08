@@ -66,3 +66,4 @@ flutter:
 
   assets:
     - asset/image/chatbot.png
+    - .env
