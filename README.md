@@ -4,16 +4,11 @@ A comprehensive mobile application built with **Flutter** and **Firebase**, desi
 
 ## 📱 UI Showcase
 
-<p align="center">
-  <img src="asset/screenshots/discover_trainer.png" width="200" alt="Discover Trainer">
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="asset/screenshots/chat.png" width="200" alt="AI Chat Screen">
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="asset/screenshots/wallet.png" width="200" alt="Wallet Screen">
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="asset/screenshots/admin_dashboard.png" width="200" alt="Admin Dashboard">
-</p>
-
+| Discover Trainer | AI Chat |
+| :---: | :---: |
+| <img src="asset/image/screenshots/discover_trainer.png" height="300" alt="Discover Trainer"> | <img src="asset/image/screenshots/chat.png" height="300" alt="Chat"> |
+| **Wallet & Payments** | **Admin Dashboard** |
+| <img src="asset/image/screenshots/wallet.png" height="300" alt="Wallet"> | <img src="asset/image/screenshots/admin_dashboard.png" height="300" alt="Admin Dashboard"> |
 ## ✨ Key Features
 
 - **Role-Based Authentication**: Secure login and registration for Parents and Trainers using Firebase Auth.
