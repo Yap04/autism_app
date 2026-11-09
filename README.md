@@ -2,29 +2,41 @@
 
 A comprehensive mobile application built with **Flutter** and **Firebase**, designed to support the autism community. This project serves as my Final Year Project (FYP) and connects parents with specialized trainers, facilitating appointments, payments, and AI-assisted support.
 
+## 📱 UI Showcase
+
+<p align="center">
+  <img src="asset/screenshots/discover_trainer.png" width="200" alt="Discover Trainer">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="asset/screenshots/chat.png" width="200" alt="AI Chat Screen">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="asset/screenshots/wallet.png" width="200" alt="Wallet Screen">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="asset/screenshots/admin_dashboard.png" width="200" alt="Admin Dashboard">
+</p>
+
 ## ✨ Key Features
 
-*   **Role-Based Authentication**: Secure login and registration for Parents and Trainers using Firebase Auth.
-*   **Trainer Discovery & Booking**: View trainer profiles, check availability, and book sessions seamlessly.
-*   **Integrated Payments**: Secure payment processing for bookings using the **Stripe API**.
-*   **Location & Maps**: View appointment locations and trainer proximities via the **Google Maps SDK**.
-*   **AI Chat Assistant**: Intelligent chatbot powered by the **Google Gemini API** to provide instant guidance and support.
-*   **Real-time Chat & Notifications**: In-app messaging and push notifications for appointment updates.
-*   **Secure Image Uploads**: Profile and content image management using the **ImgBB API**.
+- **Role-Based Authentication**: Secure login and registration for Parents and Trainers using Firebase Auth.
+- **Trainer Discovery & Booking**: View trainer profiles, check availability, and book sessions seamlessly.
+- **Integrated Payments**: Secure payment processing for bookings using the **Stripe API**.
+- **Location & Maps**: View appointment locations and trainer proximities via the **Google Maps SDK**.
+- **AI Chat Assistant**: Intelligent chatbot powered by the **Google Gemini API** to provide instant guidance and support.
+- **Real-time Chat & Notifications**: In-app messaging and push notifications for appointment updates.
+- **Secure Image Uploads**: Profile and content image management using the **ImgBB API**.
 
 ## 🛠️ Tech Stack
 
-*   **Frontend**: Flutter (Dart)
-*   **Backend / Database**: Firebase (Authentication, Cloud Firestore, Firebase Cloud Messaging)
-*   **Third-Party APIs**: 
-    *   Google Maps SDK (Android/iOS)
-    *   Google Gemini API
-    *   Stripe API
-    *   ImgBB API
-*   **Architecture & Security**: 
-    *   Environment variables managed via `flutter_dotenv`.
-    *   Dynamic Android Manifest injection for secure Map rendering.
-    *   Strict Firestore Security Rules (`request.auth != null`).
+- **Frontend**: Flutter (Dart)
+- **Backend / Database**: Firebase (Authentication, Cloud Firestore, Firebase Cloud Messaging)
+- **Third-Party APIs**:
+  - Google Maps SDK (Android/iOS)
+  - Google Gemini API
+  - Stripe API
+  - ImgBB API
+- **Architecture & Security**:
+  - Environment variables managed via `flutter_dotenv`.
+  - Dynamic Android Manifest injection for secure Map rendering.
+  - Strict Firestore Security Rules (`request.auth != null`).
 
 ---
 
@@ -34,9 +46,9 @@ Follow these instructions to set up and run the project on your local machine.
 
 ### Prerequisites
 
-*   [Flutter SDK](https://docs.flutter.dev/get-started/install) installed (version 3.x+).
-*   A [Firebase](https://firebase.google.com/) project configured for Android/iOS.
-*   Your own API Keys for Stripe, Google Maps, Gemini, and ImgBB.
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) installed (version 3.x+).
+- A [Firebase](https://firebase.google.com/) project configured for Android/iOS.
+- Your own API Keys for Stripe, Google Maps, Gemini, and ImgBB.
 
 ### 1. Clone the repository
 
@@ -71,7 +83,8 @@ To safely inject the Google Maps API key into the Android application:
 ```properties
 MAPS_API_KEY=your_google_maps_api_key_here
 ```
-*(Note: Do not use quotes around the key)*
+
+_(Note: Do not use quotes around the key)_
 
 ### 4. Install Dependencies
 
@@ -90,8 +103,8 @@ flutter run
 
 ## 🛡️ Security Note
 
-This repository enforces strict API key security. The `.env` and `android/local.properties` files are intentionally ignored by Git (`.gitignore`). If you fork or clone this project, you **must** supply your own credentials to test the features fully. 
+This repository enforces strict API key security. The `.env` and `android/local.properties` files are intentionally ignored by Git (`.gitignore`). If you fork or clone this project, you **must** supply your own credentials to test the features fully.
 
 ## 📝 License
 
-This project is created for educational purposes and portfolio demonstration as a Final Year Project. 
+This project is created for educational purposes and portfolio demonstration as a Final Year Project.
